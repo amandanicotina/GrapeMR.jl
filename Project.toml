@@ -1,0 +1,13 @@
+name = "GrapeMR"
+uuid = "30e061da-01fc-4427-9e64-f37e466dde80"
+authors = ["Amanda Nicotina", "David Dodel"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
