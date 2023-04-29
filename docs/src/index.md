@@ -5,27 +5,27 @@ Documentation for GrapeMR.jl
 # Optimal Control
 ## Description of System Dynamics
 The dynamics of a system can be mathematically described by the following system of equations:
-$$
+```math
 \begin{cases}
     \dot{\vec{x}}(t) = \vec{f}(x(t)) \\
     x(0) = x_0 (t > 0)
 \end{cases}
-$$
+```
 Here, $\vec{f}$ represents all of the forces acting on the system. In a control dynamics, a function $u(t)$, called the control function, is introduced to allow for manipulation of the system. The system dynamics can now be written as:
-$$
+```math
 \begin{cases}
     \dot{\vec{x}}(t) = \vec{f}(x(t), u(t)) \\
     x(0) = x_0 (t > 0). 
 \end{cases}
-$$
+```
 The goal in this type of system is to find the "best set" of controls. To achieve this, a reward function $C$ is introduced. If $u^*(t)$ is the optimal control, then for all $u(t)$, the reward function satisfies:
-$$
+```math
 C(u^*) ≥ C(u).
-$$
+```
 
 ## Optimal Control in NMR
 In Nuclear Magnetic Resonance (NMR), the system dynamics are governed by the Bloch Equations, which can be expressed as follows:
-$$
+```math
 \begin{bmatrix}
     \dot{M_x} \\ \dot{M_y} \\ \dot{M_z}
 \end{bmatrix} = 
@@ -40,14 +40,14 @@ $$
 \begin{bmatrix}
     0 \\ 0 \\ M_0/T_1
 \end{bmatrix}
-$$
+```
 In this equation, $(\omega_x, \omega_y)$ represent the RF pulses used in an NMR experiment to control the dynamics of the magnetization, which is described by the vector $\vec{M} = (M_x, M_y, M_z)$. The magnetization dynamics is also governed by the intrinsic relaxation values, $T_1$ and $T_2$, of each sample.
 
 ## Cost Function
 Defining a cost function is essencial in this processes since it is based on it that the system will be optimized. In the case of contrast saturation, given two samples $a$ and $b$, the goal is to supress one signal while maximizing the other. This can be achieved using the following cost function:
-$$
+```math
 C^{(a>b)} = ||\vec{M}^{(b)}(t_f)|| - (M_z^{(a)}(t_f))^2
-$$
+```
 This cost function yields the best value of $-1$ when the signal of sample $a$ is zero and the signal of sample $b$ is maximum.
 
 ## GRAPE Algorithm 
