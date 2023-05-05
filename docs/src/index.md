@@ -43,7 +43,7 @@ C(u^*) ≥ C(u).
 ## Optimal Control in NMR
 In Nuclear Magnetic Resonance (NMR), a controled dynamics can be achieved by designing the RF pulses as the controls. Hence, the magnetization dynamics would be proportional to,
 ```math
-\dot{M}(t) = f(M_0, T_1, T_2, B_1(t), M(t)).
+\dot{M}(t) = f(M_0, T_1, T_2, B_1(t), M(t))
 ```
 
 More specifically, the dynamics are governed by the Bloch Equations, which can be expressed as follows:
@@ -63,6 +63,7 @@ More specifically, the dynamics are governed by the Bloch Equations, which can b
     0 \\ 0 \\ M_0/T_1
 \end{bmatrix}
 ```
+
 where the dynamics of the magnetization is described by the vector $\vec{M} = (M_x, M_y, M_z)$. 
 
 ## Cost Function
