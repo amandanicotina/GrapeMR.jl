@@ -7,6 +7,8 @@ version = "1.0.0-DEV"
 BlochSim = "5c0f8cbe-99a4-11e9-108b-216da9629524"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+DomainSets = "5b8099bc-c8ec-5219-889f-1d9e522a28bf"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 ReinforcementLearning = "158674fc-8238-5cab-b5ba-03dfc80d1318"
 ReinforcementLearningBase = "e575027e-6cd6-5018-9292-cdc6200d2b44"
 

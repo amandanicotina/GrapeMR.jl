@@ -1,7 +1,8 @@
 using ReinforcementLearning
-using ReinforcementLearningBase
 using BlochSim
 using LinearAlgebra
+
+include("space.jl")
 
 Base.@kwdef mutable struct BlochSimEnv <: AbstractEnv
 
@@ -23,9 +24,9 @@ struct RfPulse
     Δt::Float64
 end
 
-RLBase.action_space(env::BlochSimEnv) = (RfPulse, nothing)
+RLBase.action_space(env::BlochSimEnv) = -2π .. 2π
 RLBase.reward(env::BlochSimEnv) = env.reward
-RLBase.state(env::BlochSimEnv) = (env.spin.M)
+RLBase.state(env::BlochSimEnv) = ([env.spin.M.x, env.spin.M.y, env.spin.M.z])
 RLBase.state_space(env::BlochSimEnv) = ArrayProductDomain([typemin(Float64) .. typemax(Float64), typemin(Float64) .. typemax(Float64), typemin(Float64) .. typemax(Float64)])
 RLBase.is_terminated(env::BlochSimEnv) = env.elapsed_time <= env.max_t
 RLBase.reset!(env::BlochSimEnv) = 
@@ -34,20 +35,16 @@ begin
     env.reward = 0.0;
 end
 
-function (x::BlochSimEnv)(action)
-    if isnothing(action)
-        freeprecess!(env.spin, x.time_step)
-        # TODO: What is our reward?
-        x.reward = 0.0
-    elseif isa(action, RfPulse)
-        # TODO: How are omegas related to the excitation?
-        excite!(spin, InstantaneousRF(π/2))
-        freeprecess!(env.spin, x.time_step)
-        x.reward = norm(normalize([0.5, 0.5, 0.5] - env.spin.M))
-    else
-        @error "unknown action of $action"
-    end
-    x.elapsed_time += x.time_step
+function (env::BlochSimEnv)(action)
+    # TODO: How are omegas related to the excitation?
+    # Try and use RfPulse
+    excite!(env.spin, InstantaneousRF(action))
+    freeprecess!(env.spin, env.time_step)
+    mag_vec = [env.spin.M.x, env.spin.M.y, env.spin.M.z]
+    # Try and maximise distance between two spins eventually
+    env.reward = norm(normalize([0.5, 0.5, 0.5] - mag_vec))
+
+    env.elapsed_time += env.time_step
 end
 
 env = BlochSimEnv()
