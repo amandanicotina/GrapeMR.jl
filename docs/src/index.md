@@ -52,7 +52,7 @@ More specifically, the dynamics are governed by the Bloch Equations, which can b
     \dot{M_x} \\ \dot{M_y} \\ \dot{M_z}
 \end{bmatrix} = 
 \begin{bmatrix}
-    -1/T_2 & \Delta B_0 & -\B1_y \\
+    -1/T_2 & \Delta B_0 & -B1_y \\
     -\Delta B_0 & -1/T_2 & B1_x \\
     B1_y & -B1_x & 1/T_1
 \end{bmatrix}
