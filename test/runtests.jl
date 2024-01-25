@@ -1,6 +1,5 @@
 using GrapeMR
 using Test
+using SafeTestsets
 
-@testset "GrapeMR.jl" begin
-    # Write your tests here.
-end
+@testset "Check Bloch methods" begin include("test_bloch_methods.jl") end
