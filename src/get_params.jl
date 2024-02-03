@@ -1,4 +1,5 @@
 const γ_¹H = 42.5774688e6 #[Hz/T] 
+abstract type ControlField end
 
 struct InitialControlFields
     # □ Change to just one B1 and get the angle and 
@@ -11,6 +12,9 @@ struct InitialControlFields
     band_width_step::Float64
 end
 
+mutable struct ControlFields
+end
+
 struct Spins
     M_init
     T1::Float64
@@ -20,9 +24,25 @@ struct Spins
 end
 
 struct OptimizationParams
-    cost_function::String
+    cost_function::String # □ Make a dict with the avaiable cost functions
     max_iter::Int64
 end
+
+
+
+# □ 3D array for different δ's
+struct Magnetization{N}
+    magnetization::NTuple{N, Array{Float64}}
+    spin::NTuple{N, Spins}
+end
+
+
+
+
+
+
+
+
 
 # To-Do
 ### □ Add struct with export Information

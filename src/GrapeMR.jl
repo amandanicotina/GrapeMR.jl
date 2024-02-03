@@ -1,14 +1,29 @@
 module GrapeMR
 
 using Plots
-using BlochSim
+using Zygote
+using LinearAlgebra
 using ExponentialUtilities
 
 include("get_params.jl")
+include("plots.jl")
+
 include("propagation/bloch_methods.jl")
 
+include("set_optimization/optimize.jl")
+include("set_optimization/cost_functions.jl")
+include("set_optimization/cost_gradients.jl")
+include("set_optimization/get_gradient.jl")
+
 export γ_¹H 
-export InitialControlFields, Spins, OptimizationParams
+export InitialControlFields, Spins, OptimizationParams, Magnetization
+export plot_magnetization
+
 export magnetization_ODE
+
+export grape_optimize, finite_difference_cost, finite_difference_field
+
+export cost_functions, cost_gradients
+export adjoint_initial_state, backward_propagation, gradient_controls, update_control_field
 
 end

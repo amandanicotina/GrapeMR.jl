@@ -11,9 +11,15 @@ function magnetization_precession!(cf::InitialControlFields, s::Spins)
     flip = cf.B1x_initial_control
     
 end
+
+
 """
 write documentation
 """
+function bloch_matrix()
+    
+end
+
 function magnetization_ODE(cf::InitialControlFields, s::Spins)
     γ = γ_¹H
     Δt_arr    = range(0.0, cf.t_control, length=cf.N+1)
