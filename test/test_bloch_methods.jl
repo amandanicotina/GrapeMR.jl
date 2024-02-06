@@ -49,9 +49,9 @@ end
     Mz_ODE = mag[4, end]
 
     # Solution for Mz
-    Rx = [1.0  0.0      0.0;
-          0.0  cos(α)   -sin(α);
-          0.0  sin(α)   cos(α)]
+    Rx = [1.0  0.0     0.0;
+          0.0  cos(α)  sin(α);
+          0.0 -sin(α)  cos(α)]
     M_sol = Rx*M_ini_sol
 
     @test round(Mx_ODE, digits=5) == round(M_sol[1], digits=5)

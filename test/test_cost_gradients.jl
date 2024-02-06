@@ -34,9 +34,9 @@ end
     α   = π/2;
     t_c = 1.0;
     B1  = α/(γ_¹H*t_c);
-    B1x_arr = B1*ones(1, N);  
-    B1y_arr = zeros(1,N)
-    fields_test = InitialControlFields(N, B1_arr, 1.0, B1y_arr, 0.0, 1e-1, 0.0, 0.0)
+    B1x_arr, B1y_arr = B1*ones(1, N), zeros(1,N);   
+
+    fields_test = InitialControlFields(N, B1x_arr, 1.0, B1y_arr, 0.0, 1e-1, 0.0, 0.0)
     spin_test   = Spins([1.0; 0.0; 0.0], 0.5, 0.3, 0.0, "max")
     mag_test    = magnetization_ODE(fields_test, spin_test)
     iso_test    = Magnetization((mag_test,), (spin_test,))
@@ -48,6 +48,8 @@ end
 
     # True Gradient
     true_grad = -gradient_controls(fields_test, spin_test, iso_test)
+plot(fd_cf')
+plot!(true_grad')
 
     @test round.(fd_cf, digits=5) .== round.(true_grad, digits=5)
 

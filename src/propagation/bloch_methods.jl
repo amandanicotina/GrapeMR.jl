@@ -50,21 +50,18 @@ magnetization_ODE
 """
 function magnetization_ODE(cf::InitialControlFields, s::Spins)
     γ = γ_¹H
-    Δt_arr    = range(0.0, cf.t_control, length=cf.N+1)
-    mag_exact = zeros(Float64, 4, cf.N+1)
-    mag_exact[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
+    Δt_arr  = range(0.0, cf.t_control, length=cf.N+1)
+    M       = zeros(Float64, 4, cf.N+1)
+    M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
 
     Bz = 0.0
     Bx = cf.B1x_init_control
     By = cf.B1y_init_control
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
-    bloch_matrix = [0.0    0.0        0.0       0.0;
-                    0.0    -1/s.T2   -γ*Bz     -γ*By[i];
-                    0.0    -γ*Bz     -1/s.T2    γ*Bx[i];
-                    1/s.T1  γ*By[i]  -γ*Bx[i]  -1/s.T1 ] 
-    mag_exact[:, i+1] = expv(Δt, bloch_matrix, mag_exact[:, i])
+        b_m = bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
+        M[:, i+1] = expv(Δt, b_m, M[:, i])
     end
 
-    return mag_exact    
+    return M    
 end

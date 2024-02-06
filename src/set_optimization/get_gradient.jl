@@ -13,12 +13,8 @@ function backward_propagation(cf::InitialControlFields, s::Spins, iso::Magnetiza
     By = cf.B1y_init_control
 
     for i in back_steps:-1:1 
-        bloch_matrix = [0.0    0.0        0.0       0.0;
-                        0.0    -1/s.T2   -γ*Bz     -γ*By[i];
-                        0.0    -γ*Bz     -1/s.T2    γ*Bx[i];
-                        1/s.T1  γ*By[i] -γ*Bx[i] -1/s.T1]
-
-        bloch_matrix_adjoint = adjoint(bloch_matrix)
+        b_m = bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
+        bloch_matrix_adjoint = adjoint(b_m)
         χ[:, i] = expv(-Δt[i], bloch_matrix_adjoint, χ[:, i+1]) 
     end
 

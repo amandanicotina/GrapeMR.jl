@@ -13,7 +13,7 @@ B1y_arr = zeros(1, N);
 init_control_field = InitialControlFields(N, B1x_arr, 0.0, B1y_arr, 0.0, t_c, 0.0, 0.0)
 
 ##### OPTIMIZE #####
-(iso, fields, cost_func) = grape_optimize(init_control_field, spin1; max_iter=1500, ϵ=1e-6)
+(iso, fields, cost_func) = grape_optimize(init_control_field, spin1; max_iter=500, ϵ=1e-6)
 
 ##### PLOTS #####
 data = [fields[1, :, i] for i in 1:101]
