@@ -23,3 +23,22 @@ function plot_magnetization(iso::Magnetization, t::Float64)
     # Return the array of plots
     return plots
 end
+
+function plot_magnetization_target()
+    
+end
+
+function plot_cost_values(cost::Array)
+    p = plot(cost', label = "Euclidean Distance", lw = 2,
+    xlabel = "Iterations",
+    ylabel = "Cost Value",
+    title  = "Cost Function Convergence",
+    titlefontsize = 12,
+    )
+
+    return p
+end
+
+function plot_control_fields()
+    
+end

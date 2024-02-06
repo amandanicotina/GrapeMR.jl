@@ -14,12 +14,40 @@ end
 
 
 """
-write documentation
+    bloch_matrix(cf::InitialControlFields, s::Spins)
+
+bloch_matrix
+    # Input  
+    - cf: (::InitialControlFields) - Control fields struct
+    - s:  (::Spins) - Spin struct
+
+    # Output
+    - Calculated 4x4 Bloch matrix
 """
-function bloch_matrix()
+function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, T1::Float64, T2::Float64)
+    # □ Make different calculations for different units
+    γ = γ_¹H 
+
+    bloch_matrix = 
+        [0.0   0.0     0.0     0.0;
+         0.0  -1/T2   -γ*Bz   -γ*B1y;
+         0.0  -γ*Bz   -1/T2    γ*B1x;
+         1/T1  γ*B1y  -γ*B1x  -1/T1] 
     
+    return bloch_matrix
 end
 
+
+
+"""
+magnetization_ODE
+    # Input  
+    - cf: (::InitialControlFields) - Control fields struct
+    - s:  (::Spins) - Spin struct
+
+    # Output
+    - Magnetization vector 4xN
+"""
 function magnetization_ODE(cf::InitialControlFields, s::Spins)
     γ = γ_¹H
     Δt_arr    = range(0.0, cf.t_control, length=cf.N+1)
@@ -27,8 +55,8 @@ function magnetization_ODE(cf::InitialControlFields, s::Spins)
     mag_exact[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
 
     Bz = 0.0
-    Bx = abs.(cf.B1_initial_control)
-    By = angle.(cf.B1_initial_control)
+    Bx = cf.B1x_init_control
+    By = cf.B1y_init_control
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
     bloch_matrix = [0.0    0.0        0.0       0.0;

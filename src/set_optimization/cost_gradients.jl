@@ -11,7 +11,7 @@ function grad_euclidean_norm(iso::Magnetization)
     My_tf = mag[3,end]/M_norm
     Mz_tf = mag[4,end]/M_norm
 
-    P = [1.0, Mx_tf, My_tf, Mz_tf]
+    P = [0.0, Mx_tf, My_tf, Mz_tf]
 
     return P
 end

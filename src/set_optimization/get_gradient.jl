@@ -9,8 +9,8 @@ function backward_propagation(cf::InitialControlFields, s::Spins, iso::Magnetiza
     χ[:, end]    = cost_gradients["Grad Euclidean Norm"](iso);
 
     Bz = 0.0
-    Bx = abs.(cf.B1_initial_control)
-    By = angle.(cf.B1_initial_control)
+    Bx = cf.B1x_init_control
+    By = cf.B1y_init_control
 
     for i in back_steps:-1:1 
         bloch_matrix = [0.0    0.0        0.0       0.0;
@@ -32,17 +32,21 @@ function gradient_controls(cf::InitialControlFields, s::Spins, iso::Magnetizatio
     γ = γ_¹H
     χ = backward_propagation(cf, s, iso)
     Ix = [0 0 0 0; 0 0 0 0; 0 0 0 1; 0 0 -1 0];
-   # Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
-    M = magnetization_ODE(cf, s)
-    ∂J = transpose(χ[:,end])*Ix*M[:,end] 
-
-    return ∂J
+    # Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
+    t_arr = range(cf.t_control, 0.0, length=cf.N+1)
+    Δt    = diff(t_arr)[1]
+    M     = magnetization_ODE(cf, s)
+    ΔₓJ = zeros(Float64, 1, cf.N)
+    for i ∈ 1:cf.N
+        ΔₓJ[1,i] = transpose(χ[:,i+1])*Ix*M[:,i]*Δt
+    end
+    return ΔₓJ
 end
 
 function update_control_field(cf::InitialControlFields, s::Spins, iso::Magnetization, ϵ::Float64)
     #∂J = finite_difference_field(gradient_controls, cf, s, iso, ϵ)
-    ∂J = gradient_controls(cf, s, iso)
-    Bx = abs.(cf.B1_initial_control) .- ϵ*∂J
+    ΔₓJ = gradient_controls(cf, s, iso)
+    Bx = cf.B1x_init_control .+ ϵ*ΔₓJ
     #Bx_up = abs.(cf.B1_initial_control[1,2:end]) .+ ϵ*∂J
     #Bx = [cf.B1_initial_control[1,1]; Bx_up]
     return Bx

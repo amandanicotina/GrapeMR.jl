@@ -17,7 +17,7 @@ include("set_optimization/get_gradient.jl")
 
 export γ_¹H 
 export InitialControlFields, Spins, OptimizationParams, Magnetization
-export plot_magnetization
+export plot_magnetization, plot_cost_values
 
 export magnetization_ODE
 

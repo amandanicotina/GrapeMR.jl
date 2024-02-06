@@ -28,23 +28,28 @@ end
 
 @safetestset "True Control Field Gradient vs Finite Difference" begin
     using GrapeMR
+
     # Defining parameters
-    N = 100;
+    N = 500;
+    α   = π/2;
+    t_c = 1.0;
     B1  = α/(γ_¹H*t_c);
-    B1_arr = B1*ones(1, N);  
-    fields_test = InitialControlFields(N, B1_arr, 1.0, 0.0, 1e-1, 0.0, 0.0)
+    B1x_arr = B1*ones(1, N);  
+    B1y_arr = zeros(1,N)
+    fields_test = InitialControlFields(N, B1_arr, 1.0, B1y_arr, 0.0, 1e-1, 0.0, 0.0)
     spin_test   = Spins([1.0; 0.0; 0.0], 0.5, 0.3, 0.0, "max")
     mag_test    = magnetization_ODE(fields_test, spin_test)
     iso_test    = Magnetization((mag_test,), (spin_test,))
+    cost_func   = cost_functions["Euclidean Norm"]
 
     # Finite difference
-    Δcf = 1e-8;
-    fd_cf = finite_difference_field(gradient_controls, fields_test, spin_test, iso_test, Δcf)
+    Δcf   = 1e-10;
+    fd_cf = finite_difference_field(cost_func, fields_test, spin_test, Δcf)./γ_¹H
 
     # True Gradient
-    true_grad = gradient_controls(fields_test, spin_test, iso_test)
+    true_grad = -gradient_controls(fields_test, spin_test, iso_test)
 
-    @test round.(fd_cf, digits=5) == round.(true_grad, digits=5)
+    @test round.(fd_cf, digits=5) .== round.(true_grad, digits=5)
 
 end
 

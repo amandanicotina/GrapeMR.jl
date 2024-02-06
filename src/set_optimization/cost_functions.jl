@@ -12,11 +12,11 @@ contourf(trans, long, cost_func, color = :jet)
 #### FUNCTIONS ####                    
 function euclidean_norm(iso::Magnetization)
     mag = iso.magnetization[1]
-    Mᴬx = mag[2,end]
-    Mᴬy = mag[3,end]
-    Mᴬz = mag[4,end]
+    Mx = mag[2,end]
+    My = mag[3,end]
+    Mz = mag[4,end]
 
-    J = sqrt(Mᴬx^2 + Mᴬy^2 + Mᴬz^2)
+    J = sqrt(Mx^2 + My^2 + Mz^2)
 
     return J
 end
