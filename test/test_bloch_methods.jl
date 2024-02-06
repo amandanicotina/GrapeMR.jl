@@ -3,9 +3,10 @@ using Test
 @safetestset "Exact ODE solution - Relaxation" begin
     using GrapeMR
     spin_test = Spins([1.0; 0.0; 0.0], 0.6, 0.3, 0.0, "nothing")
-
-    t_c = 0.1
-    init_field_test = InitialControlFields(2, [0.0 0.0], 1.0, 0.0, t_c, 0.0, 0.0)
+    N   = 100
+    t_c = 0.5
+    B1x, B1y = zeros(Float64, 1, N), zeros(Float64, 1, N)
+    init_field_test = InitialControlFields(N, B1x, 0.0, B1y, 0.0, t_c, 0.0, 0.0)
     
     # Solution Bloch Methods - ODE
     mag = magnetization_ODE(init_field_test, spin_test)
@@ -34,10 +35,12 @@ end
     M_ini_sol = [spin_test.M_init[1]; spin_test.M_init[2]; spin_test.M_init[3]]
 
     # Flip angle and RF field
-    α   = π;
+    N   = 100 
+    α   = π/3;
     t_c = 0.001;
-    B1 = α/(γ_¹H*t_c);
-    init_field_test = InitialControlFields(1, [B1], 0.0, 0.0, t_c, 0.0, 0.0);
+    B1  = α/(γ_¹H*t_c);
+    B1x, B1y = B1*ones(Float64, 1, N), zeros(Float64, 1, N)
+    init_field_test = InitialControlFields(N, B1x, 0.0, B1y, 0.0, t_c, 0.0, 0.0)
 
     # Solution Bloch Methods - ODE
     mag = magnetization_ODE(init_field_test, spin_test)
@@ -47,8 +50,8 @@ end
 
     # Solution for Mz
     Rx = [1.0  0.0      0.0;
-          0.0  cos(α)  -sin(α);
-          0.0  sin(α)  cos(α)]
+          0.0  cos(α)   -sin(α);
+          0.0  sin(α)   cos(α)]
     M_sol = Rx*M_ini_sol
 
     @test round(Mx_ODE, digits=5) == round(M_sol[1], digits=5)
