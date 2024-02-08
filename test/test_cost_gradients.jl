@@ -4,7 +4,7 @@ using Test
     using GrapeMR
     # Defining parameters
     N = 100;
-    fields_test = InitialControlFields(N, rand(1, N), 1.0, 0.0, 1e-1, 0.0, 0.0)
+    fields_test = InitialControlFields(N, rand(1, N), 1.0, zeros(1, N), 0.0, 1e-1, 0.0, 0.0)
     spin_test   = Spins([1.0; 0.0; 0.0], 0.5, 0.3, 0.0, "max")
     mag_test    = magnetization_ODE(fields_test, spin_test)
     iso_test    = Magnetization((mag_test,), (spin_test,))
@@ -36,15 +36,15 @@ end
     B1  = α/(γ_¹H*t_c);
     B1x_arr, B1y_arr = B1*ones(1, N), zeros(1,N);   
 
-    fields_test = InitialControlFields(N, B1x_arr, 1.0, B1y_arr, 0.0, 1e-1, 0.0, 0.0)
+    fields_test = InitialControlFields(N, rand(1, N), 1.0, zeros(1, N), 0.0, 1e-1, 0.0, 0.0)
     spin_test   = Spins([1.0; 0.0; 0.0], 0.5, 0.3, 0.0, "max")
     mag_test    = magnetization_ODE(fields_test, spin_test)
     iso_test    = Magnetization((mag_test,), (spin_test,))
     cost_func   = cost_functions["Euclidean Norm"]
 
     # Finite difference
-    Δcf   = 1e-10;
-    fd_cf = finite_difference_field(cost_func, fields_test, spin_test, Δcf)./γ_¹H
+    Δcf   = 1e-7;
+    fd_cf = finite_difference_field(cost_func, fields_test, spin_test, Δcf)
 
     # True Gradient
     true_grad = -gradient_controls(fields_test, spin_test, iso_test)
