@@ -19,11 +19,11 @@ export γ_¹H
 export InitialControlFields, Spins, OptimizationParams, Magnetization
 export plot_magnetization, plot_cost_values
 
-export magnetization_ODE
+export forward_propagation, backward_propagation
 
 export grape_optimize, finite_difference_cost, finite_difference_field
 
 export cost_functions, cost_gradients
-export adjoint_initial_state, backward_propagation, gradient_controls, update_control_field
+export normalization, gradient_controls, update_control_field
 
 end

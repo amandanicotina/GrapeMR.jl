@@ -11,13 +11,26 @@ function grad_euclidean_norm(iso::Magnetization)
     My_tf = mag[3,end]/M_norm
     Mz_tf = mag[4,end]/M_norm
 
-    P = [0.0, Mx_tf, My_tf, Mz_tf]
+    P = [1.0, Mx_tf, My_tf, Mz_tf]
 
     return P
 end
 
 
-function grad_target_one_spin()    
+function grad_target_one_spin(iso::Magnetization)    
+    # Target magnetization
+    Mx_tar, My_tar, Mz_tar= 0.0, 0.0, 1.0
+
+    mag = iso.magnetization[1]    
+    M = [mag[2,end] - Mx_tar; mag[3,end] - My_tar; mag[4,end] - Mz_tar]
+    M_norm = norm(M) 
+
+    Mx_tf = (mag[2,end] - Mx_tar)/M_norm
+    My_tf = (mag[3,end] - My_tar)/M_norm
+    Mz_tf = (mag[4,end] - Mz_tar)/M_norm
+
+    P_tar = [1.0, Mx_tf, My_tf, Mz_tf]
+    return P_tar
 end
 
 function grad_contrast()
@@ -43,7 +56,7 @@ function grad_euclidean_distance(iso::Magnetization)
     return c
 end
 
-cost_gradients = Dict("Grad Euclidean Norm"  => grad_euclidean_norm,
-                      "Grad Target One Spin" => grad_target_one_spin,
-                      "Grad Contrast"        => grad_contrast)    
+cost_gradients = Dict("Euclidean Norm"  => grad_euclidean_norm,
+                      "Target One Spin" => grad_target_one_spin,
+                      "Contrast"        => grad_contrast)    
 

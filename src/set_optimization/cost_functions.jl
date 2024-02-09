@@ -21,8 +21,18 @@ function euclidean_norm(iso::Magnetization)
     return J
 end
 
-function target_one_spin()
-    
+function target_one_spin(iso::Magnetization)
+    J_tar = 0
+    mag = iso.magnetization[1]
+    Mx = mag[2,end]
+    My = mag[3,end]
+    Mz = mag[4,end]
+    # Target magnetization
+    M_tar = [0.0, 0.0, 1.0]
+
+    J_tar = sqrt((Mx - M_tar[1,1])^2 + (My - M_tar[2,1])^2 + (Mz - M_tar[3,1])^2)
+
+    return J_tar
 end
 
 function contrast()

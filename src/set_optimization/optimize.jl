@@ -12,11 +12,11 @@ function grape_optimize(cf::InitialControlFields, spin::Spins; max_iter=1500, ϵ
         init_control_field = InitialControlFields(cf.N, B1, cf.B1x_max_amplitude, cf.B1y_init_control,
                             cf.B1y_max_amplitude, cf.t_control, 0.0, 0.0);
         # Propagation
-        mag = magnetization_ODE(init_control_field, spin)
+        mag = forward_propagation(init_control_field, spin)
         isoList = Magnetization((mag,), (spin,))
 
         # Cost function
-        cost_func = cost_functions["Euclidean Norm"](isoList)
+        cost_func = cost_functions["Target One Spin"](isoList)
         cost_vals[1, i] = cost_func
         println("Cost function value = ", cost_func)
 
@@ -39,7 +39,7 @@ function finite_difference_cost(cost_func::Function, iso::Magnetization, ΔM::Fl
     # Make a copy of the variable values to avoid modifying the original
     spin = iso.spin
     iso_vals = iso
-    M_perturbed = iso.magnetization[1][:,end]
+    M_perturbed = copy(iso.magnetization[1][:,end])
 
     # Initialize an array to store finite differences for each variable
     finite_diffs = zeros(Float64, 3, 1)
@@ -65,7 +65,7 @@ function finite_difference_field(cost_func::Function, cf::InitialControlFields, 
     perturbation = copy(cf_vals) 
 
     # No perturbation
-    mag_vals = magnetization_ODE(cf, spin)
+    mag_vals = forward_propagation(cf, spin)
     iso_vals = Magnetization((mag_vals,), (spin,))
 
     for i ∈ 1:cf.N
@@ -74,7 +74,7 @@ function finite_difference_field(cost_func::Function, cf::InitialControlFields, 
                         cf.B1y_max_amplitude, cf.t_control, cf.band_width, cf.band_width_step)
 
         # With perturbation
-        mag_perturbed = magnetization_ODE(cf_perturbed, spin)
+        mag_perturbed = forward_propagation(cf_perturbed, spin)
         iso_perturbed = Magnetization((mag_perturbed,), (spin,))
 
         # Calculate the finite difference for the current variable
