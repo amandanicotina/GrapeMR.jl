@@ -9,6 +9,8 @@ cost_func(Mx, My, Mz) = sqrt.(Mz.^2 .+ Mt.^2);
 contourf(trans, long, cost_func, color = :jet)
 
 """
+
+
 #### FUNCTIONS ####                    
 function euclidean_norm(iso::Magnetization)
     mag = iso.magnetization[1]
@@ -21,22 +23,26 @@ function euclidean_norm(iso::Magnetization)
     return J
 end
 
-function target_one_spin(iso::Magnetization)
+function target_one_spin(iso::Magnetization; M_tar = [0.5; 0.5; 0.0])
     J_tar = 0
+    # Target Magnetization
+    Mx_tar = M_tar[1,1]
+    My_tar = M_tar[2,1]
+    Mz_tar = M_tar[3,1]
+
+    # Magnetization
     mag = iso.magnetization[1]
     Mx = mag[2,end]
     My = mag[3,end]
     Mz = mag[4,end]
-    # Target magnetization
-    M_tar = [0.0, 0.0, 1.0]
 
-    J_tar = sqrt((Mx - M_tar[1,1])^2 + (My - M_tar[2,1])^2 + (Mz - M_tar[3,1])^2)
+    J_tar = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2)
 
     return J_tar
 end
 
+
 function contrast()
-    
 end
 
 function euclidean_distance(iso::Magnetization)

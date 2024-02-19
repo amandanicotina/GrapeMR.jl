@@ -17,17 +17,22 @@ function grad_euclidean_norm(iso::Magnetization)
 end
 
 
-function grad_target_one_spin(iso::Magnetization)    
-    # Target magnetization
-    Mx_tar, My_tar, Mz_tar= 0.0, 0.0, 1.0
+function grad_target_one_spin(iso::Magnetization; M_tar = [0.5; 0.5; 0.0])    
+    # Target Magnetization
+    Mx_tar = M_tar[1,1]
+    My_tar = M_tar[2,1]
+    Mz_tar = M_tar[3,1]
 
+    # Magnetization
     mag = iso.magnetization[1]    
-    M = [mag[2,end] - Mx_tar; mag[3,end] - My_tar; mag[4,end] - Mz_tar]
-    M_norm = norm(M) 
+    Mx  = mag[2,end]
+    My  = mag[3,end]
+    Mz  = mag[4,end]
+    M_norm = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2) 
 
-    Mx_tf = (mag[2,end] - Mx_tar)/M_norm
-    My_tf = (mag[3,end] - My_tar)/M_norm
-    Mz_tf = (mag[4,end] - Mz_tar)/M_norm
+    Mx_tf = (Mx - Mx_tar)/M_norm
+    My_tf = (My - My_tar)/M_norm
+    Mz_tf = (Mz - Mz_tar)/M_norm
 
     P_tar = [1.0, Mx_tf, My_tf, Mz_tf]
     return P_tar

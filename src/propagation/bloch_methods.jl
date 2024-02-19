@@ -21,7 +21,6 @@ function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, T1::Float64, T2::
 end
 
 
-
 """
 forward_propagation
     # Input  
@@ -31,15 +30,14 @@ forward_propagation
     # Output
     - Magnetization vector 4xN
 """
-function forward_propagation(cf::InitialControlFields, s::Spins)
-    γ = γ_¹H
-    Δt_arr  = range(0.0, cf.t_control, length=cf.N+1)
-    M       = zeros(Float64, 4, cf.N+1)
+function forward_propagation(cf::ControlFields, s::Spins)
+    Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
+    M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
 
     Bz = 0.0
-    Bx = cf.B1x_init_control
-    By = cf.B1y_init_control
+    Bx = cf.B1x
+    By = cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
         b_m = bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
@@ -60,16 +58,17 @@ backward_propagation
     - Adjoint state 4xN
 """
 
-function backward_propagation(cf::InitialControlFields, s::Spins, iso::Magnetization)
-    t_arr      = range(cf.t_control, 0.0, length=cf.N+1)
+function backward_propagation(cf::ControlFields, iso::Magnetization, cost_function::String)
+    t_arr      = range(cf.t_control, 0.0, length(cf.B1x)+1)
     Δt         = diff(t_arr)
     back_steps = length(Δt)
-    χ          = zeros(Float64, 4, cf.N+1)
-    χ[:, end]    = cost_gradients["Target One Spin"](iso);
+    χ          = zeros(Float64, 4, length(cf.B1x)+1)
+    χ[:, end]  = cost_gradients[cost_function](iso);
+    s = iso.spin[1]
 
     Bz = 0.0
-    Bx = cf.B1x_init_control
-    By = cf.B1y_init_control
+    Bx = cf.B1x
+    By = cf.B1y
 
     for i in back_steps:-1:1 
         b_m = bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
