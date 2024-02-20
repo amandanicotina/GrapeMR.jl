@@ -41,7 +41,7 @@ function grape_optimize(op::OptimizationParams, cf::ControlFields, spin::Spins; 
         elseif B1y_optimize
             println("Entering B1y optimization")
             for j ∈ 1:max_iter
-                #B1x        = copy(cf.B1x);
+                B1x        = copy(cf.B1x);
                 control_By = ControlFields(B1x, B1y, cf.B1x_max_amp,
                                     cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
                 # Propagation

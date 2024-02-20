@@ -30,7 +30,7 @@ export ControlFields
 export OptimizationParams
 export Spins, Magnetization
 
-export forward_propagation, backward_propagation
+export normalization, forward_propagation, backward_propagation
 
 export grape_optimize, finite_difference_cost, finite_difference_field
 

@@ -2,30 +2,19 @@ using Test
 
 @safetestset "Exact ODE solution - Relaxation" begin
     using GrapeMR
-    spin_test = Spins([1.0; 0.0; 0.0], 0.6, 0.3, 0.0, "nothing")
-    #N   = 100
-    #t_c = 0.5
-    #B1x, B1y = zeros(Float64, 1, N), zeros(Float64, 1, N)
-    #B0, ΔB0 = zeros(1, N), zeros(1, N);
+    M0 = [1.0; 0.0; 0.0];
+    T1 = 0.5;
+    T2 = 0.25;
+    
+    ##### INITIAL RF FIELD #####
+    N   = 500;
+    α   = π/2;
+    t_c = 0.5;
+    B1  = α/t_c;
+    B1x, B1y = B1*ones(Float64, 1, N), B1*ones(Float64, 1, N)
+    B0, ΔB0  = zeros(1, N), zeros(1, N);
 
-    N    = 2000;
-    α    = π/2;
-    t_c  = 0.1;
-    B1x_max, B1y_max = 2π/t_c, 2π/t_c;
-
-    time = range(0.0, t_c, N) 
-    t = time .- t_c/2;
-    flip_rads = α/diff(t)[1]
-    BW_Hz = 500;
-    x = 2*BW_Hz.*t/2
-    y = BW_Hz.*t/2
-    B1x_arr = flip_rads*sinc.(x) # sinc(x) = sin(πx)/(πx)
-    B1y_arr = flip_rads*sinc.(y) #  
-
-    B0  = zeros(1, N);
-    ΔB0 = zeros(1, N);
-    field_test = ControlFields((B1x_arr./maximum(B1x_arr))', (B1y_arr./maximum(B1x_arr))', 
-                    B1x_max, B1y_max, t_c, B0, ΔB0); 
+    (spin_test, field_test) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
 
     #init_field_test = ControlFields(γ_¹H*B1x, B1y, 0.0, 0.0, t_c, B0, ΔB0)
     
@@ -36,13 +25,21 @@ using Test
     Mz_ODE = mag[4, end]
 
     # Solution for Mz
-    # Mz_sol = 1.0 .- (1.0 .- spin_test.M_init[3])*exp.(-(2π/spin_test.T1).*time)
-    Mz_sol = 1.0 - (1.0 - spin_test.M_init[3])*exp(-2π*t_c/spin_test.T1)
+    time = range(0.0, field_test.t_control, length=length(field_test.B1x)+1)
+    Mz_sol = 1.0 .- (1.0 .- spin_test.M_init[3])*exp.(-(2π*spin_test.Γ1).*time)
+    #Mz_sol = 1.0 - (1.0 - spin_test.M_init[3])*exp(-field_test.t_control*spin_test.T1)
+plot(Mz_sol)
+plot!(mag[4,:])
 
     # Solution for Mxy
     Mxy = √(spin_test.M_init[1]^2 + spin_test.M_init[2]^2)
-    Mxy_sol = Mxy*exp(-2π*t_c/spin_test.T2)
-    #Mxy_sol = Mxy*exp.(-(2π/spin_test.T2).*time)
+    #Mxy_sol = Mxy*exp(-t_c/spin_test.T2)
+    Mxy_sol = Mxy*exp.(-(2π*spin_test.Γ2).*time)
+
+plot(abs.(Mxy_sol))
+plot!(mag[2,:])
+plot(angle.(Mxy_sol))
+plot!(mag[3,:])
 
     Mx_sol = abs(Mxy_sol)
     My_sol = 0.0

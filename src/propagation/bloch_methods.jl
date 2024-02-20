@@ -1,3 +1,23 @@
+function normalization(M_ini, t_c, T1, T2, B1x, B1y, Bz)
+    # Omega reference for the normalization
+    ω_ref = maximum(B1x);
+    
+    # Recalculating parameter values
+    τ  = (ω_ref*t_c)/2π
+    Γ1 = 2π/(ω_ref*T1)
+    Γ2 = 2π/(ω_ref*T2)
+    uz = Bz./ω_ref
+    ux = B1x./ω_ref
+    uy = B1y./ω_ref
+    ux_max, uy_max = ω_ref, ω_ref
+
+    spins = Spins(M_ini, Γ1, Γ2, 0.0, "max")
+    init_control_field = ControlFields(ux, uy, ux_max, uy_max, τ, uz, [0.0])
+
+    return spins, init_control_field
+end
+
+
 """
     bloch_matrix(cf::InitialControlFields, s::Spins)
 
@@ -9,13 +29,13 @@ bloch_matrix
     # Output
     - Calculated 4x4 Bloch matrix
 """
-function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, T1::Float64, T2::Float64)
-    # □ Make different calculations for different units
+function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2::Float64)
+
     bloch_matrix = 
-        [0.0    0.0     0.0     0.0;
-         0.0   -2π/T2  -Bz     -B1y;
-         0.0   -Bz     -2π/T2   B1x;
-         2π/T1  B1y    -B1x    -2π/T1] 
+        [0.0   0.0   0.0   0.0;
+         0.0  -Γ2   -Bz   -B1y;
+         0.0  -Bz   -Γ2    B1x;
+         Γ1    B1y  -B1x  -Γ1] 
     
     return bloch_matrix
 end
@@ -40,8 +60,8 @@ function forward_propagation(cf::ControlFields, s::Spins)
     By = cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
-        b_m = bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
-        M[:, i+1] = expv(Δt, b_m, M[:, i])
+        b_m = bloch_matrix(Bx[i], By[i], Bz, s.Γ1, s.Γ2)
+        M[:, i+1] = expv(Δt, 2π*b_m, M[:, i])
     end
 
     return M    
@@ -71,9 +91,9 @@ function backward_propagation(cf::ControlFields, iso::Magnetization, cost_functi
     By = cf.B1y
 
     for i in back_steps:-1:1 
-        b_m = bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
+        b_m = bloch_matrix(Bx[i], By[i], Bz, s.Γ1, s.Γ2)
         bloch_matrix_adjoint = adjoint(b_m)
-        χ[:, i] = expv(-Δt[i], bloch_matrix_adjoint, χ[:, i+1]) 
+        χ[:, i] = expv(-Δt[i], 2π*bloch_matrix_adjoint, χ[:, i+1]) 
     end
 
     return round.(χ, digits = 5)

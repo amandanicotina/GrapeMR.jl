@@ -9,4 +9,5 @@ struct ControlFields <: ControlField
     t_control::Float64
     band_width::AbstractArray
     band_width_step::AbstractArray
+
 end

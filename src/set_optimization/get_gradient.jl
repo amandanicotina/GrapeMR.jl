@@ -1,3 +1,6 @@
+
+
+
 """
     get_gradient(cf::ControlFields, iso::Magnetization, cost_function::String)
 
@@ -19,7 +22,7 @@ function get_gradient(cf::ControlFields, iso::Magnetization, H::Matrix, cost_fun
     # Gradient 
     ΔJ = zeros(Float64, 1, length(cf.B1x))
     for i ∈ 1:length(cf.B1x)
-        ΔJ[1,i] = transpose(χ[:,i+1])*H*Δt*M[:,i]
+        ΔJ[1,i] = transpose(χ[:,i+1])*H*M[:,i]
     end
     return ΔJ
 end
