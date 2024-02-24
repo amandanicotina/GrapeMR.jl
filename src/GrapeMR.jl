@@ -37,6 +37,6 @@ export grape_optimize, finite_difference_cost, finite_difference_field
 export cost_functions, cost_gradients
 export get_gradient, update_control_field
 
-export plot_magnetization, plot_cost_values, plot_control_fields
+export plot_magnetization, plot_cost_values, plot_control_fields, plot_magnetization_target
 
 end

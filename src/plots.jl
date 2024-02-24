@@ -10,14 +10,40 @@ function plot_magnetization(iso::Magnetization, t::Float64)
         title  = "Magnetization Dynamics - Target = $(spin.target)",
         titlefontsize = 12,
         )
-    
-
-    # Return the array of plots
     return p
 end
 
-function plot_magnetization_target()
+function plot_magnetization_target(iso::Magnetization)
+    mag  = iso.magnetization[1]
+    spin = iso.spin[1]
+    Mxy = sqrt.(mag[2,:].^2 .+ mag[3,:].^2)
     
+    p = plot(Mxy, mag[4, :], label = false, color = 1, lw = 1,
+        xlims = [0.0, 1.0],
+        ylims = [-1.0, 1.0],
+        xlabel = "Mxy",
+        ylabel = "Mz",
+        title  = "Magnetization Dynamics - Target = $(spin.target)",
+        titlefontsize = 12)
+        scatter!([Mxy[end]], [mag[4, end]], label = false, color = 1)
+    return p
+end
+
+
+function plot_magnetization_target3d(iso::Magnetization)
+    mag  = iso.magnetization[1]
+    spin = iso.spin[1]
+
+    # Create a plot of the magnetization
+    p = plot3d(mag[2, :], mag[3, :], mag[4, :], lw = 2,
+        zlims = [-1.0, 1.0],
+        xlabel = "Mx",
+        ylabel = "My",
+        zlabel = "Mz",
+        title  = "Magnetization Dynamics - Target = $(spin.target)",
+        titlefontsize = 12)
+        scatter!([mag[2, end]], [mag[3, end]], [mag[4, end]])
+    return p
 end
 
 function plot_cost_values(cost::Array)

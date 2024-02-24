@@ -1,8 +1,8 @@
 
 struct Spins
     M_init
-    Γ1::Float64
-    Γ2::Float64
+    T1::Float64
+    T2::Float64
     δ::Float64
     target::String
 end

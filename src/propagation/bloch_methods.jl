@@ -1,11 +1,13 @@
 function normalization(M_ini, t_c, T1, T2, B1x, B1y, Bz)
+    # □ Use Unitful to normalize based on units of initial RF field
+    
     # Omega reference for the normalization
-    ω_ref = maximum(B1x);
+    ω_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
     
     # Recalculating parameter values
-    τ  = (ω_ref*t_c)/2π
-    Γ1 = 2π/(ω_ref*T1)
-    Γ2 = 2π/(ω_ref*T2)
+    τ  = ω_ref*t_c
+    Γ1 = 1/(ω_ref*T1)
+    Γ2 = 1/(ω_ref*T2)
     uz = Bz./ω_ref
     ux = B1x./ω_ref
     uy = B1y./ω_ref
@@ -33,7 +35,7 @@ function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2
 
     bloch_matrix = 
         [0.0   0.0   0.0   0.0;
-         0.0  -Γ2   -Bz   -B1y;
+         0.0  -Γ2    Bz   -B1y;
          0.0  -Bz   -Γ2    B1x;
          Γ1    B1y  -B1x  -Γ1] 
     
@@ -60,8 +62,8 @@ function forward_propagation(cf::ControlFields, s::Spins)
     By = cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
-        b_m = bloch_matrix(Bx[i], By[i], Bz, s.Γ1, s.Γ2)
-        M[:, i+1] = expv(Δt, 2π*b_m, M[:, i])
+        b_m = 2π*bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
+        M[:, i+1] = expv(Δt, b_m, M[:, i])
     end
 
     return M    
@@ -79,21 +81,21 @@ backward_propagation
 """
 
 function backward_propagation(cf::ControlFields, iso::Magnetization, cost_function::String)
-    t_arr      = range(cf.t_control, 0.0, length(cf.B1x)+1)
+    t_arr      = range(0.0, cf.t_control, length(cf.B1x)+1)
     Δt         = diff(t_arr)
     back_steps = length(Δt)
     χ          = zeros(Float64, 4, length(cf.B1x)+1)
     χ[:, end]  = cost_gradients[cost_function](iso);
-    s = iso.spin[1]
+    s          = iso.spin[1]
 
     Bz = 0.0
     Bx = cf.B1x
     By = cf.B1y
 
     for i in back_steps:-1:1 
-        b_m = bloch_matrix(Bx[i], By[i], Bz, s.Γ1, s.Γ2)
+        b_m = 2π*bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
         bloch_matrix_adjoint = adjoint(b_m)
-        χ[:, i] = expv(-Δt[i], 2π*bloch_matrix_adjoint, χ[:, i+1]) 
+        χ[:, i] = expv(Δt[i], bloch_matrix_adjoint, χ[:, i+1]) 
     end
 
     return round.(χ, digits = 5)

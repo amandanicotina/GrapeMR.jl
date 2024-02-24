@@ -1,28 +1,28 @@
 
 
-
 """
     get_gradient(cf::ControlFields, iso::Magnetization, cost_function::String)
 
 get_gradient
     # Input  
-    - cf: (::InitialControlFields) - Control fields struct
+    - cf:  (::InitialControlFields) - Control fields struct
     - iso: (::Magnetization) -
+    - H:   (::Matrix) - Hamiltonian
     - cost_function: (::String) - Key to the cost function dictionary
 
     # Output
     - ΔJx - 1xN matrix
 """
 function get_gradient(cf::ControlFields, iso::Magnetization, H::Matrix, cost_function::String)
-    χ     = backward_propagation(cf, iso, cost_function)
-    t_arr = range(cf.t_control, 0.0, length = length(cf.B1x)+1)
-    Δt    = diff(t_arr)[1]
-    s     = iso.spin[1]
-    M     = forward_propagation(cf, s)
+    χ  = backward_propagation(cf, iso, cost_function)
+    s  = iso.spin[1]
+    M  = forward_propagation(cf, s)
+    t  = range(cf.t_control, 0.0, length = length(cf.B1x)+1)
+    Δt = diff(t)[1]
     # Gradient 
     ΔJ = zeros(Float64, 1, length(cf.B1x))
     for i ∈ 1:length(cf.B1x)
-        ΔJ[1,i] = transpose(χ[:,i+1])*H*M[:,i]
+        ΔJ[1,i] = transpose(χ[:,i+1])*H*Δt*M[:,i]./2π
     end
     return ΔJ
 end
@@ -34,10 +34,10 @@ end
 
 update_control_field
     # Input  
-    - cf: (::InitialControlFields) - Control fields struct
+    - cf:  (::InitialControlFields) - Control fields struct
     - iso: (::Magnetization) -
     - cost_function: (::String) - Key to the cost function dictionary
-    - ϵ: (::Float64) - 
+    - ϵ:   (::Float64) - 
 
     # Output
     - Control Field - 1xN matrix
@@ -45,9 +45,9 @@ update_control_field
 function update_control_field(cf::ControlFields, iso::Magnetization, H::Matrix, cost_function::String, ϵ::Float64)
     ΔJ = get_gradient(cf, iso, H, cost_function)
     if H == Ix
-        B = cf.B1x .+ ΔJ./ϵ
+        B = cf.B1x .- ϵ*ΔJ
     else
-        B = cf.B1y .+ ΔJ./ϵ
+        B = cf.B1y .- ϵ*ΔJ
     end
     return B
 end
