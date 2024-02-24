@@ -5,15 +5,21 @@ function normalization(M_ini, t_c, T1, T2, B1x, B1y, Bz)
     ω_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
     
     # Recalculating parameter values
+    # N spins
+    function normalized_spin(t1_t2)
+        t1, t2 = t1_t2
+        Γ1 = 1/(ω_ref*t1)
+        Γ2 = 1/(ω_ref*t2)
+        return Spins(M_ini, Γ1, Γ2, 0.0, "max")
+    end
+    spins = map(normalized_spin, zip(T1, T2))
+
     τ  = ω_ref*t_c
-    Γ1 = 1/(ω_ref*T1)
-    Γ2 = 1/(ω_ref*T2)
     uz = Bz./ω_ref
     ux = B1x./ω_ref
     uy = B1y./ω_ref
     ux_max, uy_max = ω_ref, ω_ref
 
-    spins = Spins(M_ini, Γ1, Γ2, 0.0, "max")
     init_control_field = ControlFields(ux, uy, ux_max, uy_max, τ, uz, [0.0])
 
     return spins, init_control_field

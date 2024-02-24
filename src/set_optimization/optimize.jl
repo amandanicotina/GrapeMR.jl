@@ -1,65 +1,21 @@
 # Optimizes based on cost function, gradient and propagation
 ## Optimize function with all inputs for the optimization
 
-function grape_optimize(op::OptimizationParams, cf::ControlFields, spin::Spins; max_iter=2500, ϵ = 1e-4) 
+function grape_optimize(op::OptimizationParams, cf::ControlFields, spins::Array{Spins}; max_iter=2500, ϵ = 1e-4) 
     # Initializing Optimization
     u1x            = copy(cf.B1x);
     u1x_all        = zeros(1, op.N, max_iter+1);
     u1x_all[1,:,1] = u1x;
-    B1x_optimize   = op.fields_opt[1]
 
     u1y            = copy(cf.B1y);
     u1y_all        = zeros(1, op.N, max_iter+1);
     u1y_all[1,:,1] = u1y;
-    B1y_optimize   = op.fields_opt[2]
 
-    cost_vals = zeros(1, max_iter+1);
     final_iso = Vector{Magnetization}(undef, 2)
 
-    for k ∈ 1:length(op.fields_opt)
-        if B1x_optimize
-            println("Entering B1x optimization")
-            for i ∈ 1:max_iter
-                control_ux = ControlFields(u1x, u1y, cf.B1x_max_amp,
-                                    cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
-                # Propagation
-                mag_ux = forward_propagation(control_ux, spin)
-                iso_ux = Magnetization((mag_ux,), (spin,))
-
-                # Cost function
-                cost_func = cost_functions[op.cost_function](iso_ux)
-                cost_vals[1, i] = cost_func
-                println("Cost function value = ", cost_func)
-
-                # Control field calculation
-                u1x_arr = update_control_field(control_ux, iso_ux, Ix, op.cost_function, ϵ)   
-                u1x = u1x_arr
-                u1x_all[1, :, i+1] = u1x_arr
-            end
-            B1x_optimize = false
-
-        elseif B1y_optimize
-            println("Entering B1y optimization")
-            for j ∈ 1:max_iter
-                u1x        = copy(cf.B1x);
-                control_uy = ControlFields(u1x, u1y, cf.B1x_max_amp,
-                                    cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
-                # Propagation
-                mag_uy = forward_propagation(control_uy, spin)
-                iso_uy = Magnetization((mag_uy,), (spin,))
-
-                # Cost function
-                cost_func = cost_functions[op.cost_function](iso_uy)
-                cost_vals[1, j] = cost_func;
-                println("Cost function value = ", cost_func)
-
-                # Control field calculation
-                u1y_arr = update_control_field(control_uy, iso_uy, Iy, op.cost_function, ϵ)   
-                u1y = u1y_arr
-                u1y_all[1, :, j+1] = u1y_arr
-            end
-            B1y_optimize = false
-        end
+    # TODO: map instead
+    for spin ∈ spins
+        update_control_fields(spin, op, cf, max_iter, u1x, u1x_all, u1y, u1y_all, ϵ)
     end
 
     # Calculating with optimized fields
@@ -69,14 +25,60 @@ function grape_optimize(op::OptimizationParams, cf::ControlFields, spin::Spins; 
     final_control = ControlFields(u1x_all[:,:,end], u1y_all[:,:,end], cf.B1x_max_amp, cf.B1y_max_amp, 
                                     cf.t_control, cf.band_width, cf.band_width_step)
 
-    mag_opt       = forward_propagation(final_control, spin)
-    final_iso     = Magnetization((mag_opt,), (spin,))
+    function get_output(spin::Spins)
+        mag_opt       = forward_propagation(final_control, spin)
+        final_iso     = Magnetization((mag_opt,), (spin,))
+        return final_iso, all_controls
+    end
 
-    return final_iso, all_controls
+    return map(get_output, spins)
 end 
 
+function update_control_fields(spin::Spins, params::OptimizationParams, cf::ControlFields, max_iter::Int64, u1x::AbstractArray, u1x_all::Array{Float64}, u1y::AbstractArray, u1y_all::Array{Float64}, ϵ::Float64)
+    cost_func = cost_functions[params.cost_function]
+    cost_vals = zeros(1, max_iter+1);
+    if params.fields_opt[1]
+        println("Entering B1x optimization")
+        for i ∈ 1:max_iter
+            u1y        = copy(cf.B1y);
+            control_ux = ControlFields(u1x, u1y, cf.B1x_max_amp,
+                                cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
+            # Propagation
+            mag_ux = forward_propagation(control_ux, spin)
+            iso_ux = Magnetization((mag_ux,), (spin,))
 
+            # Cost function
+            cost_vals[1, i] = cost_func(iso_ux)
+            println("Cost function value = ", cost_vals[1, i])
 
+            # Control field calculation
+            u1x_arr = update_control_field(control_ux, iso_ux, Ix, params.cost_function, ϵ)   
+            u1x = u1x_arr
+            u1x_all[1, :, i+1] = u1x_arr
+        end
+    end
+
+    if params.fields_opt[2]
+        println("Entering B1y optimization")
+        for j ∈ 1:max_iter
+            u1x        = copy(cf.B1x);
+            control_uy = ControlFields(u1x, u1y, cf.B1x_max_amp,
+                                cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
+            # Propagation
+            mag_uy = forward_propagation(control_uy, spin)
+            iso_uy = Magnetization((mag_uy,), (spin,))
+
+            # Cost function
+            cost_vals[1, j] = cost_func(iso_uy);
+            println("Cost function values = ", cost_vals[1, j])
+
+            # Control field calculation
+            u1y_arr = update_control_field(control_uy, iso_uy, Iy, params.cost_function, ϵ)   
+            u1y = u1y_arr
+            u1y_all[1, :, j+1] = u1y_arr
+        end
+    end
+end
 
 #### Finite Difference ####
 function finite_difference_cost(cost_func::Function, iso::Magnetization, ΔM::Float64)
