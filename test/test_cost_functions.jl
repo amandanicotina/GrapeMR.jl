@@ -17,7 +17,7 @@ using Test
     (spin_test, field_test) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
     
     mag_test = forward_propagation(field_test, spin_test)
-    iso_test = Magnetization((mag_test,), (spin_test,))
+    iso_test = Magnetization(mag_test, spin_test)
 
     Mx = mag_test[2,:];
     My = mag_test[3,:];
@@ -54,7 +54,7 @@ end
     (spin_test, field_test) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
     
     mag_test = forward_propagation(field_test, spin_test)
-    iso_test = Magnetization((mag_test,), (spin_test,))
+    iso_test = Magnetization(mag_test, spin_test)
 
     Mx = mag_test[2,:];
     My = mag_test[3,:];

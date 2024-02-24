@@ -1,6 +1,6 @@
 function plot_magnetization(iso::Magnetization, t::Float64)
-    mag  = iso.magnetization[1]
-    spin = iso.spin[1]
+    mag  = iso.magnetization
+    spin = iso.spin
     time = range(0.0, t, length = length(mag[1,:]))
 
     # Create a plot of the magnetization
@@ -14,8 +14,8 @@ function plot_magnetization(iso::Magnetization, t::Float64)
 end
 
 function plot_magnetization_target(iso::Magnetization)
-    mag  = iso.magnetization[1]
-    spin = iso.spin[1]
+    mag  = iso.magnetization
+    spin = iso.spin
     Mxy = sqrt.(mag[2,:].^2 .+ mag[3,:].^2)
     
     p = plot(Mxy, mag[4, :], label = false, color = 1, lw = 1,
@@ -31,8 +31,8 @@ end
 
 
 function plot_magnetization_target3d(iso::Magnetization)
-    mag  = iso.magnetization[1]
-    spin = iso.spin[1]
+    mag  = iso.magnetization
+    spin = iso.spin
 
     # Create a plot of the magnetization
     p = plot3d(mag[2, :], mag[3, :], mag[4, :], lw = 2,

@@ -1,5 +1,5 @@
 using GrapeMR
-using Plots
+
 
 # Create abstract arrays for T1 etc for N spins and use as input of the normalization function
 
@@ -48,7 +48,7 @@ if DEBUG
     for spin ∈ spins
         ##### INITIAL MAGNETIZATION #####
         mag  = forward_propagation(field_init, spin);
-        iso  = Magnetization((mag,),(spin,));
+        iso  = Magnetization(mag,spin);
         back = backward_propagation(field_init, iso, "Target One Spin")
         plot(back')
         ##### GRADIENTS #####
@@ -63,10 +63,10 @@ opt_params = OptimizationParams(N, "Target One Spin", [true true false]);
 grape_output = grape_optimize(opt_params, field_init, spins; max_iter=100, ϵ=1e-3); 
 
 ##### PLOTS #####
-for (idx, (iso_opt, fields_opt)) ∈ enumerate(grape_output)
+for (idx, (iso_opt)) ∈ enumerate(grape_output.magnetization)
     p_mag = plot_magnetization(iso_opt, t_c)
-    p_ini = plot_magnetization(iso, t_c)
-    p_field = plot_control_fields(fields_opt)
+    p_ini = plot_magnetization(iso_opt, t_c)
+    p_field = plot_control_fields(grape_output.control_field)
     p_init = plot_control_fields(field_init)
     display(p_mag)
     #display(p_field)

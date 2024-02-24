@@ -15,10 +15,8 @@ get_gradient
 """
 function get_gradient(cf::ControlFields, iso::Magnetization, H::Matrix, cost_function::String)
     χ  = backward_propagation(cf, iso, cost_function)
-    s  = iso.spin[1]
+    s  = iso.spin
     M  = forward_propagation(cf, s)
-    t  = range(cf.t_control, 0.0, length = length(cf.B1x)+1)
-    Δt = diff(t)[1]
     # Gradient 
     ∇J = zeros(Float64, 1, length(cf.B1x))
     for i ∈ 1:length(cf.B1x)

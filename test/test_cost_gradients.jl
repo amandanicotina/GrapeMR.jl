@@ -4,8 +4,8 @@ using Test
     using GrapeMR
     # Defining parameters
     M0 = [0.0; 0.0; 1.0];
-    T1 = 0.5;
-    T2 = 0.25;
+    T1 = [0.5];
+    T2 = [0.25];
     
     # Initial RF field
     N   = 500;
@@ -35,7 +35,7 @@ using Test
     (spin_test, field_test) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
     
     mag_test  = forward_propagation(field_test, spin_test[1])
-    iso_test  = Magnetization((mag_test,), (spin_test[1],))
+    iso_test  = Magnetization(mag_test, spin_test[1])
     cost      = "Target One Spin"
     cost_func = cost_functions[cost]
 
@@ -61,8 +61,8 @@ end
 
     # Defining parameters
     M0 = [0.0; 0.0; 1.0];
-    T1 = 0.5;
-    T2 = 0.25;
+    T1 = [0.5];
+    T2 = [0.25];
     
     # Initial RF field
     N   = 500;
@@ -91,14 +91,14 @@ end
     
     (spin_test, field_test) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
 
-    mag_test  = forward_propagation(field_test, spin_test)
-    iso_test  = Magnetization((mag_test,), (spin_test,))
+    mag_test  = forward_propagation(field_test, spin_test[1])
+    iso_test  = Magnetization(mag_test, spin_test[1])
     cost      = "Target One Spin"
     cost_func = cost_functions[cost]
 
     # Finite difference
     Δcf   = 1e-3;
-    fd_cf = finite_difference_field(cost_func, field_test, spin_test, Δcf, "B1y")
+    fd_cf = finite_difference_field(cost_func, field_test, spin_test[1], Δcf, "B1y")
 
     # True Gradient
     true_grad = get_gradient(field_test, iso_test, Iy, cost)

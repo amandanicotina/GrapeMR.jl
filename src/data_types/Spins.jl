@@ -8,8 +8,8 @@ struct Spins
 end
 
 # □ 3D array for different δ's
-struct Magnetization{N}
-    magnetization::NTuple{N, Array{Float64}}
-    spin::NTuple{N, Spins}
+struct Magnetization
+    # TODO: This could be an NTuple & leverage 4xN known dimension
+    magnetization::Array{Float64}
+    spin::Spins
 end
-

@@ -92,7 +92,7 @@ function backward_propagation(cf::ControlFields, iso::Magnetization, cost_functi
     back_steps = length(Δt)
     χ          = zeros(Float64, 4, length(cf.B1x)+1)
     χ[:, end]  = cost_gradients[cost_function](iso);
-    s          = iso.spin[1]
+    s          = iso.spin
 
     Bz = 0.0
     Bx = cf.B1x

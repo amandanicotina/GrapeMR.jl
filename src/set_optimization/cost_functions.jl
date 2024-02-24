@@ -13,7 +13,7 @@ contourf(trans, long, cost_func, color = :jet)
 
 #### FUNCTIONS ####                    
 function euclidean_norm(iso::Magnetization)
-    mag = iso.magnetization[1]
+    mag = iso.magnetization
     Mx = mag[2,end]
     My = mag[3,end]
     Mz = mag[4,end]
@@ -31,7 +31,7 @@ function target_one_spin(iso::Magnetization; M_tar = [0.5; 0.5; 0.0])
     Mz_tar = M_tar[3,1]
 
     # Magnetization
-    mag = iso.magnetization[1]
+    mag = iso.magnetization
     Mx = mag[2,end]
     My = mag[3,end]
     Mz = mag[4,end]
@@ -50,7 +50,7 @@ function euclidean_distance(iso::Magnetization)
         c_max = 0.0;
         c_min = 0.0;
         for i ∈ eachindex(iso.spin)
-            mag = iso.magnetization[i]
+            mag = iso.magnetization
             spin = iso.spin[i]
             if spin.target == "max"
                 c_max = -sqrt.(sum(mag[2:end,end].*mag[2:end,end]))
