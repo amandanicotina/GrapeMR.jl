@@ -20,11 +20,11 @@ function get_gradient(cf::ControlFields, iso::Magnetization, H::Matrix, cost_fun
     t  = range(cf.t_control, 0.0, length = length(cf.B1x)+1)
     Δt = diff(t)[1]
     # Gradient 
-    ΔJ = zeros(Float64, 1, length(cf.B1x))
+    ∇J = zeros(Float64, 1, length(cf.B1x))
     for i ∈ 1:length(cf.B1x)
-        ΔJ[1,i] = transpose(χ[:,i+1])*H*Δt*M[:,i]./2π
+        ∇J[1,i] = transpose(χ[:,i+1])*H*Δt*M[:,i]./2π
     end
-    return ΔJ
+    return ∇J
 end
 
 
@@ -43,11 +43,11 @@ update_control_field
     - Control Field - 1xN matrix
 """
 function update_control_field(cf::ControlFields, iso::Magnetization, H::Matrix, cost_function::String, ϵ::Float64)
-    ΔJ = get_gradient(cf, iso, H, cost_function)
+    ∇J = get_gradient(cf, iso, H, cost_function)
     if H == Ix
-        B = cf.B1x .- ϵ*ΔJ
+        B = cf.B1x .- ϵ*∇J
     else
-        B = cf.B1y .- ϵ*ΔJ
+        B = cf.B1y .- ϵ*∇J
     end
     return B
 end
