@@ -7,6 +7,8 @@ using Plots
 M0 = [0.0; 0.0; 1.0];
 T1 = [0.5, 0.7];
 T2 = [0.2, 0.3];
+target = ["max", "min"];
+
 
 DEBUG = false
 
@@ -40,7 +42,7 @@ B0    = zeros(1, N);
 B1x   = ((flip_x.*sinc.(x))./2π)';
 B1y   = ((flip_y.*sinc.(y))./2π)';
 
-(spins, field_init) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
+(spins, field_init) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0)
 
 if DEBUG
     for spin ∈ spins
@@ -58,7 +60,7 @@ end
 
 ##### OPTIMIZE #####
 opt_params = OptimizationParams(N, "Target One Spin", [true true false]);
-grape_output = grape_optimize(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
+grape_output = grape_optimize(opt_params, field_init, spins; max_iter=100, ϵ=1e-3); 
 
 ##### PLOTS #####
 for (idx, (iso_opt, fields_opt)) ∈ enumerate(grape_output)
@@ -67,5 +69,5 @@ for (idx, (iso_opt, fields_opt)) ∈ enumerate(grape_output)
     p_field = plot_control_fields(fields_opt)
     p_init = plot_control_fields(field_init)
     display(p_mag)
-    display(p_field)
+    #display(p_field)
 end

@@ -1,4 +1,4 @@
-function normalization(M_ini, t_c, T1, T2, B1x, B1y, Bz)
+function normalization(M_ini, T1, T2, target, t_c, B1x, B1y, Bz)
     # □ Use Unitful to normalize based on units of initial RF field
     
     # Omega reference for the normalization
@@ -7,12 +7,12 @@ function normalization(M_ini, t_c, T1, T2, B1x, B1y, Bz)
     # Recalculating parameter values
     # N spins
     function normalized_spin(t1_t2)
-        t1, t2 = t1_t2
+        t1, t2, tar = t1_t2
         Γ1 = 1/(ω_ref*t1)
         Γ2 = 1/(ω_ref*t2)
-        return Spins(M_ini, Γ1, Γ2, 0.0, "max")
+        return Spins(M_ini, Γ1, Γ2, 0.0, tar)
     end
-    spins = map(normalized_spin, zip(T1, T2))
+    spins = map(normalized_spin, zip(T1, T2, target))
 
     τ  = ω_ref*t_c
     uz = Bz./ω_ref

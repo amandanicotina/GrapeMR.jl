@@ -53,9 +53,9 @@ function euclidean_distance(iso::Magnetization)
             mag = iso.magnetization[i]
             spin = iso.spin[i]
             if spin.target == "max"
-                c_max = -√(sum(mag[2:end,end].*mag[2:end,end]))
+                c_max = -sqrt.(sum(mag[2:end,end].*mag[2:end,end]))
             elseif spin.target == "min"
-                c_min = √(sum(mag[2:end,end].*mag[2:end,end]))
+                c_min = sqrt.(sum(mag[2:end,end].*mag[2:end,end]))
             else
                 continue
             end
