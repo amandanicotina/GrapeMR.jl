@@ -22,7 +22,7 @@ function get_gradient(cf::ControlFields, iso::Magnetization, H::Matrix, cost_fun
     # Gradient 
     ∇J = zeros(Float64, 1, length(cf.B1x))
     for i ∈ 1:length(cf.B1x)
-        ∇J[1,i] = transpose(χ[:,i+1])*H*Δt*M[:,i]./2π
+        ∇J[1,i] = transpose(χ[:,i+1])*H*M[:,i]./2π
     end
     return ∇J
 end

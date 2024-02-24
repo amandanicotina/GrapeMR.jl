@@ -58,7 +58,7 @@ end
 
 ##### OPTIMIZE #####
 opt_params = OptimizationParams(N, "Target One Spin", [true true false]);
-grape_output = grape_optimize(opt_params, field_init, spins; max_iter=10000, ϵ=1e-3); 
+grape_output = grape_optimize(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
 
 ##### PLOTS #####
 for (idx, (iso_opt, fields_opt)) ∈ enumerate(grape_output)
