@@ -87,15 +87,17 @@ end
 
 
 function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
+    b1x_old = copy(cf.B1x)
+    b1y_old = copy(cf.B1y)
     ∇x = zeros(Float64, 1, op.N)
     ∇y = zeros(Float64, 1, op.N)
     #cost_vals = zeros(Float64, length(spins), max_iter)
-    cost_vals = zeros(Float64, 2, max_iter)
+    cost_vals = zeros(Float64, 2, length(spins), max_iter)
     grape_output = GrapeOutput([], cf, cost_vals)
 
     for i ∈ 1:max_iter
 
-        for spin ∈ spins
+        for (j, spin) ∈ enumerate(spins)
             # Propagation
             mag = forward_propagation(cf, spin)
             dyn = Magnetization(mag)
@@ -105,14 +107,22 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
             # Gradient
             if op.fields_opt[1]
                 ∇x += gradient(adj, mag, Ix)
+                (xu1x, _) = update(cf, (∇x, zeros(Float64, 1, op.N)), ϵ)
+                cfx = ControlField(xu1x, b1y_old, cf.B1x_max_amp, cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step)
+                magx = forward_propagation(cfx, spin)
+                dynx = Magnetization(magx)
+                isox = Isochromat(dynx, spin)
+                grape_output.cost_values[1,j,i] = op.cost_function(isox)
             end
             if op.fields_opt[2]
                 ∇y += gradient(adj, mag, Iy)
-            end
-            # Cost function
-            #cost_val[spin, max_iter] = op.cost_function(iso)
-            #push!(grape_output.cost_values, cost_val)
-            println("Cost function value = ",  op.cost_function(iso)) 
+                (_, yu1y) = update(cf, (zeros(Float64, 1, op.N), ∇y), ϵ)
+                cfy = ControlField(b1x_old, yu1y, cf.B1x_max_amp, cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step)
+                magy = forward_propagation(cfy, spin)
+                dyny = Magnetization(magy)
+                isoy = Isochromat(dyny, spin)
+                grape_output.cost_values[2,j,i] = op.cost_function(isoy)
+            end 
         end
 
         # Control Field

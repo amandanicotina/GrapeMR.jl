@@ -44,9 +44,8 @@ B1y   = ((flip_y.*sinc.(y))./2π)';
 
 ##### OPTIMIZE #####
 opt_params = OptimizationParams(N, target_one_spin, [true true false]);
-grape_output = grape(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
+grape_output = grape(opt_params, field_init, spins; max_iter=10000, ϵ=1e-8); 
 #grape_output_old = grape_optimize(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
-
 ##### PLOTS #####
 PLOTS = false
 if PLOTS
@@ -63,24 +62,35 @@ end
 ##### DEBUG #####
 DEBUG = true
 if DEBUG
-    for spin ∈ spins
-        ##### INITIAL MAGNETIZATION #####
-        mag = forward_propagation(field_init, spin);
-        dyn = Magnetization(mag)
-        iso = Isochromat(dyn, spin)
-        adj = backward_propagation(field_init, iso, grad_saturation_contrast)
-        push!(grape_output.isochromats, iso)
-        plot(adj')
-        ##### GRADIENTS #####
-        gx = eltype(Float64)[]
-        gy = eltype(Float64)[]
-        gx = gradient(adj, mag, Ix);
-        gy = gradient(adj, mag, Iy);
-        gxy = (gx, gy)
-        b = update(field_init, gxy, 1e-6)
-        px = plot(gx')
-        py = plot(gy')
-        display(px)
-        display(py)
+    for (idx, spin) ∈ enumerate(spins)
+        bx = plot(grape_output.cost_values[1,idx,:])
+        by = plot(grape_output.cost_values[2,idx,:])
+        bb = plot(grape_output.cost_values[1,idx,:])
+             plot!(grape_output.cost_values[2,idx,:])
+        #display(bx)
+        #display(by)
+        display(bb)
+    ##### INITIAL MAGNETIZATION #####
+        # mag = forward_propagation(field_init, spin);
+        # dyn = Magnetization(mag)
+        # iso = Isochromat(dyn, spin)
+        # adj = backward_propagation(field_init, iso, grad_saturation_contrast)
+        # push!(grape_output.isochromats, iso)
+        # plot(adj')
+        # ##### GRADIENTS #####
+        # gx = eltype(Float64)[]
+        # gy = eltype(Float64)[]
+        # gx = gradient(adj, mag, Ix);
+        # gy = gradient(adj, mag, Iy);
+        # gxy = (gx, gy)
+        # (bx, by) = update(field_init, gxy, 1e-6)
+        # px = plot(gx')
+        # py = plot(gy')
+        # pbx = plot(bx')
+        # pby = plot(by')
+        # display(px)
+        # display(py)
+        # display(pbx)
+        # display(pby)
     end
 end
