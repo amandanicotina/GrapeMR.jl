@@ -12,8 +12,8 @@ contourf(trans, long, cost_func, color = :jet)
 
 
 #### FUNCTIONS ####                    
-function euclidean_norm(iso::Magnetization)
-    mag = iso.magnetization
+function euclidean_norm(iso::Isochromat)
+    mag = iso.magnetization.dynamics
     Mx = mag[2,end]
     My = mag[3,end]
     Mz = mag[4,end]
@@ -23,7 +23,7 @@ function euclidean_norm(iso::Magnetization)
     return J
 end
 
-function target_one_spin(iso::Magnetization; M_tar = [0.5; 0.5; 0.0])
+function target_one_spin(iso::Isochromat; M_tar = [0.5; 0.5; 0.0])
     J_tar = 0
     # Target Magnetization
     Mx_tar = M_tar[1,1]
@@ -31,7 +31,7 @@ function target_one_spin(iso::Magnetization; M_tar = [0.5; 0.5; 0.0])
     Mz_tar = M_tar[3,1]
 
     # Magnetization
-    mag = iso.magnetization
+    mag = iso.magnetization.dynamics
     Mx = mag[2,end]
     My = mag[3,end]
     Mz = mag[4,end]
@@ -45,27 +45,22 @@ end
 function contrast()
 end
 
-function euclidean_distance(iso::Magnetization)
+function saturation_contrast(iso::Isochromat)
     c = 0.0;
-        c_max = 0.0;
-        c_min = 0.0;
-        for i ∈ eachindex(iso.spin)
-            mag = iso.magnetization
-            spin = iso.spin[i]
-            if spin.target == "max"
-                c_max = -sqrt.(sum(mag[2:end,end].*mag[2:end,end]))
-            elseif spin.target == "min"
-                c_min = sqrt.(sum(mag[2:end,end].*mag[2:end,end]))
-            else
-                continue
-            end
-        end
-        c = c_max + c_min
-    println("Cost: euclidean distance = $(c_max)")
+    c_max = 0.0;
+    c_min = 0.0;
+    m = iso.magnetization.dynamics
+    s = iso.spin
+    if s.target == "max"
+        c_max = -sqrt.(sum(m[2:end,end].*m[2:end,end]))./2
+    elseif s.target == "min"
+        c_min = sqrt.(sum(m[2:end,end].*m[2:end,end]))./2
+    end
+    c = c_max + c_min
     return c
 end
 
-cost_functions = Dict("Euclidean Norm"  => euclidean_norm,
-                      "Target One Spin" => target_one_spin,
-                      "Contrast"        => contrast)    
+#cost_functions = Dict("Euclidean Norm"      => euclidean_norm,
+#                      "Target One Spin"     => target_one_spin,
+#                      "Saturation Contrast" => saturation_contrast)    
 

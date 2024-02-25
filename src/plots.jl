@@ -1,5 +1,5 @@
-function plot_magnetization(iso::Magnetization, t::Float64)
-    mag  = iso.magnetization
+function plot_magnetization(iso::Isochromat, t::Float64)
+    mag  = iso.magnetization.dynamics
     spin = iso.spin
     time = range(0.0, t, length = length(mag[1,:]))
 
@@ -13,11 +13,13 @@ function plot_magnetization(iso::Magnetization, t::Float64)
     return p
 end
 
-function plot_magnetization_target(iso::Magnetization)
-    mag  = iso.magnetization
+function plot_magnetization_target(iso::Isochromat)
+    mag  = iso.magnetization.dynamics
     spin = iso.spin
     Mxy = sqrt.(mag[2,:].^2 .+ mag[3,:].^2)
-    
+
+    Mz_tar = [0.0]
+    Mxy_tar = sqrt((0.5)^2 + (0.5)^2)
     p = plot(Mxy, mag[4, :], label = false, color = 1, lw = 1,
         xlims = [0.0, 1.0],
         ylims = [-1.0, 1.0],
@@ -26,6 +28,7 @@ function plot_magnetization_target(iso::Magnetization)
         title  = "Magnetization Dynamics - Target = $(spin.target)",
         titlefontsize = 12)
         scatter!([Mxy[end]], [mag[4, end]], label = false, color = 1)
+        scatter!([Mxy_tar[end]], [Mz_tar], label = false, color = 2)
     return p
 end
 

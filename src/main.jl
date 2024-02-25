@@ -1,16 +1,11 @@
 using GrapeMR
 
-
-# Create abstract arrays for T1 etc for N spins and use as input of the normalization function
-
-##### SPINS #####
+##### INITIALIZATION #####
+# SPINS #
 M0 = [0.0; 0.0; 1.0];
-T1 = [0.5, 0.7];
-T2 = [0.2, 0.3];
-target = ["max", "min"];
-
-
-DEBUG = false
+T1 = [0.5];#, 0.7];
+T2 = [0.2];#, 0.3];
+target = ["max"];#, "min"];
 
 # Initial RF field
 #N   = 500;
@@ -42,32 +37,50 @@ B0    = zeros(1, N);
 B1x   = ((flip_x.*sinc.(x))./2π)';
 B1y   = ((flip_y.*sinc.(y))./2π)';
 
-(spins, field_init) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0)
 
-if DEBUG
-    for spin ∈ spins
-        ##### INITIAL MAGNETIZATION #####
-        mag  = forward_propagation(field_init, spin);
-        iso  = Magnetization(mag,spin);
-        back = backward_propagation(field_init, iso, "Target One Spin")
-        plot(back')
-        ##### GRADIENTS #####
-        g = get_gradient(field_init, iso, Iy, "Target One Spin");
-        b = update_control_field(field_init, iso, Ix, "Target One Spin", 1e-3)
-        plot(g')
+##### NORMALIZE #####
+(spins, field_init) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0);
+
+
+##### OPTIMIZE #####
+opt_params = OptimizationParams(N, target_one_spin, [true true false]);
+grape_output = grape(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
+#grape_output_old = grape_optimize(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
+
+##### PLOTS #####
+PLOTS = false
+if PLOTS
+    for (idx, (iso_opt)) ∈ enumerate(grape_output.magnetization)
+        p_mag = plot_magnetization(iso_opt, t_c)
+        p_ini = plot_magnetization(iso_opt, t_c)
+        p_field = plot_control_fields(grape_output.control_field)
+        p_init = plot_control_fields(field_init)
+        display(p_mag)
+        #display(p_field)
     end
 end
 
-##### OPTIMIZE #####
-opt_params = OptimizationParams(N, "Target One Spin", [true true false]);
-grape_output = grape_optimize(opt_params, field_init, spins; max_iter=100, ϵ=1e-3); 
-
-##### PLOTS #####
-for (idx, (iso_opt)) ∈ enumerate(grape_output.magnetization)
-    p_mag = plot_magnetization(iso_opt, t_c)
-    p_ini = plot_magnetization(iso_opt, t_c)
-    p_field = plot_control_fields(grape_output.control_field)
-    p_init = plot_control_fields(field_init)
-    display(p_mag)
-    #display(p_field)
+##### DEBUG #####
+DEBUG = true
+if DEBUG
+    for spin ∈ spins
+        ##### INITIAL MAGNETIZATION #####
+        mag = forward_propagation(field_init, spin);
+        dyn = Magnetization(mag)
+        iso = Isochromat(dyn, spin)
+        adj = backward_propagation(field_init, iso, grad_saturation_contrast)
+        push!(grape_output.isochromats, iso)
+        plot(adj')
+        ##### GRADIENTS #####
+        gx = eltype(Float64)[]
+        gy = eltype(Float64)[]
+        gx = gradient(adj, mag, Ix);
+        gy = gradient(adj, mag, Iy);
+        gxy = (gx, gy)
+        b = update(field_init, gxy, 1e-6)
+        px = plot(gx')
+        py = plot(gy')
+        display(px)
+        display(py)
+    end
 end

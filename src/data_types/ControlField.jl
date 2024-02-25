@@ -1,7 +1,4 @@
-abstract type ControlField end
-
-
-struct ControlFields <: ControlField
+mutable struct ControlField
     B1x::AbstractArray
     B1y::AbstractArray
     B1x_max_amp::Float64
@@ -9,5 +6,4 @@ struct ControlFields <: ControlField
     t_control::Float64
     band_width::AbstractArray
     band_width_step::AbstractArray
-
 end

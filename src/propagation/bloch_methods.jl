@@ -4,35 +4,38 @@ function normalization(M_ini, T1, T2, target, t_c, B1x, B1y, Bz)
     # Omega reference for the normalization
     ω_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
     
-    # Recalculating parameter values
-    # N spins
+    # Spins
     function normalized_spin(t1_t2)
         t1, t2, tar = t1_t2
         Γ1 = 1/(ω_ref*t1)
         Γ2 = 1/(ω_ref*t2)
-        return Spins(M_ini, Γ1, Γ2, 0.0, tar)
+        return Spin(M_ini, Γ1, Γ2, 0.0, tar)
     end
     spins = map(normalized_spin, zip(T1, T2, target))
 
+    # Control Field
     τ  = ω_ref*t_c
     uz = Bz./ω_ref
     ux = B1x./ω_ref
     uy = B1y./ω_ref
     ux_max, uy_max = ω_ref, ω_ref
 
-    init_control_field = ControlFields(ux, uy, ux_max, uy_max, τ, uz, [0.0])
+    init_control_field = ControlField(ux, uy, ux_max, uy_max, τ, uz, [0.0])
 
     return spins, init_control_field
 end
 
 
 """
-    bloch_matrix(cf::InitialControlFields, s::Spins)
+    bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2::Float64)
 
 bloch_matrix
     # Input  
-    - cf: (::InitialControlFields) - Control fields struct
-    - s:  (::Spins) - Spin struct
+    B1x: (::Float64) - Normalized B1x step
+    B1y: (::Float64) - Normalized B1x step
+    Bz:  (::Float64) - Normalized B1x step
+    Γ1:  (::Float64) - Normalized B1x step
+    Γ2:  (::Float64) - Normalized B1x step
 
     # Output
     - Calculated 4x4 Bloch matrix
@@ -52,13 +55,13 @@ end
 """
 forward_propagation
     # Input  
-    - cf: (::InitialControlFields) - Control fields struct
+    - cf: (::ControlField) - Control fields struct
     - s:  (::Spins) - Spin struct
 
     # Output
     - Magnetization vector 4xN
 """
-function forward_propagation(cf::ControlFields, s::Spins)
+function forward_propagation(cf::ControlField, s::Spin)
     Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
@@ -78,20 +81,20 @@ end
 """
 backward_propagation
     # Input  
-    - cf: (::InitialControlFields) - Control fields struct
-    - s:  (::Spins) - Spin struct
-    - iso: (::Magnetization) - magnetization vector 4xN
+    - cf: (::ControlField) - Control fields struct
+    - s:  (::Spin) - Spin struct
+    - iso: (::Isochromat) - magnetization vector 4xN
 
     # Output
     - Adjoint state 4xN
 """
 
-function backward_propagation(cf::ControlFields, iso::Magnetization, cost_function::String)
+function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::Function)
     t_arr      = range(0.0, cf.t_control, length(cf.B1x)+1)
     Δt         = diff(t_arr)
     back_steps = length(Δt)
     χ          = zeros(Float64, 4, length(cf.B1x)+1)
-    χ[:, end]  = cost_gradients[cost_function](iso);
+    χ[:, end]  = cost_function(iso);
     s          = iso.spin
 
     Bz = 0.0

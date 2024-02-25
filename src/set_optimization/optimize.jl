@@ -2,12 +2,13 @@
 ## Optimize function with all inputs for the optimization
 
 struct GrapeOutput
-    magnetization::Vector{Magnetization}
-    control_field::ControlFields
+    isochromats::Vector{Isochromat}
+    control_field::ControlField
+    cost_values::Array{Float64}
 end
 
 
-function grape_optimize(op::OptimizationParams, cf::ControlFields, spins::Array{Spins}; max_iter=2500, ϵ = 1e-4) 
+function grape_optimize(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
     # Initializing Optimization
     u1x            = copy(cf.B1x);
     u1x_all        = zeros(1, op.N, max_iter+1);
@@ -23,32 +24,32 @@ function grape_optimize(op::OptimizationParams, cf::ControlFields, spins::Array{
     end
 
     # Calculating with optimized fields
-    all_controls  = ControlFields(u1x_all, u1y_all, cf.B1x_max_amp, cf.B1y_max_amp, 
+    all_controls  = ControlField(u1x_all, u1y_all, cf.B1x_max_amp, cf.B1y_max_amp, 
                                     cf.t_control, cf.band_width, cf.band_width_step)
 
-    final_control = ControlFields(u1x_all[:,:,end], u1y_all[:,:,end], cf.B1x_max_amp, cf.B1y_max_amp, 
+    final_control = ControlField(u1x_all[:,:,end], u1y_all[:,:,end], cf.B1x_max_amp, cf.B1y_max_amp, 
                                     cf.t_control, cf.band_width, cf.band_width_step)
 
-    function final_iso(spin::Spins)
+    function final_iso(spin::Spin)
         mag_opt       = forward_propagation(final_control, spin)
-        return Magnetization(mag_opt, spin)
+        return Magnetization(mag_opt)
     end
 
     return GrapeOutput(map(final_iso, spins), all_controls)
 end 
 
-function update_control_fields(spin::Spins, params::OptimizationParams, cf::ControlFields, max_iter::Int64, u1x::AbstractArray, u1x_all::Array{Float64}, u1y::AbstractArray, u1y_all::Array{Float64}, ϵ::Float64)
+function update_control_fields(spin::Spin, params::OptimizationParams, cf::ControlField, max_iter::Int64, u1x::AbstractArray, u1x_all::Vector{Float64}, u1y::AbstractArray, u1y_all::Vector{Float64}, ϵ::Float64)
     cost_func = cost_functions[params.cost_function]
     cost_vals = zeros(1, max_iter+1);
     if params.fields_opt[1]
         println("Entering B1x optimization")
         for i ∈ 1:max_iter
             u1y        = copy(cf.B1y);
-            control_ux = ControlFields(u1x, u1y, cf.B1x_max_amp,
+            control_ux = ControlField(u1x, u1y, cf.B1x_max_amp,
                                 cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
             # Propagation
             mag_ux = forward_propagation(control_ux, spin)
-            iso_ux = Magnetization(mag_ux, spin)
+            iso_ux = Magnetization(mag_ux)
 
             # Cost function
             cost_vals[1, i] = cost_func(iso_ux)
@@ -65,11 +66,11 @@ function update_control_fields(spin::Spins, params::OptimizationParams, cf::Cont
         println("Entering B1y optimization")
         for j ∈ 1:max_iter
             u1x        = copy(cf.B1x);
-            control_uy = ControlFields(u1x, u1y, cf.B1x_max_amp,
+            control_uy = ControlField(u1x, u1y, cf.B1x_max_amp,
                                 cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step);
             # Propagation
             mag_uy = forward_propagation(control_uy, spin)
-            iso_uy = Magnetization(mag_uy, spin)
+            iso_uy = Magnetization(mag_uy)
 
             # Cost function
             cost_vals[1, j] = cost_func(iso_uy);
@@ -83,83 +84,87 @@ function update_control_fields(spin::Spins, params::OptimizationParams, cf::Cont
     end
 end
 
-#### Finite Difference ####
-function finite_difference_cost(cost_func::Function, iso::Magnetization, ΔM::Float64)
-    # Make a copy of the variable values to avoid modifying the original
-    spin        = iso.spin
-    iso_vals    = iso
-    M_perturbed = copy(iso.magnetization[:,end])
-
-    # Initialize an array to store finite differences for each variable
-    finite_diffs = zeros(Float64, 3, 1)
-    for i ∈ 1:3
-        M_perturbed[i+1,end] = M_perturbed[i+1,end] + ΔM
-        iso_perturbed = Magnetization(M_perturbed, spin)
-
-        # Calculate the finite difference for the current variable
-        finite_diffs[i,1] = (cost_func(iso_perturbed) - cost_func(iso_vals)) / ΔM
-        
-        # Reset the perturbed value for the next iteration
-        M_perturbed[i+1,end] = M_perturbed[i+1,end] - ΔM 
-    
-    end
-    return finite_diffs
-end
 
 
-function finite_difference_field(cost_func::Function, cf::ControlFields, spin::Spins, Δcf::Float64, field::String)
-    finite_diffs = zeros(Float64, 1, length(cf.B1x))
+function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
+    ∇x = zeros(Float64, 1, op.N)
+    ∇y = zeros(Float64, 1, op.N)
+    #cost_vals = zeros(Float64, length(spins), max_iter)
+    cost_vals = zeros(Float64, 2, max_iter)
+    grape_output = GrapeOutput([], cf, cost_vals)
 
-    if field == "B1x"
-        # Copy of the variable values to avoid modifying the original
-        cf_vals      = cf.B1x
-        perturbation = copy(cf_vals) 
+    for i ∈ 1:max_iter
 
-        # No perturbation
-        mag_vals = forward_propagation(cf, spin)
-        iso_vals = Magnetization(mag_vals, spin)
-
-        for i ∈ 1:length(cf.B1x)
-            perturbation[1, i] = perturbation[1, i] + Δcf
-            cf_perturbed = ControlFields(perturbation, cf.B1y, cf.B1x_max_amp, 
-                            cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step)
-
-            # With perturbation
-            mag_perturbed = forward_propagation(cf_perturbed, spin)
-            iso_perturbed = Magnetization(mag_perturbed, spin)
-
-            # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_func(iso_perturbed) - cost_func(iso_vals)) / Δcf
-
-            # Reset the perturbed value for the next iteration
-            perturbation[1, i] = perturbation[1, i] - Δcf
+        for spin ∈ spins
+            # Propagation
+            mag = forward_propagation(cf, spin)
+            dyn = Magnetization(mag)
+            iso = Isochromat(dyn, spin)
+            adj = backward_propagation(cf, iso, grad_target_one_spin)
+            push!(grape_output.isochromats, iso)
+            # Gradient
+            if op.fields_opt[1]
+                ∇x += gradient(adj, mag, Ix)
+            end
+            if op.fields_opt[2]
+                ∇y += gradient(adj, mag, Iy)
+            end
+            # Cost function
+            #cost_val[spin, max_iter] = op.cost_function(iso)
+            #push!(grape_output.cost_values, cost_val)
+            println("Cost function value = ",  op.cost_function(iso)) 
         end
 
-    else
-        # Copy of the variable values to avoid modifying the original
-        cf_vals      = cf.B1y
-        perturbation = copy(cf_vals) 
-
-        # No perturbation
-        mag_vals = forward_propagation(cf, spin)
-        iso_vals = Magnetization(mag_vals, spin)
-
-        for i ∈ 1:length(cf.B1y)
-            perturbation[1, i] = perturbation[1, i] + Δcf
-            cf_perturbed = ControlFields(cf.B1x, perturbation, cf.B1x_max_amp, 
-                            cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step)
-
-            # With perturbation
-            mag_perturbed = forward_propagation(cf_perturbed, spin)
-            iso_perturbed = Magnetization(mag_perturbed, spin)
-
-            # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_func(iso_perturbed) - cost_func(iso_vals)) / Δcf
-
-            # Reset the perturbed value for the next iteration
-            perturbation[1, i] = perturbation[1, i] - Δcf
-        end       
+        # Control Field
+        (u1x, u1y) = update(cf, (∇x, ∇y), ϵ)
+        cf.B1x = u1x
+        cf.B1y = u1y
     end
 
-    return finite_diffs
+    return grape_output
 end
+
+
+"""
+    gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
+
+gradient
+    # Input  
+    - χ = (::Matrix{Float64}) - Adjoint State
+    - M = (::Matrix{Float64}) - Forward Propagation
+    - H = (::Matrix) - Hamiltonian
+
+    # Output
+    - ΔJ - 1xN matrix
+"""
+function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
+    grad = zeros(Float64, 1, length(M[1,:])-1)
+    for i ∈ 1:length(M[1,:])-1
+        grad[1,i] = transpose(χ[:,i+1])*H*M[:,i]./2π
+    end
+    return grad
+end
+
+
+
+"""
+    update(cf::InitialControlFields, ∇xy::gradient, ϵ::Float64)
+
+update
+    # Input  
+    - cf:  (::InitialControlFields) - Control fields struct
+    - iso: (::Magnetization) -
+    - cost_function: (::String) - Key to the cost function dictionary
+    - ϵ:   (::Float64) - 
+
+    # Output
+    - Control Field - 1xN matrix
+"""
+function update(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}, ϵ::Float64)
+    u1x = cf.B1x .- ϵ*∇xy[1]
+    u1y = cf.B1y .- ϵ*∇xy[2]
+    return u1x, u1y
+end
+
+
+
