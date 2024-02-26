@@ -1,4 +1,4 @@
-function plot_magnetization(iso::Isochromat, t::Float64)
+function plot_magnetization_time(iso::Isochromat, t::Float64)
     mag  = iso.magnetization.dynamics
     spin = iso.spin
     time = range(0.0, t, length = length(mag[1,:]))
@@ -49,8 +49,8 @@ function plot_magnetization_target3d(iso::Magnetization)
     return p
 end
 
-function plot_cost_values(cost::Array)
-    p = plot(cost', label = "Euclidean Distance", lw = 2,
+function plot_cost_values(cost::Vector{Float64}, op::OptimizationParams)
+    p = plot(cost, label = op.cost_function, lw = 2,
     xlabel = "Iterations",
     ylabel = "Cost Value",
     title  = "Cost Function Convergence",

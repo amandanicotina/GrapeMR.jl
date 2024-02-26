@@ -1,12 +1,12 @@
 using GrapeMR
-
+using Plots
 
 ##### INITIALIZATION #####
 # SPINS #
 M0 = [0.0; 0.0; 1.0];
-T1 = [0.5];#, 0.7];
-T2 = [0.2];#, 0.3];
-target = ["max"];#, "min"];
+T1 = [0.2, 0.1];
+T2 = [0.08, 0.05];
+target = ["max", "min"];
 
 # Initial RF field
 N   = 500;
@@ -15,38 +15,35 @@ B1  = 10.0;
 B1x, B1y = B1*ones(Float64, 1, N), 5.0*ones(Float64, 1, N)
 B0, ΔB0  = zeros(1, N), zeros(1, N);
 
-#N   = 500;
-αx  = π/2;
-αy  = π/6;
-#t_c = 0.1;
+# N   = 500;
+# αx  = π/2;
+# αy  = π/6;
+# t_c = 0.5;
 
-time = range(0.0, t_c, N);
-t    = time .- t_c/2;
-rotx = rad2deg(αx)/360;
-roty = rad2deg(αy)/360;
-
-flip_x = rotx/diff(t)[1];
-flip_y = roty/diff(t)[1];
-
-BW_Hz = 500.0;
-x     = BW_Hz.*t;
-y     = BW_Hz.*t;
-B0    = zeros(1, N);
-#B1x   = ((flip_x.*sinc.(x))./2π)'; # sinc(x) = sin(πx)/(πx)
-#B1y   = zeros(1, N);
-
-#B1x   = ((flip_x.*sinc.(x))./2π)';
-#B1y   = ((flip_y.*sinc.(y))./2π)';
-
+# time = range(0.0, t_c, N);
+# t    = time .- t_c/2;
+# rotx = rad2deg(αx)/360;
+# roty = rad2deg(αy)/360;
+# flip_x = rotx/diff(t)[1];
+# flip_y = roty/diff(t)[1];
+# BW_Hz = 500.0;
+# x     = BW_Hz.*t;
+# y     = BW_Hz.*t;
+# B0    = zeros(1, N);
+# B1x   = ((flip_x.*sinc.(x))./2π)';
+# B1y   = ((flip_y.*sinc.(y))./2π)';
+# B1x   = ((flip_x.*sinc.(x))./2π)'; # sinc(x) = sin(πx)/(πx)
+# B1y   = zeros(1, N);
 
 ##### NORMALIZE #####
 (spins, field_init) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0);
 
 
 ##### OPTIMIZE #####
-opt_params = OptimizationParams(N, euclidean_norm, [true false false]);
-grape_output = grape(opt_params, field_init, spins; max_iter=5000, ϵ=1e-6); 
-#grape_output_old = grape_optimize(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
+opt_params = OptimizationParams(N, saturation_contrast, [true true false]);
+grape_output = grape(opt_params, field_init, spins; max_iter=10000, ϵ=1e-1); 
+
+
 ##### PLOTS #####
 PLOTS = false
 if PLOTS
@@ -61,13 +58,13 @@ if PLOTS
 end
 
 ##### DEBUG #####
-DEBUG = true
+DEBUG = false
 if DEBUG
     for (idx, spin) ∈ enumerate(spins)
         bx = plot(grape_output.cost_values[1,idx,:])
         by = plot(grape_output.cost_values[2,idx,:])
-        bb = plot(grape_output.cost_values[1,idx,:])
-             plot!(grape_output.cost_values[2,idx,:])
+        bb = plot(grape_output.cost_values[1,idx,:], label = false)
+             plot!(grape_output.cost_values[2,idx,:], label = false)
         #display(bx)
         #display(by)
         display(bb)
@@ -95,3 +92,8 @@ if DEBUG
         #display(pby)
     end
 end
+
+s1=grape_output.cost_values[1,:];
+s2=grape_output.cost_values[2,:];
+cost = (s1+s2)
+plot_cost_values(cost, opt_params)

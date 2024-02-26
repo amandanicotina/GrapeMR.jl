@@ -7,11 +7,11 @@ function grad_euclidean_norm(iso::Isochromat)
     mag = iso.magnetization.dynamics
     M = [mag[2,end]; mag[3,end]; mag[4,end]]
     M_norm = norm(M)
-    Mx_tf = mag[2,end]/M_norm
-    My_tf = mag[3,end]/M_norm
-    Mz_tf = mag[4,end]/M_norm
+    Mx_tf = mag[2,end]
+    My_tf = mag[3,end]
+    Mz_tf = mag[4,end]
 
-    P = [1.0, Mx_tf, My_tf, Mz_tf]
+    P = [0.0, Mx_tf, My_tf, Mz_tf]
 
     return P
 end
@@ -38,25 +38,20 @@ function grad_target_one_spin(iso::Isochromat; M_tar = [0.5; 0.5; 0.0])
     return P_tar
 end
 
-function grad_contrast()
-end
 
 function grad_saturation_contrast(iso::Isochromat)
     m = iso.magnetization.dynamics
     s = iso.spin
-    norm = sqrt(sum(m[2:end,end].*m[2:end,end]))
 
     if s.target == "max"
-        Px = -m[2,end]/norm
-        Py = -m[3,end]/norm
-        Pz = -m[4,end]/norm
-        P = [1.0, Px, Py, Pz]./2
-
+        Pz = -m[4,end]
+        P = [0.0, 0.0, 0.0, Pz]
+        
     elseif s.target == "min"
-        Px = m[2,end]/norm
-        Py = m[3,end]/norm
-        Pz = m[4,end]/norm
-        P = [1.0, Px, Py, Pz]./2
+        Px = m[2,end]
+        Py = m[3,end]
+        Pz = m[4,end]
+        P = [0.0, Px, Py, Pz]
     end
     
     return P

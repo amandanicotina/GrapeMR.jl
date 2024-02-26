@@ -82,8 +82,8 @@ end
 backward_propagation
     # Input  
     - cf: (::ControlField) - Control fields struct
-    - s:  (::Spin) - Spin struct
-    - iso: (::Isochromat) - magnetization vector 4xN
+    - iso: (::Isochromat) - Magnetization vector 4xN
+    - cost_function (::Function) - Cost Function gradient for adjoint state inital state
 
     # Output
     - Adjoint state 4xN
