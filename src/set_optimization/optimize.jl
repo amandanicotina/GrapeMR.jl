@@ -6,8 +6,6 @@ struct GrapeOutput
 end
 
 function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
-    ∇x = zeros(Float64, 1, op.N)
-    ∇y = zeros(Float64, 1, op.N)
     cost_vals = zeros(Float64, length(spins), max_iter)
     grape_output = GrapeOutput([], cf, cost_vals)
 
@@ -28,7 +26,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
             # Gradient
             if op.fields_opt[1]
                 ∇x += gradient(adj, mag, Ix)
-            end
+            end 
             if op.fields_opt[2]
                 ∇y += gradient(adj, mag, Iy)
             end 
