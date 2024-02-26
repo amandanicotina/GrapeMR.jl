@@ -1,3 +1,14 @@
+![Grape Logo](./docs/images/grape_logo.png)
 # GrapeMR
 
-[![Build Status](https://github.com/amandanicotina/GrapeMR.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/amandanicotina/GrapeMR.jl/actions/workflows/CI.yml?query=branch%3Amain)
+## Getting Started
+
+```bash
+$ julia
+julia>] activate .
+pkg>
+julia>exit()
+$ cd docs && julia --project make.jl
+$ open build/index.html
+```
+
