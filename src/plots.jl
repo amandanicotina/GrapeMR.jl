@@ -28,7 +28,7 @@ function plot_magnetization_target(iso::Isochromat)
         title  = "Magnetization Dynamics - Target = $(spin.target)",
         titlefontsize = 12)
         scatter!([Mxy[end]], [mag[4, end]], label = false, color = 1)
-        scatter!([Mxy_tar[end]], [Mz_tar], label = false, color = 2)
+        scatter!([0.0], [Mz_tar], label = false, color = 2)
     return p
 end
 

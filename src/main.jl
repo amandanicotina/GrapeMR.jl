@@ -1,5 +1,6 @@
 using GrapeMR
 
+
 ##### INITIALIZATION #####
 # SPINS #
 M0 = [0.0; 0.0; 1.0];
@@ -8,16 +9,16 @@ T2 = [0.2];#, 0.3];
 target = ["max"];#, "min"];
 
 # Initial RF field
-#N   = 500;
-#t_c = 0.05;
-#B1  = 10.0;
-#B1x, B1y = B1*ones(Float64, 1, N), ones(Float64, 1, N)
-#B0, ΔB0  = zeros(1, N), zeros(1, N);
-
 N   = 500;
+t_c = 0.5;
+B1  = 10.0;
+B1x, B1y = B1*ones(Float64, 1, N), 5.0*ones(Float64, 1, N)
+B0, ΔB0  = zeros(1, N), zeros(1, N);
+
+#N   = 500;
 αx  = π/2;
 αy  = π/6;
-t_c = 0.1;
+#t_c = 0.1;
 
 time = range(0.0, t_c, N);
 t    = time .- t_c/2;
@@ -34,8 +35,8 @@ B0    = zeros(1, N);
 #B1x   = ((flip_x.*sinc.(x))./2π)'; # sinc(x) = sin(πx)/(πx)
 #B1y   = zeros(1, N);
 
-B1x   = ((flip_x.*sinc.(x))./2π)';
-B1y   = ((flip_y.*sinc.(y))./2π)';
+#B1x   = ((flip_x.*sinc.(x))./2π)';
+#B1y   = ((flip_y.*sinc.(y))./2π)';
 
 
 ##### NORMALIZE #####
@@ -43,8 +44,8 @@ B1y   = ((flip_y.*sinc.(y))./2π)';
 
 
 ##### OPTIMIZE #####
-opt_params = OptimizationParams(N, target_one_spin, [true true false]);
-grape_output = grape(opt_params, field_init, spins; max_iter=10000, ϵ=1e-8); 
+opt_params = OptimizationParams(N, euclidean_norm, [true false false]);
+grape_output = grape(opt_params, field_init, spins; max_iter=5000, ϵ=1e-6); 
 #grape_output_old = grape_optimize(opt_params, field_init, spins; max_iter=1000, ϵ=1e-3); 
 ##### PLOTS #####
 PLOTS = false
@@ -71,26 +72,26 @@ if DEBUG
         #display(by)
         display(bb)
     ##### INITIAL MAGNETIZATION #####
-        # mag = forward_propagation(field_init, spin);
-        # dyn = Magnetization(mag)
-        # iso = Isochromat(dyn, spin)
-        # adj = backward_propagation(field_init, iso, grad_saturation_contrast)
-        # push!(grape_output.isochromats, iso)
-        # plot(adj')
-        # ##### GRADIENTS #####
-        # gx = eltype(Float64)[]
-        # gy = eltype(Float64)[]
-        # gx = gradient(adj, mag, Ix);
-        # gy = gradient(adj, mag, Iy);
-        # gxy = (gx, gy)
-        # (bx, by) = update(field_init, gxy, 1e-6)
-        # px = plot(gx')
-        # py = plot(gy')
-        # pbx = plot(bx')
-        # pby = plot(by')
-        # display(px)
-        # display(py)
-        # display(pbx)
-        # display(pby)
+        mag = forward_propagation(field_init, spin);
+        dyn = Magnetization(mag)
+        iso = Isochromat(dyn, spin)
+        adj = backward_propagation(field_init, iso, grad_saturation_contrast)
+        push!(grape_output.isochromats, iso)
+        #plot(adj')
+        ##### GRADIENTS #####
+        gx = eltype(Float64)[]
+        gy = eltype(Float64)[]
+        gx = gradient(adj, mag, Ix);
+        gy = gradient(adj, mag, Iy);
+        gxy = (gx, gy)
+        (bx, by) = update(field_init, gxy, 1e-4)
+        px = plot(gx')
+        py = plot(gy')
+        pbx = plot(bx')
+        pby = plot(by')
+        display(px)
+        #display(py)
+        #display(pbx)
+        #display(pby)
     end
 end

@@ -40,6 +40,6 @@ export euclidean_norm, target_one_spin, saturation_contrast
 export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast
 export gradient, update
 
-#export plot_magnetization, plot_cost_values, plot_control_fields, plot_magnetization_target
+export plot_magnetization, plot_cost_values, plot_control_fields, plot_magnetization_target
 
 end

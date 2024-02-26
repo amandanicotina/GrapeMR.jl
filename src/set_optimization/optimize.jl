@@ -102,7 +102,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
             mag = forward_propagation(cf, spin)
             dyn = Magnetization(mag)
             iso = Isochromat(dyn, spin)
-            adj = backward_propagation(cf, iso, grad_target_one_spin)
+            adj = backward_propagation(cf, iso, grad_euclidean_norm)
             push!(grape_output.isochromats, iso)
             # Gradient
             if op.fields_opt[1]
@@ -149,7 +149,7 @@ gradient
 """
 function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
     grad = zeros(Float64, 1, length(M[1,:])-1)
-    for i ∈ 1:length(M[1,:])-1
+    for i ∈ 1:(length(M[1,:])-1)
         grad[1,i] = transpose(χ[:,i+1])*H*M[:,i]./2π
     end
     return grad
