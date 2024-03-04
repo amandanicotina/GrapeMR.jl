@@ -5,6 +5,7 @@ struct Spin
     T2::Float64
     δ::Float64
     target::String
+    label::String
 end
 
 struct Magnetization

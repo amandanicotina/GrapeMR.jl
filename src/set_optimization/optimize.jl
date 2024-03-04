@@ -8,7 +8,8 @@ end
 function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
     cost_vals = zeros(Float64, length(spins), max_iter)
     grape_output = GrapeOutput([], cf, cost_vals)
-
+    u1x, u1y = [], []
+    
     for i ∈ 1:max_iter
         ∇x = zeros(Float64, 1, op.N)
         ∇y = zeros(Float64, 1, op.N)
@@ -21,7 +22,11 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
             iso = Isochromat(dyn, spin)
             grape_output.cost_values[j,i] = op.cost_function(iso)
             adj = backward_propagation(cf, iso, grad_saturation_contrast)
-            push!(grape_output.isochromats, iso)
+            if i == 1
+                push!(grape_output.isochromats, iso)
+            elseif i == max_iter
+                push!(grape_output.isochromats, iso)
+            end
 
             # Gradient
             if op.fields_opt[1]
@@ -37,7 +42,9 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
         cf.B1x = u1x
         cf.B1y = u1y
     end
-
+    grape_output.control_field.B1x = u1x
+    grape_output.control_field.B1y = u1y
+    
     return grape_output
 end
 

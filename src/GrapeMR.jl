@@ -23,23 +23,23 @@ include("set_optimization/finite_difference.jl")
 include("set_optimization/cost_functions.jl")
 include("set_optimization/cost_gradients.jl")
 
-
-#include("plots.jl")
+include("plots.jl")
 
 export γ_¹H, Ix, Iy
 export ControlField
 export OptimizationParams
 export Spin, Magnetization, Isochromat
 
-export normalization, forward_propagation, backward_propagation
+export normalization, forward_propagation, backward_propagation, steady_state
 
 export grape_optimize, grape
 export finite_difference_cost, finite_difference_field
 
-export euclidean_norm, target_one_spin, saturation_contrast
-export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast
+export cost_euclidean_norm, cost_target_one_spin, cost_saturation_contrast, saturation_contrast_square #, cost_steady_state
+export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad_saturation_contrast_square
 export gradient, update
 
-export plot_cost_values, plot_control_fields, plot_magnetization_target
-export plot_magnetization_time
+export plot_cost_values, plot_control_fields
+export plot_magnetization_time, plot_magnetization_Mz_Mxy
+
 end

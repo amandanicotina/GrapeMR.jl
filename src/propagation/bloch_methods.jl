@@ -1,4 +1,4 @@
-function normalization(M_ini, T1, T2, target, t_c, B1x, B1y, Bz)
+function normalization(M_ini, T1, T2, target, label, t_c, B1x, B1y, Bz)
     # □ Use Unitful to normalize based on units of initial RF field
     
     # Omega reference for the normalization
@@ -6,12 +6,12 @@ function normalization(M_ini, T1, T2, target, t_c, B1x, B1y, Bz)
     
     # Spins
     function normalized_spin(t1_t2)
-        t1, t2, tar = t1_t2
+        t1, t2, tar, lb = t1_t2
         Γ1 = 1/(ω_ref*t1)
         Γ2 = 1/(ω_ref*t2)
-        return Spin(M_ini, Γ1, Γ2, 0.0, tar)
+        return Spin(M_ini, Γ1, Γ2, 0.0, tar, lb)
     end
-    spins = map(normalized_spin, zip(T1, T2, target))
+    spins = map(normalized_spin, zip(T1, T2, target, label))
 
     # Control Field
     τ  = ω_ref*t_c
@@ -108,4 +108,15 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
     end
 
     return round.(χ, digits = 5)
+end
+
+
+function steady_state(α::Float64, Γ1::Float64, Γ2::Float64, TR::Float64)
+    # Calculating signal from geometric derivation
+    ϕ = 2π*Δf*TR # Offset angle
+    β = 2*atan(tan(α/2) / cos((ϕ)/2)) # β in rads
+
+    Mxy = M0 / (cot(β/2) + (T1/T2)*tan(β/2))
+    Mz  = M0*cot(β/2)
+    return Mxy, Mz
 end
