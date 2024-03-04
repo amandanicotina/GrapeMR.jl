@@ -3,15 +3,6 @@ function normalization(M_ini, T1, T2, target, label, t_c, B1x, B1y, Bz)
     
     # Omega reference for the normalization
     ω_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
-    
-    # Spins
-    function normalized_spin(t1_t2)
-        t1, t2, tar, lb = t1_t2
-        Γ1 = 1/(ω_ref*t1)
-        Γ2 = 1/(ω_ref*t2)
-        return Spin(M_ini, Γ1, Γ2, 0.0, tar, lb)
-    end
-    spins = map(normalized_spin, zip(T1, T2, target, label))
 
     # Control Field
     τ  = ω_ref*t_c
@@ -20,7 +11,22 @@ function normalization(M_ini, T1, T2, target, label, t_c, B1x, B1y, Bz)
     uy = B1y./ω_ref
     ux_max, uy_max = ω_ref, ω_ref
 
-    init_control_field = ControlField(ux, uy, ux_max, uy_max, τ, uz, [0.0])
+    init_control_field = ControlField(ux, uy, ux_max, uy_max, τ, uz, uz)
+    
+    # Spins
+    function normalized_spin(t1_t2)
+        spins = Spin[]  
+
+        t1, t2, tar, lb = t1_t2
+        Γ1 = 1/(ω_ref*t1)
+        Γ2 = 1/(ω_ref*t2)
+        for uz_value in uz
+            spin = Spin(M_ini, Γ1, Γ2, 0.0, uz_value, tar, lb)
+            push!(spins, spin)
+        end
+        return spins
+    end
+    spins = vcat(map(normalized_spin, zip(T1, T2, target, label))...)
 
     return spins, init_control_field
 end
@@ -66,12 +72,12 @@ function forward_propagation(cf::ControlField, s::Spin)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
 
-    Bz = 0.0
+    Bz = cf.band_width
     Bx = cf.B1x
     By = cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
-        b_m = 2π*bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
+        b_m = 2π*bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
         M[:, i+1] = expv(Δt, b_m, M[:, i])
     end
 
@@ -97,12 +103,12 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
     χ[:, end]  = cost_function(iso);
     s          = iso.spin
 
-    Bz = 0.0
+    Bz = cf.band_width
     Bx = cf.B1x
     By = cf.B1y
 
     for i in back_steps:-1:1 
-        b_m = 2π*bloch_matrix(Bx[i], By[i], Bz, s.T1, s.T2)
+        b_m = 2π*bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
         bloch_matrix_adjoint = adjoint(b_m)
         χ[:, i] = expv(Δt[i], bloch_matrix_adjoint, χ[:, i+1]) 
     end

@@ -4,6 +4,7 @@ struct Spin
     T1::Float64
     T2::Float64
     δ::Float64
+    B0inho::Float64
     target::String
     label::String
 end
