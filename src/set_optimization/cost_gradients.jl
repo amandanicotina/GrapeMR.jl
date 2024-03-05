@@ -44,13 +44,13 @@ function grad_saturation_contrast_square(iso::Isochromat)
     s = iso.spin
 
     if s.target == "max"
-        Pz = -m[4,end]
+        Pz = -m[4,end]/s.Nspins
         P = [0.0, 0.0, 0.0, Pz]
         
     elseif s.target == "min"
-        Px = m[2,end]
-        Py = m[3,end]
-        Pz = m[4,end]
+        Px = m[2,end]/s.Nspins
+        Py = m[3,end]/s.Nspins
+        Pz = m[4,end]/s.Nspins
         P = [0.0, Px, Py, Pz]
     end
     
@@ -62,13 +62,13 @@ function grad_saturation_contrast(iso::Isochromat)
     s = iso.spin
 
     if s.target == "max"
-        Pz = -m[4,end]/sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
+        Pz = -m[4,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
         P = [0.0, 0.0, 0.0, Pz]
         
     elseif s.target == "min"
-        Px = m[2,end]/sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
-        Py = m[3,end]/sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
-        Pz = m[4,end]/sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
+        Px = m[2,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
+        Py = m[3,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
+        Pz = m[4,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
         P = [0.0, Px, Py, Pz]
     end
     

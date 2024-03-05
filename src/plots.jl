@@ -37,22 +37,32 @@ end
 
 function plot_magnetization_Mz_Mxy(isos::Vector{Isochromat})
     p = plot()
-    #curve_color = range(1.0, length(grape_output.isochromats))
+    # □ Include ΔB0 value with plot 
 
     for (idx, iso) in enumerate(isos)
         mag = iso.magnetization.dynamics
         spin = iso.spin
         Mxy = sqrt.(mag[2,:].^2 .+ mag[3,:].^2)
-
-        plot!(p, Mxy, mag[4, :], label = "$(spin.target)", color = idx, lw = 2,
-            xlims = [-1.0, 1.0],
-            ylims = [-1.0, 1.0],
-            xlabel = "Mxy",
-            ylabel = "Mz",
-            title = "Magnetization Dynamics - $(spin.label)",
-            titlefontsize = 12)
-        
-        scatter!(p, [Mxy[end]], [mag[4, end]], label = false, color = idx, markersize = 4)
+        if spin.target == "max"
+            plot!(p, Mxy, mag[4, :], label = "$(spin.target)", color = 1, lw = 1.5,
+                xlims = [-1.0, 1.0],
+                ylims = [-1.0, 1.1],
+                xlabel = "Mxy",
+                ylabel = "Mz",
+                title = "Magnetization Dynamics - $(spin.label)",
+                titlefontsize = 12)
+            scatter!(p, [Mxy[end]], [mag[4, end]], label = false, color = 1, markersize = 4)
+        elseif spin.target == "min"
+            plot!(p, Mxy, mag[4, :], label = "$(spin.target)", color = "black", lw = 1.5,
+                xlims = [-1.0, 1.0],
+                ylims = [-1.0, 1.1],
+                xlabel = "Mxy",
+                ylabel = "Mz",
+                title = "Magnetization Dynamics - $(spin.label)",
+                titlefontsize = 12)
+            scatter!(p, [Mxy[end]], [mag[4, end]], label = false, color = "black", markersize = 4)
+        end
+ 
     end
 
     return p

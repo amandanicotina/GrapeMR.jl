@@ -6,8 +6,6 @@ const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
 
 using Plots
-using Zygote
-using SumTypes
 using LinearAlgebra
 using ExponentialUtilities
 
@@ -35,7 +33,7 @@ export normalization, forward_propagation, backward_propagation, steady_state
 export grape_optimize, grape
 export finite_difference_cost, finite_difference_field
 
-export cost_euclidean_norm, cost_target_one_spin, cost_saturation_contrast, saturation_contrast_square #, cost_steady_state
+export cost_euclidean_norm, cost_target_one_spin, cost_saturation_contrast, saturation_contrast_square
 export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad_saturation_contrast_square
 export gradient, update
 

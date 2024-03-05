@@ -46,10 +46,11 @@ function cost_saturation_contrast(iso::Isochromat)
     c = 0.0;
     m = iso.magnetization.dynamics
     s = iso.spin
+
     if s.target == "max"
-        c = 1/2 - sqrt(m[4,end]*m[4,end] + 1e-15)/2
+        c = (1 - sqrt(m[4,end]*m[4,end] + 1e-15))/s.Nspins
     elseif s.target == "min"
-        c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/2
+        c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/s.Nspins
     end
     return c
 end
@@ -58,11 +59,11 @@ function cost_saturation_contrast_square(iso::Isochromat)
     c = 0.0;
     m = iso.magnetization.dynamics
     s = iso.spin
+
     if s.target == "max"
-        c = 1/2 - sum(m[4,end]*m[4,end])/2
-        # c = - sum(m[4,end]*m[4,end])/2
+        c = (1 - sum(m[4,end]*m[4,end]))/s.Nspins
     elseif s.target == "min"
-        c = sum(m[2:end,end].*m[2:end,end])/2
+        c = sum(m[2:end,end].*m[2:end,end])/s.Nspins
     end
     return c
 end

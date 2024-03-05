@@ -7,6 +7,7 @@ struct Spin
     B0inho::Float64
     target::String
     label::String
+    Nspins::Float64
 end
 
 struct Magnetization

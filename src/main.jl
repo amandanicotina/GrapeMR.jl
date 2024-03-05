@@ -17,7 +17,7 @@ label = ["-", "-"];
 N   = 600;
 αx  = π/2;
 αy  = π/6;
-t_c = 0.3;
+t_c = 0.6;
 
 time = range(0.0, t_c, N);
 t    = time .- t_c/2;
@@ -28,28 +28,50 @@ flip_y = roty/diff(t)[1];
 BW_Hz = 300.0;
 x     = BW_Hz.*t;
 y     = BW_Hz.*t;
-B0    = [-150.0, 0.0, 150.0] #Hz
+#B0    = [0.0];
+B0    = [-150.0, -100.0, -50, 0.0, 50.0, 100.0, 150.0]; # [Hz]
+Bz    = zeros(1,N);
 B1x   = ((flip_x.*sinc.(x))./2π)'; # sinc(x) = sin(πx)/(πx)
 B1y   = ((flip_y.*sinc.(y))./2π)';
 
 ##### NORMALIZE #####
-(spins, field_init) = normalization(M0, T1, T2, target, label, t_c, B1x, B1y, B0);
+(spins, field_init) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, Bz);
+plot_control_fields(field_init)
 
 ##### OPTIMIZE #####
 opt_params = OptimizationParams(N, cost_saturation_contrast, [true true false]);
-grape_output = @time grape(opt_params, field_init, spins; max_iter=25000, ϵ=1e-4); 
+grape_output = @time grape(opt_params, field_init, spins; max_iter=15000, ϵ=1e-2); 
 
 ##### PLOTS #####
-cost1 = grape_output.cost_values[1,:];
-cost2 = grape_output.cost_values[2,:];
-# cost3 = grape_output.cost_values[3,:];
-# cost  = (cost1 + cost2 + cost3)
-cost  = (cost1 + cost2)
-cost[end] 
-# cost = grape_output.cost_values[1,:];
-plot_magnetization_Mz_Mxy(grape_output.isochromats[3:end])
+plot_magnetization_Mz_Mxy(grape_output.isochromats)
 plot_control_fields(grape_output.control_field) 
-plot_control_fields(field_init) 
-plot_magnetization_time(grape_output.isochromats[3], field_init.t_control)
-plot_magnetization_time(grape_output.isochromats[4], field_init.t_control)
-plot_cost_values(cost, opt_params)
+plot_cost_values(grape_output.cost_values, opt_params)
+
+##### Weigths & Biases #####
+if wandb == false
+    using Wandb, Dates, Logging
+
+    # Start a new run, tracking hyperparameters in config
+    lg = WandbLogger(project = "GrapeMR.jl", name = "grapemr-demo-$(now())",
+                    config = Dict("learning_rate" => 0.01, 
+                                "dropout" => 0.2,
+                                "architecture" => "CNN", 
+                                "dataset" => "CIFAR-100"))
+
+    # Use LoggingExtras.jl to log to multiple loggers together
+    global_logger(lg)
+
+    # Simulating the training or evaluation loop
+    for x in 1:50
+        acc = log(1 + x + rand() * get_config(lg, "learning_rate") + rand() + 
+                    get_config(lg, "dropout"))
+                    
+        loss = 10 - log(1 + x + rand() + x * get_config(lg, "learning_rate") + rand() +
+                        get_config(lg, "dropout"))
+        # Log metrics from your script to W&B
+        @info "metrics" accuracy=acc loss=loss
+    end
+
+    # Finish the run
+    close(lg)
+end

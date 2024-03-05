@@ -6,7 +6,8 @@ struct GrapeOutput
 end
 
 function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
-    cost_vals = zeros(Float64, length(spins), max_iter)
+    Nspins = length(spins)
+    cost_vals = zeros(Float64, max_iter, 1)[:]
     grape_output = GrapeOutput([], cf, cost_vals)
     u1x, u1y = [], []
     
@@ -16,16 +17,16 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
 
         for (j, spin) ∈ enumerate(spins)
         
-            # Propagation
+            # Propagation & cost
             mag = forward_propagation(cf, spin)
             dyn = Magnetization(mag)
             iso = Isochromat(dyn, spin)
-            grape_output.cost_values[j,i] = op.cost_function(iso)
+            grape_output.cost_values[i,1] += op.cost_function(iso)
             adj = backward_propagation(cf, iso, grad_saturation_contrast)
-            if i == 1
+            if i == max_iter
                 push!(grape_output.isochromats, iso)
-            elseif i == max_iter
-                push!(grape_output.isochromats, iso)
+            #elseif i == 1
+                #push!(grape_output.isochromats, iso)
             end
 
             # Gradient

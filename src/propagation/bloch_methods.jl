@@ -1,4 +1,4 @@
-function normalization(M_ini, T1, T2, target, label, t_c, B1x, B1y, Bz)
+function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, Bz)
     # □ Use Unitful to normalize based on units of initial RF field
     
     # Omega reference for the normalization
@@ -16,20 +16,25 @@ function normalization(M_ini, T1, T2, target, label, t_c, B1x, B1y, Bz)
     # Spins
     function normalized_spin(t1_t2)
         spins = Spin[]  
+        n_spins = length(B0);
 
         t1, t2, tar, lb = t1_t2
         Γ1 = 1/(ω_ref*t1)
         Γ2 = 1/(ω_ref*t2)
-        for uz_value in uz
-            spin = Spin(M_ini, Γ1, Γ2, 0.0, uz_value, tar, lb)
+        u0 = B0./ω_ref
+
+        for u0_val in u0
+            spin = Spin(M_ini, Γ1, Γ2, 0.0, u0_val, tar, lb, n_spins)
             push!(spins, spin)
         end
         return spins
     end
-    spins = vcat(map(normalized_spin, zip(T1, T2, target, label))...)
+    spins = vcat(map(normalized_spin, zip(T1, T2, target, label))...) 
 
     return spins, init_control_field
 end
+
+
 
 
 """
@@ -71,10 +76,11 @@ function forward_propagation(cf::ControlField, s::Spin)
     Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
-
-    Bz = cf.band_width
-    Bx = cf.B1x
-    By = cf.B1y
+    
+    ΔB0 = s.B0inho
+    Bz  = cf.band_width .+ ΔB0
+    Bx  = cf.B1x
+    By  = cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
         b_m = 2π*bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
@@ -103,9 +109,10 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
     χ[:, end]  = cost_function(iso);
     s          = iso.spin
 
-    Bz = cf.band_width
-    Bx = cf.B1x
-    By = cf.B1y
+    ΔB0 = s.B0inho
+    Bz  = cf.band_width .+ ΔB0
+    Bx  = cf.B1x
+    By  = cf.B1y
 
     for i in back_steps:-1:1 
         b_m = 2π*bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)

@@ -1,0 +1,53 @@
+{
+    "arch": "arm64",
+    "build": "hb7217d7_1",
+    "build_number": 1,
+    "build_string": "hb7217d7_1",
+    "channel": "https://conda.anaconda.org/conda-forge/osx-arm64",
+    "constrains": [
+        "expat 2.5.0.*"
+    ],
+    "depends": [],
+    "extracted_package_dir": "/Users/amandanicotina/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/libexpat-2.5.0-hb7217d7_1",
+    "files": [
+        "lib/libexpat.1.8.10.dylib",
+        "lib/libexpat.1.dylib"
+    ],
+    "fn": "libexpat-2.5.0-hb7217d7_1.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "link": {
+        "source": "/Users/amandanicotina/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/libexpat-2.5.0-hb7217d7_1",
+        "type": 1
+    },
+    "md5": "5a097ad3d17e42c148c9566280481317",
+    "name": "libexpat",
+    "package_tarball_full_path": "/Users/amandanicotina/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/libexpat-2.5.0-hb7217d7_1.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "lib/libexpat.1.8.10.dylib",
+                "path_type": "hardlink",
+                "sha256": "84cc8032fb377171d90f2687c085559a28fbb08c91c0123c8aae77bac899a1b1",
+                "sha256_in_prefix": "84cc8032fb377171d90f2687c085559a28fbb08c91c0123c8aae77bac899a1b1",
+                "size_in_bytes": 182192
+            },
+            {
+                "_path": "lib/libexpat.1.dylib",
+                "path_type": "softlink",
+                "sha256_in_prefix": "84cc8032fb377171d90f2687c085559a28fbb08c91c0123c8aae77bac899a1b1",
+                "size_in_bytes": 182192
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "osx",
+    "requested_spec": "",
+    "sha256": "7d143a9c991579ad4207f84c632650a571c66329090daa32b3c87cf7311c3381",
+    "size": 63442,
+    "subdir": "osx-arm64",
+    "timestamp": 1680190916539,
+    "track_features": "",
+    "url": "https://conda.anaconda.org/conda-forge/osx-arm64/libexpat-2.5.0-hb7217d7_1.conda",
+    "version": "2.5.0"
+}
