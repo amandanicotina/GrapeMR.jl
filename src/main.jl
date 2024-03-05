@@ -4,10 +4,10 @@ using Plots
 ##### INITIALIZATION #####
 # Spins
 M0 = [0.0; 0.0; 1.0];
-T1 = [0.100, 0.500];
-T2 = [0.050, 0.300];
+T1 = [0.180, 0.120];
+T2 = [0.120, 0.080];
 target = ["min", "max"];
-label = ["-", "-"];
+label = ["Inner Ball", "Body"];
 # T1 = [1.830, 0.622, 2.430];
 # T2 = [0.184, 0.092, 0.132];
 # target = ["max", "min", "min"];
