@@ -1,5 +1,0 @@
-#!/Users/amandanicotina/Documents/Julia/GrapeMR.jl/.CondaPkg/env/bin/python3.11
-
-import pydoc
-if __name__ == '__main__':
-    pydoc.cli()
