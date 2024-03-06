@@ -4,10 +4,12 @@ using Plots
 ##### INITIALIZATION #####
 # Spins
 M0 = [0.0; 0.0; 1.0];
-T1 = [0.180, 0.120];
-T2 = [0.120, 0.080];
+# T1 = [0.180, 0.120];
+# T2 = [0.120, 0.080];
+T1 = [0.100, 0.500];
+T2 = [0.050, 0.300];
 target = ["min", "max"];
-label = ["Inner Ball", "Body"];
+label = ["T1-100ms", "T2-500ms"];
 # T1 = [1.830, 0.622, 2.430];
 # T2 = [0.184, 0.092, 0.132];
 # target = ["max", "min", "min"];
@@ -17,7 +19,7 @@ label = ["Inner Ball", "Body"];
 N   = 600;
 αx  = π/2;
 αy  = π/6;
-t_c = 0.6;
+t_c = 0.5;
 
 time = range(0.0, t_c, N);
 t    = time .- t_c/2;
@@ -40,7 +42,7 @@ plot_control_fields(field_init)
 
 ##### OPTIMIZE #####
 opt_params = OptimizationParams(N, cost_saturation_contrast, [true true false]);
-grape_output = @time grape(opt_params, field_init, spins; max_iter=15000, ϵ=1e-2); 
+grape_output = @time grape(opt_params, field_init, spins; max_iter=100, ϵ=1e-1); 
 
 ##### PLOTS #####
 plot_magnetization_Mz_Mxy(grape_output.isochromats)

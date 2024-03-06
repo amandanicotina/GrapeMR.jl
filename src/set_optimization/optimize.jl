@@ -1,4 +1,3 @@
-
 struct GrapeOutput
     isochromats::Vector{Isochromat}
     control_field::ControlField
@@ -6,7 +5,6 @@ struct GrapeOutput
 end
 
 function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
-    Nspins = length(spins)
     cost_vals = zeros(Float64, max_iter, 1)[:]
     grape_output = GrapeOutput([], cf, cost_vals)
     u1x, u1y = [], []
@@ -15,8 +13,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
         ∇x = zeros(Float64, 1, op.N)
         ∇y = zeros(Float64, 1, op.N)
 
-        for (j, spin) ∈ enumerate(spins)
-        
+        for spin ∈ spins
             # Propagation & cost
             mag = forward_propagation(cf, spin)
             dyn = Magnetization(mag)
@@ -45,6 +42,9 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
     end
     grape_output.control_field.B1x = u1x
     grape_output.control_field.B1y = u1y
+
+    # Utility Functions
+    save_grape_data(grape_output, true)
     
     return grape_output
 end
