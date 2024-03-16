@@ -7,8 +7,10 @@ const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
 using Plots
 using Dates
+using CubicSplines
 using Serialization
 using LinearAlgebra
+using ParameterSchedulers
 using ExponentialUtilities
 
 include("data_types/ControlField.jl")
@@ -21,6 +23,7 @@ include("propagation&cost/cost_gradients.jl")
 
 include("set_optimization/optimize.jl")
 include("set_optimization/finite_difference.jl")
+include("set_optimization/initialization.jl")
 
 include("utilities/save_data.jl")
 
@@ -31,12 +34,14 @@ export ControlField
 export OptimizationParams
 export Spin, Magnetization, Isochromat
 
-export normalization, forward_propagation, backward_propagation, steady_state
+export forward_propagation, backward_propagation, steady_state
 export cost_euclidean_norm, cost_target_one_spin, cost_saturation_contrast, saturation_contrast_square
 export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad_saturation_contrast_square
 
 export grape, gradient, update
 export finite_difference_cost, finite_difference_field
+
+export normalization, initial_field_spline
 
 export save_grape_data
 

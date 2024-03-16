@@ -1,6 +1,49 @@
 using Test
 
-@safetestset "Bx: True Gradient vs Finite Difference" begin
+### Spline ###
+@safetestset "Bx Spline: True Gradient vs Finite Difference" begin
+    using GrapeMR
+    # Defining parameters
+    M0 = [0.0; 0.0; 1.0];
+    T1 = [0.5, 0.1];
+    T2 = [0.2, 0.01];
+    target = ["max", "min"];
+    label = ["T1-100ms", "T2-500ms"];
+    
+    # Initial Control Fields
+    N   = 500;
+    t_c = 0.5;
+    B0  = [0.0];
+    Bz  = zeros(1,N);
+    B1_max = 100.0; # [Hz]
+    B1x = initial_field_spline(N, t_c, B1_max)'; 
+    B1y = initial_field_spline(N, t_c, B1_max)';
+
+    (spins, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, B1_max, Bz)
+    spin_test = spins[1]
+
+    # Dynamics
+    mag_test  = forward_propagation(field_test, spin_test)
+    dyn_test  = Magnetization(mag_test)
+    iso_test  = Isochromat(dyn_test, spin_test)
+    adj_test  = backward_propagation(field_test, iso_test, grad_saturation_contrast)
+    cost_func = cost_saturation_contrast(iso_test)
+
+    # Finite difference
+    Δcf   = 1e-3;
+    fd_cf = finite_difference_field(cost_saturation_contrast, field_test, spin_test, Δcf, "B1x")
+
+    # True Gradient
+    true_grad = gradient(adj_test, mag_test, Ix)
+    
+    plot(fd_cf')
+    plot!(true_grad')
+
+    @test round.(fd_cf, digits=2) == round.(true_grad, digits=2)
+
+end
+
+@safetestset "By Spline: True Gradient vs Finite Difference" begin
     using GrapeMR
     # Defining parameters
     M0 = [0.0; 0.0; 1.0];
@@ -10,22 +53,68 @@ using Test
     
     # Initial Control Fields
     N   = 500;
+    t_c = 0.5;
+    B0  = [0.0];
+    Bz  = zeros(1,N);
+    B1_max = 100.0; # [Hz]
+    B1x = initial_field_spline(N, t_c, B1_max)'; 
+    B1y = initial_field_spline(N, t_c, B1_max)';
+
+    (spins, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, B1_max, Bz)
+    spin_test = spins[1]
+
+    # Dynamics
+    mag_test  = forward_propagation(field_test, spin_test)
+    dyn_test  = Magnetization(mag_test)
+    iso_test  = Isochromat(dyn_test, spin_test)
+    adj_test  = backward_propagation(field_test, iso_test, grad_saturation_contrast)
+    cost_func = cost_saturation_contrast(iso_test)
+
+    # Finite difference
+    Δcf   = 1e-4;
+    fd_cf = finite_difference_field(cost_saturation_contrast, field_test, spin_test, Δcf, "B1y") 
+
+    # True Gradient
+    true_grad = gradient(adj_test, mag_test, Iy)
+    
+    plot(fd_cf')
+    plot!(true_grad')
+
+    @test round.(fd_cf, digits=2) == round.(true_grad, digits=2)
+
+end
+
+
+
+### Constant ###
+@safetestset "Bx: True Gradient vs Finite Difference" begin
+    using GrapeMR
+    # Defining parameters
+    M0 = [0.0; 0.0; 1.0];
+    T1 = [0.5, 0.1];
+    T2 = [0.2, 0.01];
+    target = ["max", "min"];
+    label = ["-", "-"];
+    
+    # Initial Control Fields
+    N   = 500;
     t_c = 1.0;
     B1  = 10.0;
     B1x, B1y = B1*ones(Float64, 1, N), B1*ones(Float64, 1, N)
-    B0, ΔB0  = zeros(1, N), zeros(1, N);
+    B0, Bz  = [0.0], zeros(1, N);
 
-    (spin_test, field_test) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0);
+    (spins, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, Bz);
+    spin_test = spins[1]
 
-    mag_test  = forward_propagation(field_test, spin_test[2])
+    mag_test  = forward_propagation(field_test, spin_test)
     dyn_test  = Magnetization(mag_test)
-    iso_test  = Isochromat(dyn_test, spin_test[2])
+    iso_test  = Isochromat(dyn_test, spin_test)
     adj_test  = backward_propagation(field_test, iso_test, grad_target_one_spin)
-    cost_func = target_one_spin(iso_test)
+    cost_func = cost_target_one_spin(iso_test)
 
     # Finite difference
     Δcf   = 1e-3;
-    fd_cf = finite_difference_field(target_one_spin, field_test, spin_test[1], Δcf, "B1x") 
+    fd_cf = finite_difference_field(cost_target_one_spin, field_test, spin_test, Δcf, "B1x") 
 
     # True Gradient
     true_grad = gradient(adj_test, mag_test, Ix)
@@ -66,12 +155,12 @@ end
     mag_test  = forward_propagation(field_test, spin_test[1])
     dyn_test  = Magnetization(mag_test)
     iso_test  = Isochromat(dyn_test, spin_test[1])
-    adj_test  = backward_propagation(field_test, iso_test, grad_target_one_spin)
-    cost_func = target_one_spin(iso_test)
+    adj_test  = backward_propagation(field_test, iso_test, grad_saturation_contrast)
+    cost_func = cost_saturation_contrast(iso_test)
  
     # Finite difference
     Δcf   = 1e-3;
-    fd_cf = finite_difference_field(target_one_spin, field_test, spin_test[1], Δcf, "B1x") 
+    fd_cf = finite_difference_field(cost_saturation_contrast, field_test, spin_test[1], Δcf, "B1x") 
  
     # True Gradient
     true_grad = gradient(adj_test, mag_test, Ix)
@@ -96,9 +185,9 @@ end
     t_c = 1.0;
     B1  = 10.0;
     B1x, B1y = B1*zeros(Float64, 1, N), B1*ones(Float64, 1, N)
-    B0, ΔB0  = zeros(1, N), zeros(1, N);
+    B0, Bz  = [0.0], zeros(1, N);
 
-    (spin_test, field_test) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0);
+    (spin_test, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
 
     mag_test  = forward_propagation(field_test, spin_test[1])
     dyn_test  = Magnetization(mag_test)
@@ -140,21 +229,22 @@ end
  
     BW_Hz = 500.0;
     y     = BW_Hz.*t;
-    B0    = zeros(1, N);
-    B1y   = ((flip_y.*sinc.(y))./2π)'; # sinc(x) = sin(πx)/(πx)
+    B1  = 10.0;
     B1x   = zeros(1, N);
-     
-    (spin_test, field_test) = normalization(M0, T1, T2, target, t_c, B1x, B1y, B0);
+    B0, Bz = [0.0], zeros(1, N);
+    B1y   = ((flip_y.*sinc.(y))./2π)'; # sinc(x) = sin(πx)/(πx)
+
+    (spin_test, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
     
     mag_test  = forward_propagation(field_test, spin_test[1])
     dyn_test  = Magnetization(mag_test)
     iso_test  = Isochromat(dyn_test, spin_test[1])
     adj_test  = backward_propagation(field_test, iso_test, grad_target_one_spin)
-    cost_func = target_one_spin(iso_test)
+    cost_func = cost_target_one_spin(iso_test)
  
     # Finite difference
-    Δcf   = 1e-3;
-    fd_cf = finite_difference_field(target_one_spin, field_test, spin_test[1], Δcf, "B1y") 
+    Δcf   = 1e-4;
+    fd_cf = finite_difference_field(cost_target_one_spin, field_test, spin_test[1], Δcf, "B1y") 
  
     # True Gradient
     true_grad = gradient(adj_test, mag_test, Iy)

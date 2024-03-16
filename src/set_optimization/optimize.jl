@@ -4,12 +4,13 @@ struct GrapeOutput
     cost_values::Array{Float64}
 end
 
-function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; max_iter=2500, ϵ = 1e-4)
+function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr_scheduler::Poly; max_iter=2500, ϵ = 1e-4)
     cost_vals = zeros(Float64, max_iter, 1)[:]
     grape_output = GrapeOutput([], cf, cost_vals)
     u1x, u1y = [], []
     
-    for i ∈ 1:max_iter
+    for (eps, i) ∈ zip(lr_scheduler, 1:max_iter)
+        ϵ = max(ϵ, eps)
         ∇x = zeros(Float64, 1, op.N)
         ∇y = zeros(Float64, 1, op.N)
 
@@ -44,7 +45,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}; ma
     grape_output.control_field.B1y = u1y
 
     # Utility Functions
-    save_grape_data(grape_output, true)
+    save_grape_data(grape_output, false)
     
     return grape_output
 end

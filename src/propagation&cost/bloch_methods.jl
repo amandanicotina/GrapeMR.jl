@@ -1,41 +1,3 @@
-function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, Bz)
-    # □ Use Unitful to normalize based on units of initial RF field
-    
-    # Omega reference for the normalization
-    ω_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
-
-    # Control Field
-    τ  = ω_ref*t_c
-    uz = Bz./ω_ref
-    ux = B1x./ω_ref
-    uy = B1y./ω_ref
-    ux_max, uy_max = ω_ref, ω_ref
-
-    init_control_field = ControlField(ux, uy, ux_max, uy_max, τ, uz, uz)
-    
-    # Spins
-    function normalized_spin(t1_t2)
-        spins = Spin[]  
-        n_spins = length(B0);
-
-        t1, t2, tar, lb = t1_t2
-        Γ1 = 1/(ω_ref*t1)
-        Γ2 = 1/(ω_ref*t2)
-        u0 = B0./ω_ref
-
-        for u0_val in u0
-            spin = Spin(M_ini, Γ1, Γ2, 0.0, u0_val, tar, lb, n_spins)
-            push!(spins, spin)
-        end
-        return spins
-    end
-    spins = vcat(map(normalized_spin, zip(T1, T2, target, label))...) 
-
-    return spins, init_control_field
-end
-
-
-
 
 """
     bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2::Float64)
@@ -77,8 +39,8 @@ function forward_propagation(cf::ControlField, s::Spin)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
     
-    ΔB0 = s.B0inho
-    Bz  = cf.band_width .+ ΔB0
+    B0 = s.B0inho
+    Bz  = cf.band_width .+ B0
     Bx  = cf.B1x
     By  = cf.B1y
 
@@ -109,8 +71,8 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
     χ[:, end]  = cost_function(iso);
     s          = iso.spin
 
-    ΔB0 = s.B0inho
-    Bz  = cf.band_width .+ ΔB0
+    B0 = s.B0inho
+    Bz  = cf.band_width .+ B0
     Bx  = cf.B1x
     By  = cf.B1y
 

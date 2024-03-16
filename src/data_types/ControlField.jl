@@ -4,6 +4,6 @@ mutable struct ControlField
     B1x_max_amp::Float64
     B1y_max_amp::Float64
     t_control::Float64
-    band_width::AbstractArray
-    band_width_step::AbstractArray
+    B1_inho::AbstractArray
+    Bz::AbstractArray
 end

@@ -8,28 +8,35 @@ using Test
     
     ##### INITIAL RF FIELD #####
     N   = 500;
-    t_c = 1.0;
+    t_c = 0.5;
+    B1  = 1.0;
     B1x, B1y = B1*zeros(Float64, 1, N), B1*zeros(Float64, 1, N)
-    B0, ΔB0  = zeros(1, N), zeros(1, N);
+    B0, ΔB0  = [100.0, 150.0], zeros(1, N);
 
-    (spin_test, field_test) = normalization(M0, t_c, T1, T2, B1x, B1y, B0)
-
-    #init_field_test = ControlFields(γ_¹H*B1x, B1y, 0.0, 0.0, t_c, B0, ΔB0)
+    (spins, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
     
     # Solution Bloch Methods - ODE
-    mag = forward_propagation(field_test, spin_test)
-    Mx_ODE  = mag[2, :]
-    My_ODE  = mag[3, :]
-    Mz_ODE  = mag[4, :]
-    Mxy_ODE = sqrt.((Mx_ODE).^2 .+ (My_ODE).^2)
+    spin_test = spins[2]
+    mag_test  = forward_propagation(field_test, spin_test)
+    Mx_ODE  = mag_test[2, :]
+    My_ODE  = mag_test[3, :]
+    Mz_ODE  = mag_test[4, :]
+    Mxy_ODE = Mx_ODE .+ im*My_ODE
 
     # Solution for Mz
     time = range(0.0, field_test.t_control, length=length(field_test.B1x)+1)
     Mz_sol = 1.0 .- (1.0 .- spin_test.M_init[3])*exp.(-(2π*spin_test.T1).*time)
 
     # Solution for Mxy
-    Mxy = √(spin_test.M_init[1]^2 + spin_test.M_init[2]^2)
-    Mxy_sol = Mxy*exp.(-(2π*spin_test.T2).*time)
+    Mxy_ini = Mxy_ODE[1]
+    Mxy_sol = Mxy_ini*exp.(-(2π*spin_test.T2).*time).*exp.(-(2π*im*spin_test.B0inho).*time)
+
+    # Plots
+    plot(time, Mz_ODE)
+    plot!(time, Mz_sol)
+
+    plot(Mxy_ODE)
+    plot!(Mxy_sol)
 
     @test round.(Mxy_ODE, digits=5).== round.(Mxy_sol, digits=5)
     @test round.(Mz_ODE, digits=5) .== round.(Mz_sol, digits=5)
