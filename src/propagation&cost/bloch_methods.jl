@@ -40,7 +40,7 @@ function forward_propagation(cf::ControlField, s::Spin)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
     
     B0 = s.B0inho
-    Bz  = cf.band_width .+ B0
+    Bz  = cf.Bz .+ B0
     Bx  = cf.B1x
     By  = cf.B1y
 
@@ -72,7 +72,7 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
     s          = iso.spin
 
     B0 = s.B0inho
-    Bz  = cf.band_width .+ B0
+    Bz  = cf.Bz .+ B0
     Bx  = cf.B1x
     By  = cf.B1y
 

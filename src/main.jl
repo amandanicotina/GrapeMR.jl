@@ -1,5 +1,6 @@
 using GrapeMR
 using Plots
+using ParameterSchedulers
 
 ##### INITIALIZATION #####
 # Spins
@@ -22,19 +23,16 @@ Bz  = zeros(1,N);
 B1 = 1.0; # [Hz]
 B1x = B1*initial_field_spline(N, t_c, B1)'; 
 B1y = B1*initial_field_spline(N, t_c, B1)';
-ΔB1 = [0.9, 1.0]
+ΔB1 = [0.5, 1.0];
 
 ##### NORMALIZE #####
-(spins, field_init) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, Bz);
-plot_control_fields(field_init)
+(spins, field_init) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, ΔB1, Bz);
 
 ##### OPTIMIZE #####
 opt_params = OptimizationParams(N, cost_saturation_contrast, [true true false]);
-max_iter = 20000
-# lr_scheduler = Step(start = 1e-1, decay=0.98, step_sizes=[(max_iter // 6) * 3, (max_iter // 6) * 2, max_iter // 6])
-# lr_scheduler = Exp(start=1e-1, decay=0.99)
-lr_scheduler = Poly(start=1e-1, degree=2, max_iter=max_iter+1)
-grape_output = @time grape(opt_params, field_init, spins, lr_scheduler; max_iter=max_iter, ϵ=1e-4); 
+max_iter = 5000
+lr_scheduler = Poly(start=1e-1, degree=2, max_iter=max_iter+1) 
+grape_output = @time grape(opt_params, field_init, spins, lr_scheduler; max_iter = max_iter, ϵ=1e-4); 
 
 ##### PLOTS #####
 plot_magnetization_Mz_Mxy(grape_output.isochromats)

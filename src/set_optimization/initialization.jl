@@ -15,24 +15,28 @@ function initial_field_spline(N, t_c, B1_max)
     return spline_vec
 end
 
-function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, Bz)
-    # □ Use Unitful to normalize based on units of initial RF field
-    
+function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, B1_inho, Bz)
     # Omega reference for the normalization
     ω_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
-    #ω_ref = B1_max
 
     # Control Field
     τ  = ω_ref*t_c
     uz = Bz./ω_ref
     ux = B1x./ω_ref
     uy = B1y./ω_ref
+    u_inho = B1_inho
     ux_max, uy_max = ω_ref, ω_ref
-    u_inho = [0.0]
-    init_control_field = ControlField(ux, uy, ux_max, uy_max, τ, u_inho, uz)
+
+    norm_control_fields = ControlField[]
+    for ΔB1 in B1_inho
+        ux_tmp = ΔB1.*copy(ux)
+        uy_tmp = ΔB1.*copy(uy)
+        norm_control_field = ControlField(ux_tmp, uy_tmp, ux_max, uy_max, τ, u_inho, uz) 
+        push!(norm_control_fields, norm_control_field)
+    end
     
     # Spins
-    function normalized_spin(t1_t2)
+    function normalized_spins(t1_t2)
         spins = Spin[]  
         n_spins = length(B0);
 
@@ -47,7 +51,7 @@ function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, Bz)
         end
         return spins
     end
-    spins = vcat(map(normalized_spin, zip(T1, T2, target, label))...) 
+    spins = vcat(map(normalized_spins, zip(T1, T2, target, label))...) 
 
-    return spins, init_control_field
+    return spins, norm_control_fields
 end
