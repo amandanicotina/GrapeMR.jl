@@ -5,6 +5,7 @@ struct Spin
     T2::Float64
     δ::Float64
     B0inho::Float64
+    B1inho::Float64
     target::String
     label::String
     Nspins::Float64

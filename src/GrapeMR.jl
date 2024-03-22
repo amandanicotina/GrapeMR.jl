@@ -39,7 +39,7 @@ export forward_propagation, backward_propagation, steady_state
 export cost_euclidean_norm, cost_target_one_spin, cost_saturation_contrast, saturation_contrast_square
 export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad_saturation_contrast_square
 
-export grape, gradient, update
+export grape, gradient, update!
 export finite_difference_cost, finite_difference_field
 
 export normalization, initial_field_spline

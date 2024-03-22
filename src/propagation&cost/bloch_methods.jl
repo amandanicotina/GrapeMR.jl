@@ -40,9 +40,10 @@ function forward_propagation(cf::ControlField, s::Spin)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
     
     B0 = s.B0inho
-    Bz  = cf.Bz .+ B0
-    Bx  = cf.B1x
-    By  = cf.B1y
+    B1 = s.B1inho
+    Bz = cf.Bz .+ B0
+    Bx = B1*cf.B1x
+    By = B1*cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
         b_m = 2π*bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
@@ -72,9 +73,10 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
     s          = iso.spin
 
     B0 = s.B0inho
-    Bz  = cf.Bz .+ B0
-    Bx  = cf.B1x
-    By  = cf.B1y
+    B1 = s.B1inho
+    Bz = cf.Bz .+ B0
+    Bx = B1*cf.B1x
+    By = B1*cf.B1y
 
     for i in back_steps:-1:1 
         b_m = 2π*bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)

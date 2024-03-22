@@ -5,7 +5,7 @@ function save_grape_data(gp::GrapeOutput, bool::Bool; folder_path = "/Users/aman
         full_folder_path = joinpath(folder_path, folder_name)
 
         # Create/Check folder
-        if !isdir(full_folder_path)
+        if isdir(full_folder_path)
             mkdir(full_folder_path)
         end
         # File name

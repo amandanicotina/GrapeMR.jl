@@ -6,13 +6,13 @@ end
 
 function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr_scheduler::Poly; max_iter=2500, ϵ = 1e-4)
     cost_vals = zeros(Float64, max_iter, 1)[:]
-    grape_output = GrapeOutput([], cf, cost_vals)
     u1x, u1y = [], []
-    
+    grape_output = GrapeOutput([], deepcopy(cf), cost_vals)
+
     for (eps, i) ∈ zip(lr_scheduler, 1:max_iter)
-        ϵ = max(ϵ, eps)
-        ∇x = zeros(Float64, 1, op.N)
-        ∇y = zeros(Float64, 1, op.N)
+        ϵ   = max(ϵ, eps)
+        ∇x  = zeros(Float64, 1, op.N)
+        ∇y  = zeros(Float64, 1, op.N)
 
         for spin ∈ spins
             # Propagation & cost
@@ -23,10 +23,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
             adj = backward_propagation(cf, iso, grad_saturation_contrast)
             if i == max_iter
                 push!(grape_output.isochromats, iso)
-            #elseif i == 1
-                #push!(grape_output.isochromats, iso)
             end
-
             # Gradient
             if op.fields_opt[1]
                 ∇x += gradient(adj, mag, Ix)
@@ -37,10 +34,11 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
         end
 
         # Control Field
-        (u1x, u1y) = update(cf, (∇x, ∇y), ϵ)
+        (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
         cf.B1x = u1x
         cf.B1y = u1y
     end
+
     grape_output.control_field.B1x = u1x
     grape_output.control_field.B1y = u1y
 
@@ -74,18 +72,18 @@ end
 
 
 """
-    update(cf::InitialControlFields, ∇xy::Tuple, ϵ::Float64)
+    update(cf::ControlField, ∇xy::Tuple, ϵ::Float64)
 
 update
     # Input  
-    - cf:  (::InitialControlFields) - Control fields struct
+    - cf:  (::ControlField) - Control fields struct
     - ∇xy: (::Tuple) - Calculated gradients for x and y components
     - ϵ:   (::Float64) - Weigth of gradient
 
     # Output
     - Control Field - 1xN matrix
 """
-function update(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}, ϵ::Float64)
+function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}, ϵ::Float64)
     u1x = cf.B1x .- ϵ*∇xy[1]
     u1y = cf.B1y .- ϵ*∇xy[2]
     return u1x, u1y

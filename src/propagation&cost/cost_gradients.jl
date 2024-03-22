@@ -62,20 +62,20 @@ function grad_saturation_contrast(iso::Isochromat)
     s = iso.spin
 
     if s.target == "max"
-        Pz = -m[4,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
+        Pz = -m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
         P = [0.0, 0.0, 0.0, Pz]
         
     elseif s.target == "min"
-        Px = m[2,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
-        Py = m[3,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
-        Pz = m[4,end]/s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
+        Px = m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Py = m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Pz = m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
         P = [0.0, Px, Py, Pz]
     end
     
     return P
 end
 
-# cost_gradients = Dict("Euclidean Norm"      => grad_euclidean_norm,
-#                       "Target One Spin"     => grad_target_one_spin,
-#                       "Saturation Contrast" => grad_saturation_contrast)    
+ cost_gradients = Dict("cost_euclidean_norm,"     => grad_euclidean_norm,
+                       "cost_target_one_spin"     => grad_target_one_spin,
+                       "cost_saturation_contrast" => grad_saturation_contrast)    
 
