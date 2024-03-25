@@ -7,7 +7,6 @@ const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
 using Plots
 using Dates
-using Flux
 using CubicSplines
 using Serialization
 using LinearAlgebra
