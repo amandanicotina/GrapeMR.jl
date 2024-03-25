@@ -31,3 +31,7 @@ Manifest.toml
 
 # Images
 .svg
+
+# WandB
+.CondaPkg
+wandb/
