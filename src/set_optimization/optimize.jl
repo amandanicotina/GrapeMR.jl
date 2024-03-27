@@ -44,8 +44,10 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
 
     # Utility Functions
     save_grape_data(grape_output, false)
+
+    grape_output_units = rescale(grape_output)
     
-    return grape_output
+    return grape_output_units
 end
 
 

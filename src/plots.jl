@@ -106,8 +106,8 @@ function plot_control_fields(cf::ControlField)
     Bx = cf.B1x
     By = cf.B1y
 
-    p_Bx = plot(time, Bx', linewidth=2, label = false, ylabel="u1x", title="Control Fields", titlefontsize=12)
-    p_By = plot(time, By', linewidth=2, label = false, ylabel="u1y", xlabel="t [s]")
+    p_Bx = plot(time, Bx', linewidth=2, label = false, ylabel="B1x [Hz]", title="Control Fields", titlefontsize=12)
+    p_By = plot(time, By', linewidth=2, label = false, ylabel="B1y [Hz]", xlabel="t [s]")
 
     p = plot(p_Bx, p_By, layout=(2,  1))
 

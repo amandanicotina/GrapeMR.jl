@@ -41,7 +41,7 @@ export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad
 export grape, gradient, update!
 export finite_difference_cost, finite_difference_field
 
-export normalization, initial_field_spline
+export initial_field_spline, normalization, rescale
 
 export save_grape_data
 
