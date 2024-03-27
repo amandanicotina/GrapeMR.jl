@@ -69,8 +69,9 @@ function rescale(gp::GrapeMR.GrapeOutput)
     end
 
     # Control Fields
-    norm_B1x = B_ref*(gp.control_field.B1x./maximum(gp.control_field.B1x))
-    norm_B1y = B_ref*(gp.control_field.B1y./maximum(gp.control_field.B1y))
+    all(gp.control_field.B1x .== 0.0) ? norm_B1x = zeros(1, length(gp.control_field.B1x)) : norm_B1x = B_ref*(gp.control_field.B1x./maximum(gp.control_field.B1x))
+    all(gp.control_field.B1y .== 0.0) ? norm_B1y = zeros(1, length(gp.control_field.B1y)) : norm_B1y = B_ref*(gp.control_field.B1y./maximum(gp.control_field.B1y))
+
 
     grape_output_rescale.control_field.B1x = norm_B1x
     grape_output_rescale.control_field.B1y = norm_B1y
