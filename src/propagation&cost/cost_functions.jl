@@ -1,17 +1,8 @@
 """
-Cost Functions dictonary
-
-long  = range(-1, 1, length=N);
-trans = range(-1, 1, length=N);
-
-cost_func(Mx, My, Mz) = sqrt.(Mz.^2 .+ Mt.^2);
-# Plot cost function values
-contourf(trans, long, cost_func, color = :jet)
+Cost Functions 
 
 """
-
-
-#### FUNCTIONS ####                    
+              
 function cost_euclidean_norm(iso::Isochromat)
     mag = iso.magnetization.dynamics
     Mx = mag[2,end]
@@ -83,8 +74,5 @@ function cost_steady_state(iso::Isochromat, ss::Tuple)
     return c_ss
 end
 
-
-#cost_functions = Dict("Euclidean Norm"      => euclidean_norm,
-#                      "Target One Spin"     => target_one_spin,
-#                      "Saturation Contrast" => saturation_contrast)    
+  
 

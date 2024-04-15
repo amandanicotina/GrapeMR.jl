@@ -6,5 +6,3 @@ mutable struct ControlField
     t_control::Float64
 end
 
-# B1x_max_amp::Float64
-# B1y_max_amp::Float64

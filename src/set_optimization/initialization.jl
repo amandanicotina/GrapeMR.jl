@@ -1,6 +1,6 @@
 function initial_field_spline(N, t_c)
     len = 10
-    B1_max = 1/t_c;
+    B1_max = 10;#1/t_c;
     time = range(0.0, t_c, length=len)
     field_vals = rand(Float64, len) .* B1_max
     spline = CubicSpline(time, field_vals)
@@ -18,7 +18,7 @@ end
 
 function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
     # Omega reference for the normalization
-    B_ref = 1/t_c;
+    B_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
 
     # Control Field
     τ  = B_ref*t_c
@@ -36,7 +36,7 @@ function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
         Γ1 = 1/(B_ref*t1)
         Γ2 = 1/(B_ref*t2)
         u0 = B0./B_ref
-        u1 = B1./B_ref
+        u1 = B1
 
         for u0_val ∈ u0
             for u1_val ∈ u1
@@ -75,7 +75,7 @@ function rescale(gp::GrapeMR.GrapeOutput)
 
     grape_output_rescale.control_field.B1x = norm_B1x
     grape_output_rescale.control_field.B1y = norm_B1y
-    grape_output_rescale.control_field.t_control = 1/B_ref
+    grape_output_rescale.control_field.t_control = gp.control_field.t_control/B_ref
     return grape_output_rescale
 
 end
