@@ -10,7 +10,8 @@ M0 = [1.0; 0.0; 0.0];
 # label = ["T1-900ms", "T1-70ms"];
 # T1 = [1.830, 0.622, 2.430];
 # T2 = [0.184, 0.092, 0.132];
-# target = ["max", "min", "min"];# label = ["GD", "Yolk", "White"];
+# label = ["GD", "Yolk", "White"];
+# target = ["max", "min", "min"];
 
 T1 = [0.5];
 T2 = [0.25];
