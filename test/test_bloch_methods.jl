@@ -21,7 +21,6 @@ using Test
     Mx_ODE  = mag_test[2, :]
     My_ODE  = mag_test[3, :]
     Mz_ODE  = mag_test[4, :]
-    Mxy_ODE = Mx_ODE .+ im*My_ODE
 
     # Solution for Mz
     time = range(0.0, field_test.t_control, length=length(field_test.B1x)+1)
@@ -29,7 +28,8 @@ using Test
 
     # Solution for Mxy
     Mxy_ini = Mxy_ODE[1]
-    Mxy_sol = Mxy_ini*exp.(-(2π*spin_test.T2).*time).*exp.(-(2π*im*spin_test.B0inho).*time)
+    Mx_sol = Mx_ODE*exp.(-(2π*spin_test.T2).*time).*exp.(-(2π*im*spin_test.B0inho).*time)
+    My_sol = My_ODE*exp.(-(2π*spin_test.T2).*time).*exp.(-(2π*im*spin_test.B0inho).*time)
 
     # Plots
     plot(time, Mz_ODE)

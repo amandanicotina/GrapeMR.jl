@@ -18,7 +18,7 @@ end
 
 function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
     # Omega reference for the normalization
-    B_ref = all(B1x .== 0.0) ? maximum(B1y) : maximum(B1x)
+    B_ref = all(B1x .== 0.0) ? 1.0 : maximum(B1x)
 
     # Control Field
     τ  = B_ref*t_c
