@@ -39,11 +39,11 @@ function forward_propagation(cf::ControlField, s::Spin)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
     
-    B0 = s.B0inho
+    B0 = 2π*s.B0inho
     B1 = s.B1inho
-    Bz = cf.Bz .+ B0
-    Bx = B1*cf.B1x
-    By = B1*cf.B1y
+    Bz = 2π*cf.Bz .+ B0
+    Bx = 2π*B1*cf.B1x
+    By = 2π*B1*cf.B1y
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
         b_m = bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)

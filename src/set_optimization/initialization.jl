@@ -36,7 +36,7 @@ function normalization(M_ini, T1, T2, B0, target, label, t_c, B1x, B1y, B1, Bz)
         Γ1 = 1/(B_ref*t1)
         Γ2 = 1/(B_ref*t2)
         u0 = B0./B_ref
-        u1 = B1
+        u1 = B1./B_ref
 
         for u0_val ∈ u0
             for u1_val ∈ u1

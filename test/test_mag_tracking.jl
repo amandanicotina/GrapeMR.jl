@@ -31,7 +31,7 @@ end
     ##### OPTIMIZE #####
     max_iter = 300
     lr_scheduler = Poly(start=1e-1, degree=2, max_iter=max_iter+1) 
-    opt_params   = OptimizationParams(N, max_iter, cost_target_one_spin, [true false false]);
+    opt_params   = OptimizationParams(N, max_iter, cost_target_one_spin, [false false false]);
     grape_output = GrapeMR.grape(opt_params, field_init, spins, lr_scheduler; max_iter = max_iter, ϵ=1e-2); 
 
     waveform_Hz = vec(grape_output.control_field.B1x); #5*ones(N);
