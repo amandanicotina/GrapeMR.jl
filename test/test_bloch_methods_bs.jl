@@ -113,15 +113,17 @@ using ParameterSchedulers
 
 # Plots
     waveform = vec(γ_¹H.*waveform_T.*(2π*Δt*1e-3))
-    pFlip = plot(round.(abs.(waveform), digits = 4), label = "GrapeMR")
-        plot!(pFlip, round.(rf_full.α, digits = 4), label = "BlochSim")
+    time = range(0.0, rf_time, N+1)
+    time1 = range(0.0, rf_time, N)
 
-    pPhase = plot(round.(angle.(waveform), digits = 4), label = "GrapeMR")
-        plot!(pPhase, round.(rf_full.θ, digits = 4), label = "BlochSim")
+    pFlip = plot(time1, round.(abs.(waveform), digits = 4), label = "GrapeMR", xlabel = "t[s]", ylabel = "Flip angle [rads]", title = "RF pulse")
+        plot!(pFlip, time1, round.(rf_full.α, digits = 4), label = "BlochSim")
+
+    pPhase = plot(time1, round.(angle.(waveform), digits = 4), label = "GrapeMR", xlabel = "t[s]", ylabel = "Phase [rads]")
+        plot!(pPhase, time1, round.(rf_full.θ, digits = 4), label = "BlochSim")
     
     pRF = plot(pFlip, pPhase; layout= (2,1))
     
-    time = range(0.0, rf_time, N+1)
     pMx = plot(time, My_bs, label = "BlochSim", xlabel = "t (ms)", ylabel = "Magnetization", title = "Mx")
         plot!(pMx, time, mag_grape_norm[2,:], label = "Forward Propagation")
         plot!(pMx, time, mag_grape_units[2,:], label = "GrapeMR Units")
