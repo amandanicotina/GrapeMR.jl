@@ -113,7 +113,7 @@ using ParameterSchedulers
 
 # Plots
     waveform = vec(γ_¹H.*waveform_T.*(2π*Δt*1e-3))
-    pFlip = plot(round.(real.(waveform), digits = 4), label = "GrapeMR")
+    pFlip = plot(round.(abs.(waveform), digits = 4), label = "GrapeMR")
         plot!(pFlip, round.(rf_full.α, digits = 4), label = "BlochSim")
 
     pPhase = plot(round.(angle.(waveform), digits = 4), label = "GrapeMR")
