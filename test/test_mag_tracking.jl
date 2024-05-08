@@ -3,13 +3,6 @@ using GrapeMR
 using BlochSim
 using ParameterSchedulers
 
-α_rf_grape = [];
-function test_rf(wave_Hz, Δt)
-    α_rf_grape = wave_Hz.*(2π*Δt*1e-3)
-
-end
-
-
 # Spin
     M0_bs, T1, T2, Δf = 1.0, 500, 300, 0; #[ms] and [Hz]
     M0 = [0.0; 0.0; 1.0];
