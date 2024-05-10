@@ -3,6 +3,7 @@ using GrapeMR
 using BlochSim
 using ParameterSchedulers
 
+
 # Spin
     M0_bs, T1, T2, Δf = 1.0, 500, 300, 0; #[ms] and [Hz]
     M0 = [0.0; 0.0; 1.0];

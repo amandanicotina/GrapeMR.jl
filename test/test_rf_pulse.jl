@@ -6,6 +6,7 @@ using ParameterSchedulers
 @safetestset begin "RF pulse: GrapeMR vs BlochSim"
 # TODO add optimizated Control Filed ot trest after refactoting
 # TODO create script to test each element individually
+
 # Parameters
     N = 500;
     rf_time = 500; #[ms]
