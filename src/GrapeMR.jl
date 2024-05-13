@@ -23,9 +23,9 @@ include("propagation&cost/cost_gradients.jl")
 
 include("set_optimization/optimize.jl")
 include("set_optimization/finite_difference.jl")
-include("set_optimization/initialization.jl")
 
 include("utilities/save_data.jl")
+include("utilities/rf_shapes.jl")
 
 include("plots.jl")
 
@@ -42,9 +42,8 @@ export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad
 export grape, gradient, update!
 export finite_difference_cost, finite_difference_field
 
-export initial_field_spline, normalization, rescale
-
 export save_grape_data
+export initial_field_spline
 
 export plot_cost_values, plot_control_fields
 export plot_magnetization_time, plot_magnetization_Mz_Mxy

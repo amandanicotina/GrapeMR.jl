@@ -13,7 +13,7 @@ bloch_matrix
     # Output
     - Calculated 4x4 Bloch matrix
 """
-function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2::Float64)
+function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, T1::Float64, T2::Float64)
 
     bloch_matrix = 
         [0.0   0.0   0.0   0.0;

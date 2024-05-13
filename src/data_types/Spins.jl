@@ -11,6 +11,29 @@ struct Spin
     Nspins::Float64
 end
 
+function Spin(M_ini, T1, T2, B0, B1, target, label)
+
+    function vector_spins(args)
+        spins = GrapeMR.Spin[]  
+        n_spins = length(T1)*length(B0)*length(B1);
+
+        t1, t2, tar, lb = args
+
+        for B0_val ∈ B0
+           for B1_val ∈ B1
+                spin = GrapeMR.Spin(M_ini, t1, t2, 0.0, B0_val, B1_val, tar, lb, n_spins)
+                push!(spins, spin)
+            end
+        end
+        return spins
+    end
+
+    spins = vcat(map(vector_spins, zip(T1, T2, target, label))...) 
+
+    return spins
+end
+
+
 struct Magnetization
     # TODO: This could be an NTuple & leverage 4xN known dimension?
     dynamics::Array{Float64}
