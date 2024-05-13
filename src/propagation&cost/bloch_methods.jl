@@ -41,7 +41,7 @@ function forward_propagation(cf::ControlField, s::Spin)
     
     B0 = 2π*s.B0inho
     B1 = s.B1inho
-    Bz = 2π*cf.Bz .+ B0
+    Bz = cf.Bz .+ B0
     Bx = 2π*B1*cf.B1x
     By = 2π*B1*cf.B1y
 

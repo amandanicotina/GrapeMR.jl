@@ -1,6 +1,7 @@
 using Plots
 using GrapeMR
 using BlochSim
+using ParameterSchedulers
 
 # # TODO actually test each component of the magnetization not just ploting it -> make it into a real test
 # # TODO figure out a better way to check for all different combinations
@@ -107,7 +108,7 @@ end
 ###################### TESTS ######################
 
 # @safetestset begin "Free Precession/Relaxation: ODE vs BlochSim vs Forward Propagation"
-# # Parameters
+# Parameters
 # N = 500;
 # rf_time = 1000; #[ms]
 # Δt = rf_time/N;
@@ -119,7 +120,7 @@ end
 # label  = ["-"];
 # # RFs
 # ΔB1, Bz = 1.0, zeros(1,N), 0.0;
-# Bx_off   = zeros(1,N); 
+# Bx_off  = zeros(1,N); 
 # By_off  = zeros(1,N); 
 
 # # Constructing different Spin objects to be tested
@@ -144,33 +145,35 @@ end
 # @safetestset begin "Rotation: ODE vs BlochSim vs Forward Propagation"
 # Parameters
 N = 500;
-rf_time = 1000; #[ms]
+rf_time = 500; #[ms]
 Δt = rf_time/N;
 # Spin
 Mx₀, My₀, Mz₀ = 0.0, 1.0, 0.0;
-T1, T2, Δf    = 5000000.0, 3000000.0, 0.0;
-#Δf = [0.0, -5.0, -30.0];
+T1, T2        = 5000000.0, 3000000.0, 0.0
+Δf = [0.0, -5.0, 8.0];
 target = ["-"];
 label  = ["-"];
 # RFs
 ΔB1, Bz = 1.0, zeros(1,N), 0.0;
-B1x = ones(1,N);#3*initial_field_spline(N, rf_time*1e-3)'; #
-B1y = zeros(1,N);#5*initial_field_spline(N, rf_time*1e-3)'; # 
+B1x = ones(1, N); #8*initial_field_spline(N, rf_time*1e-3)'; # 
+B1y = ones(1,N); #5*initial_field_spline(N, rf_time*1e-3)'; # 
 
 # Constructing different Spin objects to be tested 
-(spins, control_field) = normalization([Mx₀, My₀, Mz₀], [T1*1e-3], [T2*1e-3], [Δf], target, label, rf_time*1e-3, B1x, B1y, ΔB1, Bz);
-spin1_bs = BlochSim.Spin(BlochSim.Magnetization(Mx₀, My₀, Mz₀), 1, T1, T2, Δf)
+(spins, control_field) = normalization([Mx₀, My₀, Mz₀], [T1*1e-3], [T2*1e-3], Δf, target, label, rf_time*1e-3, B1x, B1y, ΔB1, Bz);
+spin1_bs = BlochSim.Spin(BlochSim.Magnetization(Mx₀, My₀, Mz₀), 1, T1, T2, Δf[1])
+spin2_bs = BlochSim.Spin(BlochSim.Magnetization(Mx₀, My₀, Mz₀), 1, T1, T2, Δf[2])
+spin3_bs = BlochSim.Spin(BlochSim.Magnetization(Mx₀, My₀, Mz₀), 1, T1, T2, Δf[3])
 
 # Convert RF for BlochSim
 waveform_T = control_field.B1x./γ_¹H .+ im*control_field.B1y./γ_¹H;
 waveform_G = vec(waveform_T).*1e4;
-rf_full = BlochSim.RF(waveform_G, Δt);
-rf_disc = [BlochSim.RF([Δrf], Δt) for Δrf ∈ waveform_G];
+rf_full = BlochSim.RF(waveform_G, Δt)
+rf_disc = [BlochSim.RF([Δrf], Δt) for Δrf ∈ waveform_G]
 
 # Calling functions for all objects
-mag_grape = GrapeMR.forward_propagation(control_field, spins[1]);
-mag_bs    = BlochSim_simulation(spin1_bs, rf_disc, N);
-mag_ODE   = ODE_simulation(spins[], rf_time, N);
+mag_grape = GrapeMR.forward_propagation(control_field, spins[3]);
+mag_bs    = BlochSim_simulation(spin3_bs, rf_disc, N)
+mag_ODE   = ODE_simulation(spins[1], rf_time, N);
 
 (pMag, pMz) = plot_magnetization_tracking(mag_bs, mag_grape, mag_ODE, rf_time)
 display(pMag)
