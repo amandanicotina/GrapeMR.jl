@@ -4,11 +4,11 @@
 
 bloch_matrix
     # Input  
-    B1x: (::Float64) - Normalized B1x step
-    B1y: (::Float64) - Normalized B1x step
-    Bz:  (::Float64) - Normalized B1x step
-    Γ1:  (::Float64) - Normalized B1x step
-    Γ2:  (::Float64) - Normalized B1x step
+    B1x: (::Float64) - B1x step
+    B1y: (::Float64) - B1x step
+    Bz:  (::Float64) - B1x step
+    Γ1:  (::Float64) - B1x step
+    Γ2:  (::Float64) - B1x step
 
     # Output
     - Calculated 4x4 Bloch matrix
@@ -17,9 +17,9 @@ function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2
 
     bloch_matrix = 
         [0.0   0.0   0.0   0.0;
-         0.0  -Γ2    Bz   -B1y;
-         0.0  -Bz   -Γ2    B1x;
-         Γ1    B1y  -B1x  -Γ1] 
+         0.0  -1/T2  Bz   -B1y;
+         0.0  -Bz   -1/T2  B1x;
+         1/T1  B1y  -B1x  -1/T1] 
     
     return bloch_matrix
 end
