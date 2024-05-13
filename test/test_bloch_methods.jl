@@ -148,15 +148,15 @@ N = 500;
 rf_time = 500; #[ms]
 Δt = rf_time/N;
 # Spin
-Mx₀, My₀, Mz₀ = 0.0, 1.0, 0.0;
-T1, T2        = 5000000.0, 3000000.0, 0.0
+Mx₀, My₀, Mz₀ = 0.0, 0.0, 1.0;
+T1, T2        = 500.0, 300.0, 0.0
 Δf = [0.0, -5.0, 8.0];
 target = ["-"];
 label  = ["-"];
 # RFs
 ΔB1, Bz = 1.0, zeros(1,N), 0.0;
-B1x = ones(1, N); #8*initial_field_spline(N, rf_time*1e-3)'; # 
-B1y = ones(1,N); #5*initial_field_spline(N, rf_time*1e-3)'; # 
+B1x = 8*initial_field_spline(N, rf_time*1e-3)'; # rand(1, N); #
+B1y = zeros(1,N); #5*initial_field_spline(N, rf_time*1e-3)'; # 
 
 # Constructing different Spin objects to be tested 
 (spins, control_field) = normalization([Mx₀, My₀, Mz₀], [T1*1e-3], [T2*1e-3], Δf, target, label, rf_time*1e-3, B1x, B1y, ΔB1, Bz);
