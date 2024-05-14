@@ -5,7 +5,7 @@ using ParameterSchedulers
 
 # # TODO actually test each component of the magnetization not just ploting it -> make it into a real test
 # # TODO figure out a better way to check for all different combinations
-
+# # TODO ODE solution for Δα's and Δθ's to check with other simulations
 # ODE Solution
 function ODE_simulation(spin::GrapeMR.Spin, t_rf::Real, N::Int)
     T₁, T₂ = spin.T1[], spin.T2[]
