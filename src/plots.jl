@@ -91,7 +91,7 @@ function plot_magnetization_target3d(iso::Magnetization)
 end
 
 function plot_cost_values(cost::Vector{Float64}, op::OptimizationParams)
-    p = plot(cost, label = op.cost_function, lw = 2,
+    p = plot(cost, label = string(op.cost_function), lw = 2,
     xlabel = "Iterations",
     ylabel = "Cost Value",
     title  = "Cost Function Convergence",
