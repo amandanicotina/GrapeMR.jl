@@ -6,8 +6,8 @@ function cost_function(iso::Isochromat, cf::Symbol)
     @match cf begin
         :euclidean_norm      => euclidean_norm(iso)
         :target_one_spin     => target_one_spin(iso)
-        :steady_state        => steady_state(iso, ())
-        #:steady_state_opt    => steady_state_opt()
+        :target_steady_state => target_steady_state(iso, ())
+        #:target_steady_state_opt    => target_steady_statee_opt()
         :saturation_contrast => saturation_contrast(iso)
         :saturation_contrast_square => saturation_contrast_square(iso)
         _                    => error("Cost function not defined")
@@ -70,7 +70,7 @@ function saturation_contrast_square(iso::Isochromat)
     return c
 end
 
-function steady_state(iso::Isochromat, ss::Tuple)
+function target_steady_state(iso::Isochromat, ss::Tuple)
     c_ss = 0
     # Steady State
     Mxy_ss = ss[1];
@@ -86,6 +86,6 @@ function steady_state(iso::Isochromat, ss::Tuple)
 end
 
   
-function steady_state_opt()
+function target_steady_state_opt()
     
 end

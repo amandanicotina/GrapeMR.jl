@@ -18,8 +18,11 @@ end
 
 
 
+# Make one for sinc
 
 
 
 
-
+function bSSFP()
+    
+end
