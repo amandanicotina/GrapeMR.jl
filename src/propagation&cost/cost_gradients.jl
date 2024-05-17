@@ -2,11 +2,20 @@
 Cost gradients dictonary
 
 """
+function cost_function_gradient(iso::Isochromat, cf::Symbol)
+    @match cf begin
+        :euclidean_norm      => grad_euclidean_norm(iso)
+        :target_one_spin     => grad_target_one_spin(iso)
+        #:steady_state        => grad_steady_state(iso, ())
+        #:steady_state_opt    => grad_steady_state_opt()
+        :saturation_contrast => grad_saturation_contrast(iso)
+        :saturation_contrast_square => grad_saturation_contrast_square(iso)
+    end
+    
+end
                 
 function grad_euclidean_norm(iso::Isochromat)
     mag = iso.magnetization.dynamics
-    M = [mag[2,end]; mag[3,end]; mag[4,end]]
-    M_norm = norm(M)
     Mx_tf = mag[2,end]
     My_tf = mag[3,end]
     Mz_tf = mag[4,end]
@@ -17,7 +26,7 @@ function grad_euclidean_norm(iso::Isochromat)
 end
 
 
-function grad_target_one_spin(iso::Isochromat; M_tar = [0.5; 0.5; 0.0])    
+function grad_target_one_spin(iso::Isochromat; M_tar = [0.0; 1.0; 0.0])    
     # Target Magnetization
     Mx_tar = M_tar[1,1]
     My_tar = M_tar[2,1]
@@ -42,7 +51,7 @@ end
 function grad_saturation_contrast(iso::Isochromat)
     m = iso.magnetization.dynamics
     s = iso.spin
-
+    P = [];
     if s.target == "max"
         Pz = -m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
         P = [0.0, 0.0, 0.0, Pz]
@@ -52,6 +61,8 @@ function grad_saturation_contrast(iso::Isochromat)
         Py = m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
         Pz = m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
         P = [0.0, Px, Py, Pz]
+    else
+        error(" $(s.target) is not a matching target. Valid targets are max or min")
     end
     
     return P
@@ -71,13 +82,11 @@ function grad_saturation_contrast_square(iso::Isochromat)
         Py = m[3,end]/s.Nspins
         Pz = m[4,end]/s.Nspins
         P = [0.0, Px, Py, Pz]
+    else
+        error(" $(s.target) is not a matching target. Valid targets are max or min")
     end
     
     return P
 end
 
- cost_gradients = Dict("cost_euclidean_norm,"     => grad_euclidean_norm,
-                       "cost_target_one_spin"     => grad_target_one_spin,
-                       "cost_saturation_contrast" => grad_saturation_contrast,
-                       "cost_saturation_contrast_square" => grad_saturation_contrast_square)    
 

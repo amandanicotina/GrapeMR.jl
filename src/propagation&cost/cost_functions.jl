@@ -2,8 +2,20 @@
 Cost Functions 
 
 """
+function cost_function(iso::Isochromat, cf::Symbol)
+    @match cf begin
+        :euclidean_norm      => euclidean_norm(iso)
+        :target_one_spin     => target_one_spin(iso)
+        :steady_state        => steady_state(iso, ())
+        #:steady_state_opt    => steady_state_opt()
+        :saturation_contrast => saturation_contrast(iso)
+        :saturation_contrast_square => saturation_contrast_square(iso)
+        _                    => error("Cost function not defined")
+    end
+end
+
               
-function cost_euclidean_norm(iso::Isochromat)
+function euclidean_norm(iso::Isochromat)
     mag = iso.magnetization.dynamics
     Mx = mag[2,end]
     My = mag[3,end]
@@ -14,8 +26,8 @@ function cost_euclidean_norm(iso::Isochromat)
     return J
 end
 
-function cost_target_one_spin(iso::Isochromat; M_tar = [0.5; 0.5; 0.0])
-    J_tar = 0
+function target_one_spin(iso::Isochromat; M_tar = [0.0; 1.0; 0.0])
+
     # Target Magnetization
     Mx_tar = M_tar[1,1]
     My_tar = M_tar[2,1]
@@ -32,8 +44,7 @@ function cost_target_one_spin(iso::Isochromat; M_tar = [0.5; 0.5; 0.0])
     return J_tar
 end
 
-
-function cost_saturation_contrast(iso::Isochromat)
+function saturation_contrast(iso::Isochromat)
     c = 0.0;
     m = iso.magnetization.dynamics
     s = iso.spin
@@ -46,7 +57,7 @@ function cost_saturation_contrast(iso::Isochromat)
     return c
 end
 
-function cost_saturation_contrast_square(iso::Isochromat)
+function saturation_contrast_square(iso::Isochromat)
     c = 0.0;
     m = iso.magnetization.dynamics
     s = iso.spin
@@ -59,7 +70,7 @@ function cost_saturation_contrast_square(iso::Isochromat)
     return c
 end
 
-function cost_steady_state(iso::Isochromat, ss::Tuple)
+function steady_state(iso::Isochromat, ss::Tuple)
     c_ss = 0
     # Steady State
     Mxy_ss = ss[1];
@@ -75,4 +86,6 @@ function cost_steady_state(iso::Isochromat, ss::Tuple)
 end
 
   
-
+function steady_state_opt()
+    
+end

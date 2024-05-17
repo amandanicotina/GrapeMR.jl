@@ -4,12 +4,12 @@ const γ_¹H = 42.5774688e6 #[Hz/T]
 const Ix = [0 0 0 0; 0 0 0 0; 0 0 0 1; 0 0 -1 0];
 const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
-
+using CSV
 using Plots
 using Dates
 using Match
+using DataFrames
 using CubicSplines
-using Serialization
 using LinearAlgebra
 using ParameterSchedulers
 using ExponentialUtilities

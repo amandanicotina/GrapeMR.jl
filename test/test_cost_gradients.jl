@@ -3,12 +3,13 @@ using Test
 ### Spline ###
 @safetestset "Bx Spline: True Gradient vs Finite Difference" begin
     using GrapeMR
+    using Plots
     # Defining parameters
     M0 = [0.0; 0.0; 1.0];
-    T1 = [0.5, 0.1];
-    T2 = [0.2, 0.01];
+    T1 = [0.5];
+    T2 = [0.2];
     target = ["max", "min"];
-    label = ["T1-100ms", "T2-500ms"];
+    label  = ["T1-$(Int(T1[1]*1e3))ms"]
     
     # Initial Control Fields
     N   = 500;
@@ -16,22 +17,24 @@ using Test
     B0  = [0.0];
     Bz  = zeros(1,N);
     B1_max = 100.0; # [Hz]
-    B1x = initial_field_spline(N, t_c, B1_max)'; 
-    B1y = initial_field_spline(N, t_c, B1_max)';
+    B1x = initial_field_spline(N, t_c)'; 
+    B1y = initial_field_spline(N, t_c)';
 
-    (spins, field_test) = normalization(M0, T1, T2, B0, target, label, t_c, B1x, B1y, B1_max, Bz)
-    spin_test = spins[1]
+    field_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
+    spins_test = GrapeMR.Spin(M0, T1, T2, B0, [1.0], target, label)
+    spin_test  = spins_test[1]
 
     # Dynamics
     mag_test  = forward_propagation(field_test, spin_test)
     dyn_test  = Magnetization(mag_test)
     iso_test  = Isochromat(dyn_test, spin_test)
-    adj_test  = backward_propagation(field_test, iso_test, grad_saturation_contrast)
-    cost_func = cost_saturation_contrast(iso_test)
+    cost_func = :saturation_contrast
+    cost_grad = GrapeMR.cost_function_gradient(iso_test, cost_func)
+    adj_test  = backward_propagation(field_test, iso_test, cost_grad)
 
     # Finite difference
     Δcf   = 1e-3;
-    fd_cf = finite_difference_field(cost_saturation_contrast, field_test, spin_test, Δcf, "B1x")
+    fd_cf = GrapeMR.finite_difference_field(cost_func, field_test, spin_test, Δcf, "B1x")*55
 
     # True Gradient
     true_grad = gradient(adj_test, mag_test, Ix)

@@ -13,7 +13,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
         ϵ   = max(ϵ, eps)
         ∇x  = zeros(Float64, 1, op.N)
         ∇y  = zeros(Float64, 1, op.N)
-
+        @show eps
         for spin ∈ spins
             # Propagation & cost
             mag = forward_propagation(cf, spin)
@@ -43,9 +43,6 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
     grape_output.control_field.B1x = u1x
     grape_output.control_field.B1y = u1y
 
-    # Utility Functions
-    save_grape_data(grape_output, false)
-    
     return grape_output
 end
 
