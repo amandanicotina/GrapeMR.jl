@@ -64,12 +64,12 @@ backward_propagation
     - Adjoint state 4xN
 """
 
-function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::Function)
+function backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vector{Float64})
     t_arr      = range(0.0, cf.t_control, length(cf.B1x)+1)
     Δt         = diff(t_arr)
     back_steps = length(Δt)
     χ          = zeros(Float64, 4, length(cf.B1x)+1)
-    χ[:, end]  = cost_function(iso);
+    χ[:, end]  = cost_grad;
     s          = iso.spin
 
     B0 = 2π*s.B0inho
@@ -88,7 +88,7 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_function::
 end
 
 
-function steady_state(α::Float64, Γ1::Float64, Γ2::Float64, TR::Float64)
+function steady_state(α::Float64, T1::Float64, T2::Float64, TR::Float64)
     # Calculating signal from geometric derivation
     ϕ = 2π*Δf*TR # Offset angle
     β = 2*atan(tan(α/2) / cos((ϕ)/2)) # β in rads

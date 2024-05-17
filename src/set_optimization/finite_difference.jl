@@ -1,5 +1,5 @@
 #### Finite Difference ####
-function finite_difference_cost(cost_func::Function, iso::Isochromat, ΔM::Float64)
+function finite_difference_cost(cost::Symbol, iso::Isochromat, ΔM::Float64)
     # Make a copy of the variable values to avoid modifying the original
     spin        = iso.spin
     iso_vals    = iso
@@ -13,7 +13,7 @@ function finite_difference_cost(cost_func::Function, iso::Isochromat, ΔM::Float
         iso_perturbed = Isochromat(dyn_perturbed, spin)
 
         # Calculate the finite difference for the current variable
-        finite_diffs[i,1] = (cost_func(iso_perturbed) - cost_func(iso_vals)) / ΔM
+        finite_diffs[i,1] = (cost_function(iso_perturbed, cost) - cost_function(iso_vals, cost)) / ΔM
         
         # Reset the perturbed value for the next iteration
         M_perturbed[i+1,end] = M_perturbed[i+1,end] - ΔM 
@@ -23,7 +23,7 @@ function finite_difference_cost(cost_func::Function, iso::Isochromat, ΔM::Float
 end
 
 
-function finite_difference_field(cost_func::Function, cf::ControlField, spin::Spin, Δcf::Float64, field::String)
+function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spin, Δcf::Float64, field::String)
     finite_diffs = zeros(Float64, 1, length(cf.B1x))
 
     if field == "B1x"
@@ -38,8 +38,7 @@ function finite_difference_field(cost_func::Function, cf::ControlField, spin::Sp
 
         for i ∈ 1:length(cf.B1x)
             perturbation[1, i] = perturbation[1, i] + Δcf
-            cf_perturbed = ControlField(perturbation, cf.B1y, cf.B1x_max_amp, 
-                            cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step)
+            cf_perturbed = ControlField(perturbation, cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
 
             # With perturbation
             mag_perturbed = forward_propagation(cf_perturbed, spin)
@@ -47,7 +46,7 @@ function finite_difference_field(cost_func::Function, cf::ControlField, spin::Sp
             iso_perturbed = Isochromat(dyn_perturbed, spin)
 
             # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_func(iso_perturbed) - cost_func(iso_vals)) / Δcf
+            finite_diffs[1, i] = (cost_function(iso_perturbed, cost) - cost_function(iso_vals, cost)) / Δcf
 
             # Reset the perturbed value for the next iteration
             perturbation[1, i] = perturbation[1, i] - Δcf
@@ -65,8 +64,7 @@ function finite_difference_field(cost_func::Function, cf::ControlField, spin::Sp
 
         for i ∈ 1:length(cf.B1y)
             perturbation[1, i] = perturbation[1, i] + Δcf
-            cf_perturbed = ControlField(cf.B1x, perturbation, cf.B1x_max_amp, 
-                            cf.B1y_max_amp, cf.t_control, cf.band_width, cf.band_width_step)
+            cf_perturbed = ControlField(cf.B1x, perturbation, cf.B1_ref, cf.Bz, cf.t_control)
 
             # With perturbation
             mag_perturbed = forward_propagation(cf_perturbed, spin)
@@ -75,7 +73,7 @@ function finite_difference_field(cost_func::Function, cf::ControlField, spin::Sp
 
 
             # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_func(iso_perturbed) - cost_func(iso_vals)) / Δcf
+            finite_diffs[1, i] = (cost_func(iso_perturbed, cf) - cost_func(iso_vals, cf)) / Δcf
 
             # Reset the perturbed value for the next iteration
             perturbation[1, i] = perturbation[1, i] - Δcf

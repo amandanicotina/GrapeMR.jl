@@ -13,14 +13,14 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
         ϵ   = max(ϵ, eps)
         ∇x  = zeros(Float64, 1, op.N)
         ∇y  = zeros(Float64, 1, op.N)
-
+        @show eps
         for spin ∈ spins
             # Propagation & cost
             mag = forward_propagation(cf, spin)
             dyn = Magnetization(mag)
             iso = Isochromat(dyn, spin)
-            grape_output.cost_values[i,1] += op.cost_function(iso)
-            cost_grad = cost_gradients[string(op.cost_function)]
+            grape_output.cost_values[i,1] += GrapeMR.cost_function(iso, op.cost_function)
+            cost_grad = GrapeMR.cost_function_gradient(iso, op.cost_function)
             adj = backward_propagation(cf, iso, cost_grad)
             if i == max_iter
                 push!(grape_output.isochromats, iso)
@@ -43,9 +43,6 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
     grape_output.control_field.B1x = u1x
     grape_output.control_field.B1y = u1y
 
-    # Utility Functions
-    save_grape_data(grape_output, false)
-    
     return grape_output
 end
 

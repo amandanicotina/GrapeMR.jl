@@ -4,11 +4,12 @@ const γ_¹H = 42.5774688e6 #[Hz/T]
 const Ix = [0 0 0 0; 0 0 0 0; 0 0 0 1; 0 0 -1 0];
 const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
-
+using CSV
 using Plots
 using Dates
+using Match
+using DataFrames
 using CubicSplines
-using Serialization
 using LinearAlgebra
 using ParameterSchedulers
 using ExponentialUtilities
@@ -35,9 +36,8 @@ export OptimizationParams
 export Spin, Magnetization, Isochromat
 
 export forward_propagation, backward_propagation, steady_state
-export cost_euclidean_norm, cost_target_one_spin, cost_saturation_contrast, saturation_contrast_square
-export cost_gradients
-export grad_euclidean_norm, grad_target_one_spin, grad_saturation_contrast, grad_saturation_contrast_square
+export cost_function
+export cost_function_gradient
 
 export grape, gradient, update!
 export finite_difference_cost, finite_difference_field
