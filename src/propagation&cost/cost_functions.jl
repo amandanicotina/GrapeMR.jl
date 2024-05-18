@@ -6,7 +6,7 @@ function cost_function(iso::Isochromat, cf::Symbol)
     @match cf begin
         :euclidean_norm      => euclidean_norm(iso)
         :target_one_spin     => target_one_spin(iso)
-        :target_steady_state => target_steady_state(iso, ())
+        :target_steady_state => target_steady_state(iso)
         #:target_steady_state_opt    => target_steady_statee_opt()
         :saturation_contrast => saturation_contrast(iso)
         :saturation_contrast_square => saturation_contrast_square(iso)
@@ -70,18 +70,20 @@ function saturation_contrast_square(iso::Isochromat)
     return c
 end
 
-function target_steady_state(iso::Isochromat, ss::Tuple)
+function target_steady_state(iso::Isochromat)
     c_ss = 0
+    spin = iso.spin
     # Steady State
-    Mxy_ss = ss[1];
-    Mz_ss  = ss[2];
+    ss = steady_state_matrix(spin)
+    Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
 
     # Magnetization
     mag = iso.magnetization.dynamics
-    Mxy = (mag[2,end]).^2 .+ (mag[3,end]).^2
+    Mx  = mag[2,end]
+    My  = mag[3,end]
     Mz  = mag[4,end]
 
-    c_ss = sqrt((Mxy - Mxy_ss)^2 + (Mz - Mz_ss)^2)
+    c_ss = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
     return c_ss
 end
 

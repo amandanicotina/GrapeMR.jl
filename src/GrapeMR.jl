@@ -8,6 +8,7 @@ using CSV
 using Plots
 using Dates
 using Match
+using BlochSim
 using DataFrames
 using CubicSplines
 using LinearAlgebra
@@ -19,6 +20,7 @@ include("data_types/OptimizationParams.jl")
 include("data_types/Spins.jl")
 
 include("propagation&cost/bloch_methods.jl")
+include("propagation&cost/steady_state.jl")
 include("propagation&cost/cost_functions.jl")
 include("propagation&cost/cost_gradients.jl")
 
@@ -31,11 +33,12 @@ include("utilities/rf_shapes.jl")
 include("plots.jl")
 
 export γ_¹H, Ix, Iy
-export ControlField
+export ControlField, ControlFieldbSSFP
 export OptimizationParams
-export Spin, Magnetization, Isochromat
+export Spins, Spin, SteadyState, Magnetization, Isochromat
 
-export forward_propagation, backward_propagation, steady_state
+export forward_propagation, backward_propagation
+export steady_state, steady_state_matrix, steady_state_geometric
 export cost_function
 export cost_function_gradient
 

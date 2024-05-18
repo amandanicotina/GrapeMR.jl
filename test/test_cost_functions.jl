@@ -24,7 +24,7 @@ using Test
     spins_test         = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
     mag_test = forward_propagation(control_field_test, spins_test[1])
-    dyn_test = Magnetization(mag_test)
+    dyn_test = GrapeMR.Magnetization(mag_test)
     iso_test = Isochromat(dyn_test, spins_test[1])
 
     Mx = mag_test[2,:];
@@ -69,7 +69,7 @@ end
     spins_test         = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
     mag_test = forward_propagation(control_field_test, spins_test[1])
-    dyn_test = Magnetization(mag_test)
+    dyn_test = GrapeMR.Magnetization(mag_test)
     iso_test = Isochromat(dyn_test, spins_test[1])
 
     Mx = mag_test[2,:];
@@ -109,12 +109,12 @@ end
     B1y = rand(1,N); #5*initial_field_spline(N, t_c)'; # 
 
     # Spin and RF objects
-    control_field_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
-    spins_test         = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
+    control_sc_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
+    spins_sc_test   = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
-    mag_test = forward_propagation(control_field_test, spins_test[1])
-    dyn_test = Magnetization(mag_test)
-    iso_test = Isochromat(dyn_test, spins_test[1])
+    mag_sc_test = forward_propagation(control_sc_test, spins_sc_test[1])
+    dyn_sc_test = GrapeMR.Magnetization(mag_sc_test)
+    iso_sc_test = Isochromat(dyn_sc_test, spins_test[1])
 
     Mx = mag_test[2,:];
     My = mag_test[3,:];
@@ -132,3 +132,48 @@ end
 
     @test round.(fd_M, digits=5) .== round.(true_grad, digits=5)
 end
+
+# New cost function test: steady State
+
+using GrapeMR
+using BlochSim
+using Plots
+
+# Parameters bSSFP
+N  = 401                 # Number of points
+α  = π / 8               # Flip angle in radians
+Δϕ = π                  # Phase cycling
+TR = 5e-3               # Repetition time in seconds
+
+# Parameters RF
+t_c = 0.5;
+ΔB1, Bz  = 1.0, zeros(1, N)
+B1x, B1y = zeros(1, N), zeros(1, N)
+
+# Spin parameters
+M0 = [0.0, 0.0, 1.0]    # Initial magnetization vector
+T1 = [1.0]              # Longitudinal relaxation time
+T2 = [0.8]              # Transverse relaxation time
+B0 = range(-2/TR, stop=2/TR, length=N) |> collect # B0 field range
+
+# Target and label for simulation
+target = ["max"]
+label  = ["T1-$(Int(T1[1]*1e3))ms"]
+
+# Spins and ControlField objects
+spins_ss_test   = GrapeMR.SteadyState(M0, T1, T2, B0, ΔB1, target, label, α, Δϕ, TR, TR/2)
+control_ss_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
+
+mag_ss_test = forward_propagation(control_ss_test, spins_ss_test[1])
+dyn_ss_test = GrapeMR.Magnetization(mag_ss_test)
+iso_ss_test = Isochromat(dyn_ss_test, spins_ss_test[1]) 
+
+cost_func_ss = :target_steady_state
+cost_val_ss  = GrapeMR.cost_function(iso_ss_test, cost_func_ss)
+
+# Finite difference
+ΔM = 1e-10
+fd_M_ss = finite_difference_cost(cost_func_ss, iso_ss_test, ΔM)
+
+# True gradient
+true_grad_ss = 

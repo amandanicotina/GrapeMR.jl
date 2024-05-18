@@ -4,7 +4,7 @@ struct GrapeOutput
     cost_values::Array{Float64}
 end
 
-function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr_scheduler::Poly; max_iter=2500, ϵ = 1e-4)
+function grape(op::OptimizationParams, cf::ControlField, spins::Vector{<:Spins}, lr_scheduler::Poly; max_iter=2500, ϵ = 1e-4)
     cost_vals = zeros(Float64, max_iter, 1)[:]
     u1x, u1y = [], []
     grape_output = GrapeOutput([], deepcopy(cf), cost_vals)
@@ -17,7 +17,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{Spin}, lr
         for spin ∈ spins
             # Propagation & cost
             mag = forward_propagation(cf, spin)
-            dyn = Magnetization(mag)
+            dyn = GrapeMR.Magnetization(mag)
             iso = Isochromat(dyn, spin)
             grape_output.cost_values[i,1] += GrapeMR.cost_function(iso, op.cost_function)
             cost_grad = GrapeMR.cost_function_gradient(iso, op.cost_function)

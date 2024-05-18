@@ -34,7 +34,7 @@ forward_propagation
     # Output
     - Magnetization vector 4xN
 """
-function forward_propagation(cf::ControlField, s::Spin)
+function forward_propagation(cf::ControlField, s::Spins)
     Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];
@@ -88,12 +88,3 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vect
 end
 
 
-function steady_state(α::Float64, T1::Float64, T2::Float64, TR::Float64)
-    # Calculating signal from geometric derivation
-    ϕ = 2π*Δf*TR # Offset angle
-    β = 2*atan(tan(α/2) / cos((ϕ)/2)) # β in rads
-
-    Mxy = M0 / (cot(β/2) + (T1/T2)*tan(β/2))
-    Mz  = M0*cot(β/2)
-    return Mxy, Mz
-end

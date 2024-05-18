@@ -1,12 +1,12 @@
 """
-Cost gradients dictonary
+Cost Function's Gradients
 
 """
 function cost_function_gradient(iso::Isochromat, cf::Symbol)
     @match cf begin
         :euclidean_norm          => grad_euclidean_norm(iso)
         :target_one_spin         => grad_target_one_spin(iso)
-        # :target_steady_state     => grad_target_steady_state(iso, ())
+        :target_steady_state     => grad_target_steady_state(iso)
         # :target_steady_state_opt => grad_target_steady_statee_opt()
         :saturation_contrast     => grad_saturation_contrast(iso)
         :saturation_contrast_square => grad_saturation_contrast_square(iso)
@@ -90,3 +90,6 @@ function grad_saturation_contrast_square(iso::Isochromat)
 end
 
 
+function grad_target_steady_state(iso::Isochromat)
+    
+end
