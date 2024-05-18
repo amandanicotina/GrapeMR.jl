@@ -22,7 +22,31 @@ end
 
 
 
+"""
+    bSSFP(gp::GrapeMR.GrapeOutput; folder_path = pwd())
 
-function bSSFP()
+Save data related to Grape optimization into files organized in folders.
+
+# Arguments
+- `gp::GrapeMR.GrapeOutput`: Grape optimization output.
+- `folder_path::String = pwd()`: Folder path where data will be saved.
+
+# Example
+```julia
+bSSFP(gp_output, folder_path="/path/to/folder")
+
+If no path is provided, it saves the files inside the folder where the package was installed
+folder name format : yyyy-mm-dd
+"""
+
+function bSSFP(s::GrapeMR.SteadyState)
+    # Spin object (parameters in miliseconds)
+    spin = BlochSim.Spin(s.M_init, s.T1*1e3, s.T2*1e3, s.B0inho)
+
+    # RF pulse
+    nTR = ceil(3*s.T1/s.TR)
+    rf = InstantaneousRF(s.α)
+    TR = range(tr+length)
+
     
 end

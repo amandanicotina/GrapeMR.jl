@@ -88,12 +88,3 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vect
 end
 
 
-function steady_state(α::Float64, T1::Float64, T2::Float64, TR::Float64)
-    # Calculating signal from geometric derivation
-    ϕ = 2π*Δf*TR # Offset angle
-    β = 2*atan(tan(α/2) / cos((ϕ)/2)) # β in rads
-
-    Mxy = M0 / (cot(β/2) + (T1/T2)*tan(β/2))
-    Mz  = M0*cot(β/2)
-    return Mxy, Mz
-end
