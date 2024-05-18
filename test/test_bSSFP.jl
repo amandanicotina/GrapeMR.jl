@@ -32,7 +32,7 @@ sig_geo_Mz  = Vector{Float64}(undef, N)
 
 sig_mat_abs = Vector{Float64}(undef, N)
 sig_mat_phase = Vector{Float64}(undef, N)
-mag_mat = Vector{BlochSim.Magnetization}(undef, N)
+sig_mat = Vector{BlochSim.Magnetization}(undef, N)
 
 # Simulation
 for (i, spin) ∈ enumerate(spins)
@@ -46,10 +46,11 @@ for (i, spin) ∈ enumerate(spins)
     # ss_geo_Mz = steady_state_geometric_Mz(spin)
     # sig_geo_Mz[i] = abs(ss_geo_Mz)
     
-    ss_mat, M_mat = steady_state_matrix(spin)
-    sig_mat_abs[i] = abs(ss_mat)
-    sig_mat_phase[i] = angle(ss_mat)
-    mag_mat[i] = M_mat
+    ss_mat = steady_state_matrix(spin)
+    signal = complex(ss_mat.x, ss_mat.y)
+    sig_mat_abs[i] = abs(signal)
+    sig_mat_phase[i] = angle(signal)
+    sig_mat[i] = ss_mat
 end
 
 # Plotting results
@@ -63,8 +64,8 @@ pMag = plot(B0, sig_abs, label = "Manual", xlabel = "Offset [Hz]", ylabel = "Mag
 pSig = plot(pMag, pPhase; layout = (2,1))
 
 
-plot(B0, getproperty.(mag_mat, :z), label = "Matrix")
-plot!(B0, Mzgeo, label = "Geometric", xlabel = "Offset [Hz]", ylabel="Mz")
+plot(B0, getproperty.(sig_mat, :z), label = "Matrix", xlabel = "Offset [Hz]", ylabel="Mz")
+#plot!(B0, Mzgeo, label = "Geometric")
 
 display(pSig)
 

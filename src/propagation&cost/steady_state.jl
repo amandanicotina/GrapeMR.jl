@@ -43,9 +43,9 @@ function steady_state_matrix(s::GrapeMR.SteadyState)
 
     copyto!(spin.M, M)
     freeprecess!(spin, TE)
-    sig = BlochSim.signal(spin)
+    #sig = BlochSim.signal(spin)
 
-    return sig, spin.M
+    return spin.M
 end
 
 

@@ -35,7 +35,7 @@ include("plots.jl")
 export γ_¹H, Ix, Iy
 export ControlField, ControlFieldbSSFP
 export OptimizationParams
-export Spin, Magnetization, Isochromat
+export Spins, Spin, SteadyState, Magnetization, Isochromat
 
 export forward_propagation, backward_propagation
 export steady_state, steady_state_matrix, steady_state_geometric

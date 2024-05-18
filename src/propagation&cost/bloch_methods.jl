@@ -34,7 +34,7 @@ forward_propagation
     # Output
     - Magnetization vector 4xN
 """
-function forward_propagation(cf::ControlField, s::Spin)
+function forward_propagation(cf::ControlField, s::Spins)
     Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
     M[:, 1] = [1.0; s.M_init[1]; s.M_init[2]; s.M_init[3]];

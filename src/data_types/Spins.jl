@@ -69,9 +69,6 @@ function SteadyState(M_ini, T1, T2, B0, B1, target, label, α, Δϕ, TR, TE)
 end
 
 
-
-
-
 struct Magnetization
     # TODO: This could be an NTuple & leverage 4xN known dimension?
     dynamics::Array{Float64}
@@ -79,5 +76,5 @@ end
 
 struct Isochromat
     magnetization::Magnetization
-    spin::Spin
+    spin::Spins
 end
