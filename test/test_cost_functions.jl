@@ -176,4 +176,12 @@ cost_val_ss  = GrapeMR.cost_function(iso_ss_test, cost_func_ss)
 fd_M_ss = finite_difference_cost(cost_func_ss, iso_ss_test, ΔM)
 
 # True gradient
-true_grad_ss = 
+true_grad_ss = cost_function_gradient(iso_ss_test, cost_func_ss)[2:end, :]
+
+# using ForwardDiff
+# ss = steady_state_matrix(spins_ss_test[1])
+# Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+# ss_vec  = [Mx_ss, My_ss, Mz_ss]
+# Mx, My, Mz = mag_ss_test[2,end], mag_ss_test[3,end], mag_ss_test[4,end]
+# mag_vec = [Mx, My, Mz]
+# gradient = ForwardDiff.gradient()
