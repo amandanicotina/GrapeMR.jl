@@ -48,6 +48,28 @@ function steady_state_matrix(s::GrapeMR.SteadyState)
     return spin.M
 end
 
+function steady_state_matrix(Tr, Te, T₁, T₂, M₀, B0inho, α, Δϕ)
+    # Create Spin object
+    (TR, TE, T1, T2, M0, B0) = (Tr*1e3, Te*1e3, T₁*1e3, T₂*1e3, M₀, B0inho[])
+    I  = BlochSim.I
+    # Spin objects
+    spin = BlochSim.Spin(M0, T1, T2, B0)
+    spin_phase_cycle = BlochSim.Spin(M0, T1, T2, B0 - (Δϕ / 2π / (TR/1000)))
+
+    # Create RF pulse
+    rf = InstantaneousRF(α)
+
+    # Compute SS signal
+    (R,)   = excite(spin_phase_cycle, rf)
+    (A, B) = freeprecess(spin_phase_cycle, TR)
+    M      = (I - R * A) \ (R * B)
+
+    copyto!(spin.M, M)
+    freeprecess!(spin, TE)
+    #sig = BlochSim.signal(spin)
+
+    return spin.M
+end
 
 
 function steady_state_geometric(s::GrapeMR.SteadyState)

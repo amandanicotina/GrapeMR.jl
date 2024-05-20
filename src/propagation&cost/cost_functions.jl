@@ -72,9 +72,9 @@ end
 
 function target_steady_state(iso::Isochromat)
     c_ss = 0
-    spin = iso.spin
+    s = iso.spin
     # Steady State
-    ss = steady_state_matrix(spin)
+    ss = steady_state_matrix(s)
     Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
 
     # Magnetization

@@ -50,5 +50,6 @@ export initial_field_spline
 
 export plot_cost_values, plot_control_fields
 export plot_magnetization_time, plot_magnetization_Mz_Mxy
+export plot_magnetization_target, plot_magnetization_target_3d
 
 end

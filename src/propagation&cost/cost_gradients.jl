@@ -91,5 +91,23 @@ end
 
 
 function grad_target_steady_state(iso::Isochromat)
-    
+    m = iso.magnetization.dynamics
+    s = iso.spin
+
+    # Steady State
+    ss = steady_state_matrix(s)
+    Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+
+    # Magnetization
+    Mx = m[2,end]
+    My = m[3,end]
+    Mz = m[4,end]
+
+    # Adjoint State
+    norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+    Px = (Mx - Mx_ss)/norm
+    Py = (My - My_ss)/norm
+    Pz = (Mz - Mz_ss)/norm
+
+    return [0.0, Px, Py, Pz]
 end
