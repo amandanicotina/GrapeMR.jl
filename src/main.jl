@@ -47,8 +47,8 @@ plot_control_fields(grape_output.control_field)
 plot_cost_values(grape_output.cost_values, opt_params)
 
 ##### SAVE DATA #####
-# folder_path = "/Users/amandanicotina/Documents/Documents/ProgressReports/ResultsGrapeMR"
-# GrapeMR.save_grape_data(grape_output; folder_path)
+folder_path = "/Users/amandanicotina/Documents/Documents/ProgressReports/ResultsGrapeMR"
+GrapeMR.save_grape_data(grape_output; folder_path)
 
 
 # TODO Fix lr_scheduler

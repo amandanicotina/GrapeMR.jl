@@ -47,7 +47,9 @@ function save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
     end
 
     try
-        (df_cost, df_control, df_spins) = save_data_frame(gp)
+        gp_dicts = grape_output_to_dict(gp)
+        save_gp_dicts(gp_dicts, file_path)
+        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(gp_dicts)
         CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
         CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
         CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
@@ -58,7 +60,7 @@ function save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
 
 end
 
-function save_data_frame(gp::GrapeMR.GrapeOutput)
+function grape_output_to_dict(gp::GrapeMR.GrapeOutput)
     # Dictionaries with data
     dict_cost_values   = Dict("Cost Values"   => gp.cost_values);
     dict_control_field = Dict("B1x [Hz]"      => vec(gp.control_field.B1x),
@@ -69,17 +71,32 @@ function save_data_frame(gp::GrapeMR.GrapeOutput)
     dict_iso_spins     = [Dict("Initial State" => [iso_spin.spin.M_init],
                                 "T1 [s]"       => iso_spin.spin.T1,
                                 "T2 [s]"       => iso_spin.spin.T2,
-                                "Chem Shift"   => iso_spin.spin.δ,
                                 "Offset [Hz]"  => iso_spin.spin.B0inho,
                                 "B1 inho [%]"  => iso_spin.spin.B1inho,
                                 "Label"        => iso_spin.spin.label,
                                 "Target"       => iso_spin.spin.target,
                                 "N° of Spins"  => iso_spin.spin.Nspins) 
                                 for iso_spin in gp.isochromats
-                        ]      
-    # DataFrame format 
+                        ]
+    return (dict_cost_values, dict_control_field, dict_iso_spins)
+end
+
+function gp_dicts_to_data_frame(gp_dicts::Tuple{Dict, Dict, Vector})
+    # Dictionaries with data
+    (dict_cost_values, dict_control_field, dict_iso_spins) = gp_dicts
+    # DataFrame formatS
     df_cost    = DataFrame(dict_cost_values);
     df_control = DataFrame(dict_control_field)
     df_spins   = DataFrame(dict_iso_spins)
     return df_cost, df_control, df_spins
+end
+
+function save_gp_dicts(gp_dicts::Tuple{Dict, Dict, Vector}, file_path::String)
+    (dict_cost_values, dict_control_field, dict_iso_spins) = gp_dicts
+    gp_output_dict = Dict(
+        "cost_values" => dict_cost_values,
+        "control_field" => dict_control_field,
+        "iso_spins" => dict_iso_spins
+    )
+    save(joinpath(file_path, "grape_output_dict.jld"), "gp_output_dict", gp_output_dict)
 end
