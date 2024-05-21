@@ -1,8 +1,7 @@
-function initial_field_spline(N, t_c)
+function spline_RF(N, t_c)
     len = 10
-    B1_max = 10;#1/t_c;
     time = range(0.0, t_c, length=len)
-    field_vals = rand(Float64, len) .* B1_max
+    field_vals = rand(Float64, len)
     spline = CubicSpline(time, field_vals)
 
     t_values = range(0.0, t_c, length=N)
@@ -18,7 +17,15 @@ end
 
 
 
-# Make one for sinc
+function sinc_RF(N::Int, t_c::Float64, BW_Hz::Real, α::Float64)
+    time = range(0.0, t_c, N);
+    t    = time .- t_c/2;
+    rot  = rad2deg(α)/360;
+    flip = rot/diff(t)[1];
+    x    = BW_Hz.*t;
+    B1   = ((flip.*sinc.(x))./2π)'; # sinc(x) = sin(πx)/(πx)
+    return B1
+end
 
 
 
@@ -39,14 +46,26 @@ If no path is provided, it saves the files inside the folder where the package w
 folder name format : yyyy-mm-dd
 """
 
-function bSSFP(s::GrapeMR.SteadyState)
-    # Spin object (parameters in miliseconds)
-    spin = BlochSim.Spin(s.M_init, s.T1*1e3, s.T2*1e3, s.B0inho)
+function bSSFP_RF(N::Int, nTR::Int, α::Float64, TR::Float64)
+    Δt  = TR/N
+    rf0 = (α/2) / (2π*Δt)
+    rf  = α / (2π*Δt)
+    bSSFP_vec = Float64[]  
 
-    # RF pulse
-    nTR = ceil(3*s.T1/s.TR)
-    rf = InstantaneousRF(s.α)
-    TR = range(tr+length)
+    for n ∈ 1:nTR
+        if n == 1
+            append!(bSSFP_vec, rf0)
+            append!(bSSFP_vec, zeros(N))
+            @show bSSFP_vec
+        elseif n > 1
+            append!(bSSFP_vec, rf)
+            append!(bSSFP_vec, zeros(N))
+        else
+            continue
+        end
+    end
 
-    
+    return [0.0; bSSFP_vec]
 end
+
+

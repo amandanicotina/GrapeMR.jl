@@ -55,27 +55,49 @@ function plot_magnetization_Mz_Mxy(isos::Vector{Isochromat})
     return p
 end
 
-function plot_magnetization_target(iso::Isochromat)
-    s = iso.spin
-    m = iso.magnetization.dynamics
+function plot_magnetization_target(isos::Vector{Isochromat})
+    p = plot()
 
-    # Steady State
-    ss = steady_state_matrix(s)
-    Mxy_ss, Mz_ss = sqrt((ss.x)^2 + (ss.y)^2), ss.z
+    max_label_plotted = false
+    min_label_plotted = false
 
-    # Magnetization
-    Mxy = sqrt.((m[2,:]).^2 + (m[3,:]).^2)
-    Mz  = m[4,:]
+    for iso in isos
+        mag = iso.magnetization.dynamics
+        spin = iso.spin
+        Mxy = sqrt.(mag[2,:].^2 .+ mag[3,:].^2)
+        if spin.target == "max" 
+            # Steady State
+            ss = steady_state_matrix(spin)
+            Mxy_ss, Mz_ss = sqrt((ss.x)^2 + (ss.y)^2), ss.z
+            plot!(p, Mxy, mag[4, :], label = max_label_plotted ? false : "$(spin.target) - $(spin.label)", color = 1, lw = 1.5,
+                xlims = [-1.0, 1.0],
+                ylims = [-1.0, 1.1],
+                xlabel = "Mxy",
+                ylabel = "Mz",
+                title = "Magnetization Dynamics",
+                titlefontsize = 12)
+            scatter!(p, [Mxy[end]], [mag[4, end]], label = false, color = 1, markersize = 4)
+            scatter!([Mxy_ss], [Mz_ss], color = 3, label = max_label_plotted ? false : "Steady State $(spin.target)")
+            max_label_plotted = true
+            
+        elseif spin.target == "min" 
+            # Steady State
+            ss = steady_state_matrix(spin)
+            Mxy_ss, Mz_ss = sqrt((ss.x)^2 + (ss.y)^2), ss.z
+            plot!(p, Mxy, mag[4, :], label = min_label_plotted ? false : "$(spin.target) - $(spin.label)", color = "black", lw = 1.5,
+                xlims = [-1.0, 1.0],
+                ylims = [-1.0, 1.1],
+                xlabel = "Mxy",
+                ylabel = "Mz",
+                title = "Magnetization Dynamics",
+                titlefontsize = 12)
+            scatter!(p, [Mxy[end]], [mag[4, end]], label = false, color = "black", markersize = 4)
+            scatter!([Mxy_ss], [Mz_ss], color = 5, label = min_label_plotted ? false : "Steady State $(spin.target)")
+            min_label_plotted = true
+        end
+ 
+    end
 
-    p = plot(Mxy, Mz, label = false, color = 1, lw = 1,
-        xlims = [-0.001, 1.0],
-        ylims = [-1.0, 1.0],
-        xlabel = "Mxy",
-        ylabel = "Mz",
-        title  = "Magnetization Dynamics - $(s.label)",
-        titlefontsize = 12)
-        scatter!([Mxy[end]], [Mz[end]], label = false, color = 1)
-        scatter!([Mxy_ss], [Mz_ss], color = 3, label = "Steady State")
     return p
 end
 

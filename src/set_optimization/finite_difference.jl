@@ -23,7 +23,7 @@ function finite_difference_cost(cost::Symbol, iso::Isochromat, ΔM::Float64)
 end
 
 
-function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spin, Δcf::Float64, field::String)
+function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spins, Δcf::Float64, field::String)
     finite_diffs = zeros(Float64, 1, length(cf.B1x))
 
     if field == "B1x"
@@ -73,7 +73,7 @@ function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spin, Δc
 
 
             # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_func(iso_perturbed, cf) - cost_func(iso_vals, cf)) / Δcf
+            finite_diffs[1, i] = (cost_function(iso_perturbed, cost) - cost_function(iso_vals, cost)) / Δcf
 
             # Reset the perturbed value for the next iteration
             perturbation[1, i] = perturbation[1, i] - Δcf

@@ -38,7 +38,7 @@ export OptimizationParams
 export Spins, Spin, SteadyState, Magnetization, Isochromat
 
 export forward_propagation, backward_propagation
-export steady_state, steady_state_matrix, steady_state_geometric
+export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
 export cost_function
 export cost_function_gradient
 
@@ -46,7 +46,7 @@ export grape, gradient, update!
 export finite_difference_cost, finite_difference_field
 
 export save_grape_data
-export initial_field_spline
+export spline_RF, sinc_RF, bSSFP_RF
 
 export plot_cost_values, plot_control_fields
 export plot_magnetization_time, plot_magnetization_Mz_Mxy

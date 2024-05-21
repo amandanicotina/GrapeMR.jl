@@ -256,3 +256,51 @@ end
     plot!(true_grad')
 end
 
+###########
+using GrapeMR
+using Plots
+# Parameters bSSFP
+N  = 301                 # Number of points
+α  = π/4               # Flip angle in radians
+Δϕ = π                  # Phase cycling
+TR = 5e-3               # Repetition time in seconds
+
+# Parameters RF
+t_c = 0.5;
+ΔB1, Bz  = 1.0, zeros(1, N)
+B1x, B1y = ones(1, N), ones(1, N)
+
+# Spin parameters
+M0 = [0.0, 0.0, 1.0] # Initial magnetization vector
+T1 = [1.0]           # Longitudinal relaxation time
+T2 = [0.8]           # Transverse relaxation time
+B0 = [0.0]           # Offset field in Hz
+
+# Target and label for simulation
+target = ["max"]
+label  = ["T1-$(Int(T1[1]*1e3))ms"]
+
+# Spins and ControlField objects
+spins_ss_test   = GrapeMR.SteadyState(M0, T1, T2, B0, ΔB1, target, label, α, Δϕ, TR, TR/2)
+control_ss_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
+
+# Cost Function
+cost_func_ss = :target_steady_state
+
+mag_ss_test  = forward_propagation(control_ss_test, spins_ss_test[1])
+dyn_ss_test  = GrapeMR.Magnetization(mag_ss_test)
+iso_ss_test  = Isochromat(dyn_ss_test, spins_ss_test[1]) 
+cost_val_ss  = GrapeMR.cost_function(iso_ss_test, cost_func_ss)
+cost_ss_grad = GrapeMR.cost_function_gradient(iso_ss_test, cost_func_ss)
+adj_ss_test  = backward_propagation(control_ss_test, iso_ss_test, cost_ss_grad)
+
+# Finite difference
+Δcf   = 1e-8;
+fd_cf = finite_difference_field(cost_func_ss, control_ss_test, spins_ss_test[1], Δcf, "B1y")
+
+# True Gradient
+true_grad = gradient(adj_ss_test, mag_ss_test, Iy)
+ 
+plot(fd_cf')
+plot!(true_grad')
+end

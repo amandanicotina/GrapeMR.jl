@@ -1,6 +1,6 @@
 """
 Cost Functions 
-
+introduce 1/Nspins
 """
 function cost_function(iso::Isochromat, cf::Symbol)
     @match cf begin
@@ -70,24 +70,43 @@ function saturation_contrast_square(iso::Isochromat)
     return c
 end
 
-function target_steady_state(iso::Isochromat)
-    c_ss = 0
+function target_steady_state(iso::Isochromat) ###this doesn't work for different B0s!!!!
+    c_ss, cmin_ss, cmax_ss = 0, 0, 0
     s = iso.spin
-    # Steady State
-    ss = steady_state_matrix(s)
-    Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+    if s.target == "min"
+        # Steady State
+        ss = steady_state_matrix(s)
+        Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+        # Magnetization
+        mag = iso.magnetization.dynamics
+        Mx  = mag[2,end]
+        My  = mag[3,end]
+        Mz  = mag[4,end]
+        cmin_ss = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
 
-    # Magnetization
-    mag = iso.magnetization.dynamics
-    Mx  = mag[2,end]
-    My  = mag[3,end]
-    Mz  = mag[4,end]
+    elseif s.target == "max"
+        # Steady State
+        ss = steady_state_matrix(s)
+        Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+        # Magnetization
+        mag = iso.magnetization.dynamics
+        Mx  = mag[2,end]
+        My  = mag[3,end]
+        Mz  = mag[4,end]
+        cmax_ss = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
 
-    c_ss = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
-    return c_ss
+    else
+        error(" $(s.target) is not a matching target. Valid targets are max or min")
+    end
+
+    return (c_ss + cmax_ss + cmin_ss)/s.Nspins
 end
 
   
 function target_steady_state_opt()
     
+end
+
+
+function saturation_contrast_steady_state(iso::Isochromat)
 end

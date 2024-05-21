@@ -141,7 +141,7 @@ using Plots
 
 # Parameters bSSFP
 N  = 401                 # Number of points
-α  = π / 8               # Flip angle in radians
+α  = π / 2               # Flip angle in radians
 Δϕ = π                  # Phase cycling
 TR = 5e-3               # Repetition time in seconds
 
@@ -151,14 +151,14 @@ t_c = 0.5;
 B1x, B1y = zeros(1, N), zeros(1, N)
 
 # Spin parameters
-M0 = [0.0, 0.0, 1.0]    # Initial magnetization vector
-T1 = [1.0]              # Longitudinal relaxation time
-T2 = [0.8]              # Transverse relaxation time
-B0 = range(-2/TR, stop=2/TR, length=N) |> collect # B0 field range
+M0 = [0.0, 0.0, 1.0] # Initial magnetization vector
+T1 = [0.8, 0.5]     # Longitudinal relaxation time
+T2 = [0.4, 0.3]     # Transverse relaxation time
+B0 = [0.0]           # [Hz]
 
 # Target and label for simulation
-target = ["max"]
-label  = ["T1-$(Int(T1[1]*1e3))ms"]
+target = ["max", "min"]
+label  = ["T1-$(Int(T1[1]*1e3))ms", "T1-$(Int(T1[2]*1e3))ms"]
 
 # Spins and ControlField objects
 spins_ss_test   = GrapeMR.SteadyState(M0, T1, T2, B0, ΔB1, target, label, α, Δϕ, TR, TR/2)
@@ -177,6 +177,8 @@ fd_M_ss = finite_difference_cost(cost_func_ss, iso_ss_test, ΔM)
 
 # True gradient
 true_grad_ss = cost_function_gradient(iso_ss_test, cost_func_ss)[2:end, :]
+
+round.(fd_M_ss, digits=5) .== round.(true_grad_ss, digits = 5)
 
 # using ForwardDiff
 # ss = steady_state_matrix(spins_ss_test[1])

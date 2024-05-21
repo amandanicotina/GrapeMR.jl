@@ -6,3 +6,4 @@ mutable struct ControlField
     t_control::Float64
 end
 
+# write function ControlField with max Bxmax? : (b_norm = Bxmax) = maximum(B1x) then test to see if now matches
