@@ -48,6 +48,29 @@ function steady_state_matrix(s::GrapeMR.SteadyState)
     return spin.M
 end
 
+function steady_state_matrix(s::GrapeMR.SteadyState, α_opt::Float64)
+    # Create Spin object
+    (TR, TE, T1, T2, M0) = (s.TR*1e3, s.TE*1e3, s.T1*1e3, s.T2*1e3, s.M_init[3])
+    I  = BlochSim.I
+    # Spin objects
+    spin = BlochSim.Spin(M0, T1, T2, s.B0inho)
+    spin_phase_cycle = BlochSim.Spin(M0, T1, T2, s.B0inho - (s.Δϕ / 2π / (TR/1000)))
+
+    # Create RF pulse
+    rf = InstantaneousRF(α_opt)
+
+    # Compute SS signal
+    (R,)   = excite(spin_phase_cycle, rf)
+    (A, B) = freeprecess(spin_phase_cycle, TR)
+    M      = (I - R * A) \ (R * B)
+
+    copyto!(spin.M, M)
+    freeprecess!(spin, TE)
+    #sig = BlochSim.signal(spin)
+
+    return spin.M
+end
+
 function steady_state_matrix(Tr, Te, T₁, T₂, M₀, B0inho, α, Δϕ)
     # Create Spin object
     (TR, TE, T1, T2, M0, B0) = (Tr*1e3, Te*1e3, T₁*1e3, T₂*1e3, M₀, B0inho[])
@@ -109,3 +132,11 @@ save_grape_data(gp_output, folder_path="/path/to/folder")
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
+
+function optimal_flip_angle(T1::Float64, T2::Float64, TR::Float64)
+    Γ_T1 = (2π*TR)/T1;
+    Γ_T2 = (2π*TR)/T2;
+    ernst_sol = (exp(-Γ_T1) + exp(-Γ_T2)) / (1 + exp(-(Γ_T1 + Γ_T2))) 
+    α_opt = acos(ernst_sol)
+    return α_opt
+end

@@ -2,11 +2,11 @@ abstract type Spins end
 
 struct Spin <: Spins
     M_init::Vector{Float64}
-    T1::Vector{Float64}
-    T2::Vector{Float64}
+    T1::Float64
+    T2::Float64
     #δ::Vector{Float64}
-    B0inho::Vector{Float64}
-    B1inho::Vector{Float64}
+    B0inho::Float64
+    B1inho::Float64
     target::String
     label::String
     Nspins::Float64

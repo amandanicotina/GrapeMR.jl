@@ -7,9 +7,10 @@ function cost_function_gradient(iso::Isochromat, cf::Symbol)
         :euclidean_norm          => grad_euclidean_norm(iso)
         :target_one_spin         => grad_target_one_spin(iso)
         :target_steady_state     => grad_target_steady_state(iso)
-        # :target_steady_state_opt => grad_target_steady_statee_opt()
+        :target_steady_state_opt => grad_target_steady_state_opt(iso)
         :saturation_contrast     => grad_saturation_contrast(iso)
-        :saturation_contrast_square => grad_saturation_contrast_square(iso)
+        :saturation_contrast_square       => grad_saturation_contrast_square(iso)
+        :saturation_contrast_steady_state => grad_saturation_contrast_steady_state(iso)
     end
     
 end
@@ -125,6 +126,42 @@ function grad_target_steady_state(iso::Isochromat)
         Px = (Mx - Mx_ss)/(s.Nspins*norm)
         Py = (My - My_ss)/(s.Nspins*norm)
         Pz = (Mz - Mz_ss)/(s.Nspins*norm)
+
+    else
+        error(" $(s.target) is not a matching target. Valid targets are max or min")
+    end
+
+    return [0.0, Px, Py, Pz]
+end
+
+
+
+function grad_saturation_contrast_steady_state(iso::Isochromat)
+    s = iso.spin
+
+    if s.target == "max"
+        # Steady State
+        ss = steady_state_matrix(s)
+        Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+
+        # Magnetization
+        m  = iso.magnetization.dynamics
+        Mx = m[2,end]
+        My = m[3,end]
+        Mz = m[4,end]
+
+        # Adjoint State
+        # norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+        Px = 0.0 #-(Mx - Mx_ss)/(s.Nspins*norm)
+        Py = 0.0 #-(My - My_ss)/(s.Nspins*norm)
+        Pz = -(Mz - Mz_ss)/(s.Nspins*sqrt((Mz - Mz_ss)^2 + 1e-15))
+    
+    elseif s.target == "min"
+        # Magnetization
+        m  = iso.magnetization.dynamics
+        Px = m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Py = m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Pz = m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
 
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")

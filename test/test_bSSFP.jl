@@ -5,7 +5,7 @@ using Plots
 # Parameters
 
 # RFs
-N  = 201     # Number of points
+N  = 301     # Number of points
 α  = 2π/9    # Flip angle in radians
 Δϕ = π       # Phase cycling
 TR = 4.28e-3 # Repetition time in seconds
@@ -13,9 +13,9 @@ TE = 2.19e-3 # Echo time in seconds
 
 # Spin parameters
 M0 = [0.0, 0.0, 1.0] # Initial magnetization vector
-T1 = [0.8]          # Longitudinal relaxation time
-T2 = [0.4]          # Transverse relaxation time
-B0 = 1/TR           # [Hz]
+T1 = [1.0]          # Longitudinal relaxation time
+T2 = [0.6]          # Transverse relaxation time
+B0 = 1/TR          # [Hz]
 B0_vals = range(-B0, B0, length=N) # Offset field range
 
 # Target and label for simulation
@@ -23,7 +23,7 @@ target = ["max"]
 label  = ["T1-$(Int(T1[1]*1e3))ms"]
 
 # Create spins using SteadyState method from GrapeMR
-spins = GrapeMR.SteadyState(M0, T1, T2, B0_vals, 1.0, target, label, α, Δϕ, TR, TE, [])
+spins = GrapeMR.SteadyState(M0, T1, T2, B0_vals, 1.0, target, label, α, Δϕ, TR, TE)
 
 # Preallocate arrays for results
 ss_vec_Mz    = Vector{Float64}(undef, N)
@@ -64,20 +64,20 @@ for (i, spin) ∈ enumerate(spins)
 end
 
 # Plotting results
-pMag   = plot(B0_vals, sig_abs, label = "Manual",  
+pMag   = plot(B0_vals, sig_mat_abs, label = false, lw = 2.5, color = 4,
          xlabel = "Offset [Hz]", ylabel = "Magnitude", title = "bSSFP Off-Resonace profile")
-         plot!(pMag, B0_vals, sig_geo_abs, label = "Geometric")
-         plot!(pMag, B0_vals, sig_mat_abs, label = "Matrix") 
-         plot!(pMag, B0_vals, ss_vec_abs, label = "Spin calculated")
-pPhase = plot(B0_vals, sig_phase, label = "Manual", ylabel = "Phase [rad]")
-         plot!(pPhase, B0_vals, sig_mat_phase, label = "Matrix")
-         plot!(pPhase, B0_vals, ss_vec_phase, label = "Spin calculated")
+         #plot!(pMag, B0_vals, sig_geo_abs, label = "Geometric", lw= 2)
+         #plot!(pMag, B0_vals, sig_abs, label = "Manual", lw= 2) 
+         #plot!(pMag, B0_vals, ss_vec_abs, label = "Spin calculated", lw= 2)
+pPhase = plot(B0_vals, sig_mat_phase, label = false, ylabel = "Phase [rad]", lw= 2.5)
+         #plot!(pPhase, B0_vals, sig_phase, label = "Manual", lw= 2)
+         #plot!(pPhase, B0_vals, ss_vec_phase, label = "Spin calculated", lw= 2)
 pSig   = plot(pMag, pPhase; layout = (2,1))
 
-pMz = plot(B0_vals, sig_mat_Mz, label = "Matrix", 
+pMz = plot(B0_vals, sig_mat_Mz, label = false, lw= 2.5,
         xlabel = "Offset [Hz]", ylabel = "Mz - Magnetization", title = "bSSFP Off-Resonace profile")
-       plot!(pMz, B0_vals, sig_geo_Mz, label = "Geometric")
-       plot!(pMz, B0_vals, ss_vec_Mz, label = "Spin calculated")
+       #plot!(pMz, B0_vals, sig_geo_Mz, label = "Geometric", lw= 2)
+       #plot!(pMz, B0_vals, ss_vec_Mz, label = "Spin calculated", lw= 2)
 
 display(pSig)
 display(pMz)

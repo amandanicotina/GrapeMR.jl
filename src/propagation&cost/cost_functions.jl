@@ -7,10 +7,10 @@ function cost_function(iso::Isochromat, cf::Symbol)
         :euclidean_norm      => euclidean_norm(iso)
         :target_one_spin     => target_one_spin(iso)
         :target_steady_state => target_steady_state(iso)
-        #:target_steady_state_opt    => target_steady_statee_opt()
-        :saturation_contrast => saturation_contrast(iso)
-        :saturation_contrast_square => saturation_contrast_square(iso)
-        _                    => error("Cost function not defined")
+        :saturation_contrast              => saturation_contrast(iso)
+        :saturation_contrast_square       => saturation_contrast_square(iso)
+        :saturation_contrast_steady_state => saturation_contrast_steady_state(iso)
+        _                        => error("Cost function not defined")
     end
 end
 
@@ -70,8 +70,8 @@ function saturation_contrast_square(iso::Isochromat)
     return c
 end
 
-function target_steady_state(iso::Isochromat) ###this doesn't work for different B0s!!!!
-    c_ss, cmin_ss, cmax_ss = 0, 0, 0
+function target_steady_state(iso::Isochromat) 
+    c = 0
     s = iso.spin
     if s.target == "min"
         # Steady State
@@ -82,7 +82,7 @@ function target_steady_state(iso::Isochromat) ###this doesn't work for different
         Mx  = mag[2,end]
         My  = mag[3,end]
         Mz  = mag[4,end]
-        cmin_ss = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+        c = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
 
     elseif s.target == "max"
         # Steady State
@@ -93,20 +93,36 @@ function target_steady_state(iso::Isochromat) ###this doesn't work for different
         Mx  = mag[2,end]
         My  = mag[3,end]
         Mz  = mag[4,end]
-        cmax_ss = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+        c = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
 
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")
     end
 
-    return (c_ss + cmax_ss + cmin_ss)/s.Nspins
+    return c/s.Nspins
 end
-
-  
-function target_steady_state_opt()
-    
-end
-
 
 function saturation_contrast_steady_state(iso::Isochromat)
+    c = 0
+    s = iso.spin
+    if s.target == "min"
+        # Magnetization
+        m = iso.magnetization.dynamics
+        c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/s.Nspins
+    elseif s.target == "max"
+        # Steady State
+        ss = steady_state_matrix(s)
+        Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+        # Magnetization
+        m  = iso.magnetization.dynamics
+        Mx = m[2,end]
+        My = m[3,end]
+        Mz = m[4,end]
+        # c = (1 - sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15))/s.Nspins
+        c = (1 - sqrt((Mz - Mz_ss)^2 + 1e-15))/s.Nspins
+    else
+        error(" $(s.target) is not a matching target. Valid targets are max or min")
+    end
+
+    return c
 end

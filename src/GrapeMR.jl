@@ -39,6 +39,7 @@ export Spins, Spin, SteadyState, Magnetization, Isochromat
 
 export forward_propagation, backward_propagation
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
+export optimal_flip_angle
 export cost_function
 export cost_function_gradient
 
@@ -49,7 +50,7 @@ export save_grape_data
 export spline_RF, sinc_RF, bSSFP_RF
 
 export plot_cost_values, plot_control_fields
-export plot_magnetization_time, plot_magnetization_Mz_Mxy
-export plot_magnetization_target, plot_magnetization_target_3d
+export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
+export plot_magnetization_target, plot_magnetization_target_3D
 
 end

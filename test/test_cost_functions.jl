@@ -168,7 +168,7 @@ mag_ss_test = forward_propagation(control_ss_test, spins_ss_test[1])
 dyn_ss_test = GrapeMR.Magnetization(mag_ss_test)
 iso_ss_test = Isochromat(dyn_ss_test, spins_ss_test[1]) 
 
-cost_func_ss = :target_steady_state
+cost_func_ss = :saturation_contrast_steady_state
 cost_val_ss  = GrapeMR.cost_function(iso_ss_test, cost_func_ss)
 
 # Finite difference
