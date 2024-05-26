@@ -9,6 +9,7 @@ using JLD
 using Plots
 using Dates
 using Match
+using Hyperopt
 using BlochSim
 using DataFrames
 using CubicSplines
