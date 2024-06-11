@@ -47,7 +47,7 @@ function forward_propagation(cf::ControlField, s::Spins)
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
         b_m = bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
-        M[:, i+1] = expv(Δt, b_m, M[:, i])
+        M[:, i+1] = exp(Δt*b_m)*M[:, i]
     end
 
     return M    
@@ -81,7 +81,7 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vect
     for i in back_steps:-1:1 
         b_m = bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
         bloch_matrix_adjoint = adjoint(b_m)
-        χ[:, i] = expv(Δt[i], bloch_matrix_adjoint, χ[:, i+1]) 
+        χ[:, i] = exp(Δt[i]*bloch_matrix_adjoint)*χ[:, i+1]
     end
 
     return round.(χ, digits = 5)
