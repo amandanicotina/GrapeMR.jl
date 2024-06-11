@@ -155,6 +155,12 @@ function plot_magnetization_target_3D(iso::Isochromat)
     return p
 end
 
+"""
+
+Cost Function plots
+
+"""
+
 function plot_cost_values(cost::Vector{Float64}, op::OptimizationParams)
     p = plot(cost, label = string(op.cost_function), lw = 2,
     xlabel = "Iterations",
@@ -166,15 +172,134 @@ function plot_cost_values(cost::Vector{Float64}, op::OptimizationParams)
     return p
 end
 
+
+function plot_cost_offset(isos::Vector{Isochromat}, cost::Symbol)
+    # Cost function values for all isochromats
+    c = cost_function.(isos, cost)
+
+    # Offset frequencies
+    ν_ini = isos[1].spin.B0inho
+    ν_end = isos[end].spin.B0inho
+    ν_len = Int(length(isos)/2)
+    ν = range(ν_ini, stop=ν_end, length=ν_len)
+
+    p = plot(xlabel = "Offset [Hz]",
+        ylabel = "Cost Value",
+        title  = "Cost Function Offset profile",
+        titlefontsize = 12)
+        plot!(p, ν, c[1:ν_len], label =  "min", lw = 2)
+        plot!(p, ν, c[ν_len+1:end], label = "max", lw = 2)
+
+    return p
+end
+
+function plot_cost_offset(spins::Vector{GrapeMR.Spin}, cost::Symbol)
+    # Calculate dynamics for new offset range with optimized field
+    isos = Vector{Isochromat}()
+    for spin ∈ spins
+        mag = forward_propagation(grape_output.control_field, spin)
+        dyn = GrapeMR.Magnetization(mag)
+        iso = Isochromat(dyn, spin)
+        push!(isos, iso)
+    end
+    # Cost function values for all isochromats
+    c = cost_function.(isos, cost)
+
+    # Offset frequencies
+    ν_ini = isos[1].spin.B0inho
+    ν_end = isos[end].spin.B0inho
+    ν_len = Int(length(isos)/2)
+    ν = range(ν_ini, stop=ν_end, length=ν_len)
+
+    p = plot(xlabel = "Offset [Hz]",
+        ylabel = "Cost Value",
+        title  = "Cost Function Offset profile",
+        titlefontsize = 12)
+        plot!(p, ν, c[1:ν_len], label =  "min", lw = 2)
+        plot!(p, ν, c[ν_len+1:end], label = "max", lw = 2)
+
+    return p
+end
+
+"""
+
+Control Field Plots
+
+"""
+
 function plot_control_fields(cf::ControlField)
     time = range(0.0, cf.t_control, length = length(cf.B1x))
     Bx = cf.B1x
     By = cf.B1y
 
-    p_Bx = plot(time, Bx', linewidth=2, label = false, ylabel="B1x [Hz]", title="Control Fields", titlefontsize=12)
-    p_By = plot(time, By', linewidth=2, label = false, ylabel="B1y [Hz]", xlabel="t [s]")
+    B1 = vec(Bx + im * By)
+
+    p_Bx = plot(time, abs.(B1), linewidth=2, label=false, ylabel="|B1| [Hz]", title="Control Fields", titlefontsize=15)
+    p_By = plot(time, angle.(B1), linewidth=2, label=false, ylabel="ϕ [rad]", xlabel="t [s]")
+    xticks_values = [-π, -π/2, 0, π/2, π]
+    xticks_labels = ["-π", "-π/2", "0", "π/2", "π"]
+    p_By = plot!(p_By, xticks=(xticks_values, xticks_labels))
+
+    p = plot(p_Bx, p_By, layout = (2,1))
+
+    return p
+end
+
+
+
+
+function plot_control_fields_tesla(cf::ControlField)
+    time = range(0.0, cf.t_control, length = length(cf.B1x))
+    Bx = cf.B1x./γ_¹H
+    By = cf.B1y./γ_¹H
+
+    B1 = vec(1e6*(Bx + im*By))
+    
+    p_Bx = plot(time, abs.(B1), linewidth=2, label=false, ylabel="|B1| [μT]", title="Control Fields", titlefontsize=15)
+    p_By = plot(time, angle.(B1), linewidth=2, label=false, ylabel="ϕ [rad]", xlabel="t [s]")
+    xticks_values = [-π, -π/2, 0, π/2, π]
+    xticks_labels = ["-π", "-π/2", "0", "π/2", "π"]
+    p_By = plot!(p_By, xticks=(xticks_values, xticks_labels))
 
     p = plot(p_Bx, p_By, layout=(2,  1))
 
     return p 
 end
+
+function bohb_params(bohb)
+    cost  = []
+    t_c   = []
+    start = []
+    deg   = []
+    max   = []
+    for i ∈ eachindex(bohb.results)
+        push!(cost, bohb.results[i][1])
+        push!(t_c, bohb.history[i][1])
+        push!(start, bohb.history[i][2])
+        push!(deg, bohb.history[i][3])
+        push!(max, bohb.history[i][4])
+    end
+    t_min = bohb.minimizer[1]
+    d_min = bohb.minimizer[3]
+    m_min = bohb.minimizer[4]
+    c_min = round(bohb.minimum[1], digits=4)
+    order = collect(1:length(t_c))
+    p_cost =  scatter(t_c, max, zcolor=cost, 
+         markerstrokecolor = :auto, label = false, markersize = 4, 
+         xlabel = "Control time [s]", ylabel = "Iterations", 
+         title = "Optimization", 
+         color = :viridis)
+         scatter!([t_min], [m_min], label = "Minimum = $c_min", 
+         marker = :star5, markersize = 8, color = :red)
+
+    p_order =  scatter(t_c, max, zcolor=order, 
+         markerstrokecolor = :auto, label = false, markersize = 4, 
+         xlabel = "Control time [s]", ylabel = "Iterations", 
+         title = "Optimization", 
+         color = :viridis)
+         scatter!([t_min], [m_min], label = "Minimum = $c_min", 
+         marker = :star5, markersize = 8, color = :red)
+
+    return p_cost, p_order
+end
+

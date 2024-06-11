@@ -13,7 +13,7 @@ function grape(op::OptimizationParams, cf::ControlField, spins::Vector{<:Spins},
         ϵ   = max(ϵ, eps)
         ∇x  = zeros(Float64, 1, op.N)
         ∇y  = zeros(Float64, 1, op.N)
-        @show eps
+        # @show eps
         for spin ∈ spins
             # Propagation & cost
             mag = forward_propagation(cf, spin)
@@ -87,5 +87,52 @@ function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}
     return u1x, u1y
 end
 
+# I have to change the cost function to adjust for the paralelization
+function par_grape(op::OptimizationParams, cf::ControlField, spins::Vector{GrapeMR.Spin}, lr_scheduler::Poly; max_iter=2500, ϵ = 1e-4)
+    cost_vals = zeros(Float64, max_iter, 1)[:]
+    u1x, u1y = [], []
+    grape_output = GrapeOutput([], deepcopy(cf), cost_vals)
+    ∇x  = zeros(Float64, 1, op.N)
+    ∇y  = zeros(Float64, 1, op.N)
 
+    for (eps, i) ∈ zip(lr_scheduler, 1:max_iter)
+        ϵ = max(ϵ, eps)
+        cost_threads = zeros(Float64, Threads.nthreads())
+        ∇x_threads   = [zeros(Float64, 1, op.N) for _ in 1:Threads.nthreads()]
+        ∇y_threads   = [zeros(Float64, 1, op.N) for _ in 1:Threads.nthreads()]
 
+        Threads.@threads for spin ∈ spins
+            thread_id = Threads.threadid()
+            mag    = forward_propagation(cf, spin)
+            dyn    = GrapeMR.Magnetization(mag)
+            iso    = Isochromat(dyn, spin)
+            c_grad = GrapeMR.cost_function_gradient(iso, op.cost_function)
+            adj    = backward_propagation(cf, iso, c_grad)
+            cost_threads[thread_id] += GrapeMR.cost_function(iso, op.cost_function)
+            if i == max_iter
+                push!(grape_output.isochromats, iso)
+            end
+            # Gradient
+            if op.fields_opt[1]
+                ∇x_threads[thread_id] += gradient(adj, mag, Ix)
+            end 
+            if op.fields_opt[2]
+                ∇y_threads[thread_id] += gradient(adj, mag, Iy)
+            end 
+        end
+
+        ∇x .= sum(∇x_threads)
+        ∇y .= sum(∇y_threads)
+        grape_output.cost_values[i] = sum(cost_threads)
+    end
+
+    # Control Field
+    (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
+    cf.B1x = u1x
+    cf.B1y = u1y
+
+    grape_output.control_field.B1x = u1x
+    grape_output.control_field.B1y = u1y
+
+    return grape_output
+end

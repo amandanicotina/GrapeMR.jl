@@ -1,0 +1,47 @@
+
+bohb.minimizer
+    time_c     = 0.8
+    poly_start = 0.1
+    poly_deg   = 1
+    max_iter   = 2900
+
+###
+No threading 
+###
+102 spins
+    381.2 seconds (4.95 G allocations: 366.423 GiB, 7.34% gc time, 0.48% compilation time: 8% of which was recompilation)
+    412.852161 seconds (4.94 G allocations: 366.063 GiB, 8.41% gc time)
+    -> New matrix exponential
+    293.904787 seconds (4.37 G allocations: 336.791 GiB, 9.75% gc time)
+
+    -> max_iter = 2500
+    337.7 seconds (4.26 G allocations: 315.425 GiB, 8.69% gc time)
+    -> New matrix exponential
+    247.6 seconds (3.78 G allocations: 290.778 GiB, 9.16% gc time, 0.74% compilation time)
+
+
+###
+Multi-threading 
+###
+102 spins
+    716.9 seconds (4.94 G allocations: 366.063 GiB, 3.37% gc time, 0.03% compilation time)
+    744.3 seconds (4.94 G allocations: 366.128 GiB, 3.52% gc time)
+    -> New matrix exponential 
+    691.9 seconds (4.37 G allocations: 337.178 GiB, 3.30% gc time)
+
+    -> max_iter = 2500
+    663.2 seconds (4.26 G allocations: 315.500 GiB, 3.85% gc time)
+    -> New matrix exponential
+    594.4 seconds (3.77 G allocations: 290.774 GiB, 3.26% gc time, 0.04% compilation time)
+
+
+
+40      1.0     0.1     2       9500    1016.534251 seconds (16.17 G allocations: 1.076 TiB, 9.20% gc time)
+cost = 0.46044507906565574
+38      0.8642857142857142      0.1     1       8500    908.866838 seconds (14.46 G allocations: 985.204 GiB, 9.21% gc time)
+cost = 0.4597631457774895
+
+Tc = 0.8642857142857142 
+poly_start = 0.1
+poly_deg = 1
+max_iter = 8500
