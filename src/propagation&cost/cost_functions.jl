@@ -4,9 +4,10 @@ introduce 1/Nspins
 """
 function cost_function(iso::Isochromat, cf::Symbol)
     @match cf begin
-        :euclidean_norm      => euclidean_norm(iso)
-        :target_one_spin     => target_one_spin(iso)
-        :target_steady_state => target_steady_state(iso)
+        :euclidean_norm        => euclidean_norm(iso)
+        :target_one_spin       => target_one_spin(iso)
+        :target_steady_state   => target_steady_state(iso)
+        :targetB0_steady_state => targetB0_steady_state(iso)
         :saturation_contrast              => saturation_contrast(iso)
         :saturation_contrast_square       => saturation_contrast_square(iso)
         :saturation_contrast_steady_state => saturation_contrast_steady_state(iso)
@@ -98,6 +99,25 @@ function target_steady_state(iso::Isochromat)
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")
     end
+
+    return c/s.Nspins
+end
+
+
+function targetB0_steady_state(iso::Isochromat) 
+    c = 0
+    s = iso.spin
+
+    # Steady State
+    ss = steady_state_matrix(s)
+    Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+
+    # Magnetization
+    mag = iso.magnetization.dynamics
+    Mx  = mag[2,end]
+    My  = mag[3,end]
+    Mz  = mag[4,end]
+    c = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
 
     return c/s.Nspins
 end

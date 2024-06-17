@@ -128,6 +128,7 @@ function plot_magnetization_target(isos::Vector{Isochromat})
     return p
 end
 
+
 function plot_magnetization_target_3D(iso::Isochromat)
     s = iso.spin
     m = iso.magnetization.dynamics
@@ -144,9 +145,9 @@ function plot_magnetization_target_3D(iso::Isochromat)
     # Plot
     p = plot3d(Mx, My, Mz, label = "$(s.target) - $(s.label)", color = 1, lw = 2)
         scatter!([Mx[end]], [My[end]], [Mz[end]], label = false, color = 1, markersize = 3)
-    if s.target == "max"
+    #if s.target == "max"
         scatter!([Mx_ss], [My_ss], [Mz_ss], label = "Steady State", color = 3, markersize = 3)
-    end
+    #end
         xlabel!("Mx")
         ylabel!("My")
         zlabel!("Mz")
@@ -161,8 +162,8 @@ Cost Function plots
 
 """
 
-function plot_cost_values(cost::Vector{Float64}, op::OptimizationParams)
-    p = plot(cost, label = string(op.cost_function), lw = 2,
+function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
+    p = plot(cost, label = string(gp.cost_function), lw = 2,
     xlabel = "Iterations",
     ylabel = "Cost Value",
     title  = "Cost Function Convergence",
@@ -180,7 +181,7 @@ function plot_cost_offset(isos::Vector{Isochromat}, cost::Symbol)
     # Offset frequencies
     ν_ini = isos[1].spin.B0inho
     ν_end = isos[end].spin.B0inho
-    ν_len = Int(length(isos)/2)
+    ν_len = Int(ceil(length(isos)/2))
     ν = range(ν_ini, stop=ν_end, length=ν_len)
 
     p = plot(xlabel = "Offset [Hz]",
@@ -208,15 +209,15 @@ function plot_cost_offset(spins::Vector{GrapeMR.Spin}, cost::Symbol)
     # Offset frequencies
     ν_ini = isos[1].spin.B0inho
     ν_end = isos[end].spin.B0inho
-    ν_len = Int(length(isos)/2)
+    ν_len = ceil(length(isos))
     ν = range(ν_ini, stop=ν_end, length=ν_len)
 
     p = plot(xlabel = "Offset [Hz]",
         ylabel = "Cost Value",
         title  = "Cost Function Offset profile",
         titlefontsize = 12)
-        plot!(p, ν, c[1:ν_len], label =  "min", lw = 2)
-        plot!(p, ν, c[ν_len+1:end], label = "max", lw = 2)
+        plot!(p, ν, c, label =  "min", lw = 2)
+        # plot!(p, ν, c[ν_len+1:end], label = "max", lw = 2)
 
     return p
 end
@@ -303,3 +304,53 @@ function bohb_params(bohb)
     return p_cost, p_order
 end
 
+
+
+
+function plot_magnetization_targetB0(isos::Vector{Isochromat})
+    p = plot()
+
+    for iso ∈ isos
+        m   = iso.magnetization.dynamics
+        s   = iso.spin
+        Mxy = sqrt.(m[2,:].^2 .+ m[3,:].^2)
+        # Steady State
+        ss = steady_state_matrix(s)
+        Mxy_ss, Mz_ss = sqrt((ss.x)^2 + (ss.y)^2), ss.z
+        plot!(p, Mxy, m[4, :], label = "$(s.target) - $(s.label)", color = 1, lw = 2,
+            xlims = [-1.0, 1.0],
+            ylims = [-1.0, 1.1],
+            xlabel = "Mxy",
+            ylabel = "Mz",
+            title = "Magnetization Dynamics",
+            titlefontsize = 12)
+        scatter!(p, [Mxy[end]], [m[4, end]], label = false, color = 1, markersize = 4)
+        scatter!([Mxy_ss], [Mz_ss], color = 3, label = "Steady State $(s.target)")
+    end
+    return p
+end
+
+function plot_Mtrans_offset_ss(isos::Vector{Isochromat})
+    label_plotted = false
+
+    p = plot(xlabel = "Offset [Hz]",
+        ylabel = "Mxy",
+        title = "Offset Profile",
+        titlefontsize = 12)
+
+    for iso ∈ isos
+        m   = iso.magnetization.dynamics
+        s   = iso.spin
+        Mxy = sqrt.(m[2,:].^2 .+ m[3,:].^2)
+        b0 = s.B0inho
+        # Steady State
+        ss = steady_state_matrix(s)
+        Mxy_ss = sqrt((ss.x)^2 + (ss.y)^2)
+
+        scatter!(p, [b0], [Mxy[end]], label = label_plotted ? false : "GrapeMR", color = 1, markersize = 8)
+        scatter!([b0], [Mxy_ss], color = 3, label = label_plotted ? false : "Steady State")
+        label_plotted = true
+    end
+
+    return p
+end

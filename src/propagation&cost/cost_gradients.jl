@@ -7,6 +7,7 @@ function cost_function_gradient(iso::Isochromat, cf::Symbol)
         :euclidean_norm          => grad_euclidean_norm(iso)
         :target_one_spin         => grad_target_one_spin(iso)
         :target_steady_state     => grad_target_steady_state(iso)
+        :targetB0_steady_state     => grad_targetB0_steady_state(iso)
         :saturation_contrast     => grad_saturation_contrast(iso)
         :saturation_contrast_square       => grad_saturation_contrast_square(iso)
         :saturation_contrast_steady_state => grad_saturation_contrast_steady_state(iso)
@@ -129,6 +130,28 @@ function grad_target_steady_state(iso::Isochromat)
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")
     end
+
+    return [0.0, Px, Py, Pz]
+end
+
+function grad_targetB0_steady_state(iso::Isochromat)
+    s = iso.spin
+
+    # Steady State
+    ss = steady_state_matrix(s)
+    Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
+
+    # Magnetization
+    m  = iso.magnetization.dynamics
+    Mx = m[2,end]
+    My = m[3,end]
+    Mz = m[4,end]
+
+    # Adjoint State
+    norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+    Px = (Mx - Mx_ss)/(s.Nspins*norm)
+    Py = (My - My_ss)/(s.Nspins*norm)
+    Pz = (Mz - Mz_ss)/(s.Nspins*norm)
 
     return [0.0, Px, Py, Pz]
 end

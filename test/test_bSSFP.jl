@@ -3,20 +3,19 @@ using BlochSim
 using Plots
 
 # Parameters
-
 # RFs
-N  = 301     # Number of points
+N  = 501     # Number of points
 α  = 2π/9    # Flip angle in radians
 Δϕ = π       # Phase cycling
 TR = 4.28e-3 # Repetition time in seconds
 TE = 2.19e-3 # Echo time in seconds
 
 # Spin parameters
-M0 = [0.0, 0.0, 1.0] # Initial magnetization vector
-T1 = [1.0]          # Longitudinal relaxation time
-T2 = [0.6]          # Transverse relaxation time
-B0 = 1/TR          # [Hz]
-B0_vals = range(-B0, B0, length=N) # Offset field range
+M0 = [0.0, 0.0, 1.0]
+T1 = [1.83]         
+T2 = [0.18]          
+B0 = 100       
+B0_vals = range(-B0, B0, length=N) 
 
 # Target and label for simulation
 target = ["max"]
@@ -80,5 +79,5 @@ pMz = plot(B0_vals, sig_mat_Mz, label = false, lw= 2.5,
        #plot!(pMz, B0_vals, ss_vec_Mz, label = "Spin calculated", lw= 2)
 
 display(pSig)
-display(pMz)
+# display(pMz)
 
