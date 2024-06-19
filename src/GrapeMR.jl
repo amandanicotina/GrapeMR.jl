@@ -44,7 +44,7 @@ export steady_state, steady_state_matrix, steady_state_geometric, steady_state_g
 export cost_function
 export cost_function_gradient
 
-export grape, par_grape, hyperopt_grape
+export grape, par_grape, hyperoptimization
 export gradient, update!
 export finite_difference_cost, finite_difference_field
 

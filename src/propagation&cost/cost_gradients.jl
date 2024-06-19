@@ -7,8 +7,9 @@ function cost_function_gradient(iso::Isochromat, cf::Symbol)
         :euclidean_norm          => grad_euclidean_norm(iso)
         :target_one_spin         => grad_target_one_spin(iso)
         :target_steady_state     => grad_target_steady_state(iso)
-        :targetB0_steady_state     => grad_targetB0_steady_state(iso)
+        :targetB0_steady_state   => grad_targetB0_steady_state(iso)
         :saturation_contrast     => grad_saturation_contrast(iso)
+        :saturation_contrast_Mxy => grad_saturation_contrast_Mxy(iso)
         :saturation_contrast_square       => grad_saturation_contrast_square(iso)
         :saturation_contrast_steady_state => grad_saturation_contrast_steady_state(iso)
     end
@@ -69,6 +70,26 @@ function grad_saturation_contrast(iso::Isochromat)
     return P
 end
 
+function grad_saturation_contrast_Mxy(iso::Isochromat)
+    m = iso.magnetization.dynamics
+    s = iso.spin
+    P = [];
+    if s.target == "max"
+        Px = -m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Py = -m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        P = [0.0, Px, Py, 0.0]
+        
+    elseif s.target == "min"
+        Px = m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Py = m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Pz = m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        P = [0.0, Px, Py, Pz]
+    else
+        error(" $(s.target) is not a matching target. Valid targets are max or min")
+    end
+    
+    return P
+end
 
 function grad_saturation_contrast_square(iso::Isochromat)
     m = iso.magnetization.dynamics

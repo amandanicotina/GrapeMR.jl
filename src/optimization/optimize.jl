@@ -90,12 +90,12 @@ function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}
 end
 
 
-function hyperopt_grape(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
+function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
     bohb = @hyperopt for i = i,
         Tc = Tc,
-        poly_start = poly_start, 
+        poly_start  = poly_start, 
         poly_degree = poly_degree, 
-        max_iter = max_iter;
+        max_iter    = max_iter;
         sampler = Hyperband(R=50, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
         # BOHB
         # See: https://github.com/baggepinnen/Hyperopt.jl#bohb
