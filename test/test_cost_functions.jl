@@ -92,9 +92,9 @@ end
 #@safetestset "Test Cost Function: Saturation Contrast" begin
     using GrapeMR
     # Parameters
-    N   = 500;
+    N   = 1000;
     t_c = 0.5; #[s]
-    grape_params = GrapeParams(1000, :saturation_contrast_My, [true true false])
+    grape_params = GrapeParams(1000, :target_one_spin, [true true false])
 
     # Spin
     M0  = [0.0, 0.0, 1.0];
@@ -115,16 +115,16 @@ end
     # Spin and RF objects
     control_sc_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
     spins_sc_test   = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
-
+    
     mag_sc_test = forward_propagation(control_sc_test, spins_sc_test[1])
     dyn_sc_test = GrapeMR.Magnetization(mag_sc_test)
     iso_sc_test = Isochromat(dyn_sc_test, spins_sc_test[1])
-    
+
     Mx = mag_sc_test[2,:];
     My = mag_sc_test[3,:];
     Mz = mag_sc_test[4,:];
 
-    cost_func_sc_My = :saturation_contrast_My
+    cost_func_sc_My = :target_one_spin
     cost_val     = GrapeMR.cost_function(iso_sc_test, cost_func_sc_My)
 
     # Finite difference

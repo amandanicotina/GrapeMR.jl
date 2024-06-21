@@ -28,7 +28,8 @@ function grad_euclidean_norm(iso::Isochromat)
 end
 
 
-function grad_target_one_spin(iso::Isochromat; M_tar = [0.0; 1.0; 0.0])    
+function grad_target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])  
+
     # Target Magnetization
     Mx_tar = M_tar[1,1]
     My_tar = M_tar[2,1]
@@ -46,6 +47,7 @@ function grad_target_one_spin(iso::Isochromat; M_tar = [0.0; 1.0; 0.0])
     Mz_tf = (Mz - Mz_tar)/M_norm
 
     P_tar = [1.0, Mx_tf, My_tf, Mz_tf]
+
     return P_tar
 end
 
@@ -75,7 +77,7 @@ function grad_saturation_contrast_My(iso::Isochromat)
     s = iso.spin
     P = [];
     if s.target == "max"
-        Py = -(0.6)/(s.Nspins + 1e-15)
+        Py = -(0.3)/(s.Nspins + 1e-15)
         P = [0.0, 0.0, Py, 0.0]
         
     elseif s.target == "min"

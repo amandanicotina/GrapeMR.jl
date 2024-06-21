@@ -28,8 +28,8 @@ function euclidean_norm(iso::Isochromat)
     return J
 end
 
-function target_one_spin(iso::Isochromat; M_tar = [0.0; 1.0; 0.0])
-
+function target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
+    s = iso.spin
     # Target Magnetization
     Mx_tar = M_tar[1,1]
     My_tar = M_tar[2,1]
@@ -41,9 +41,9 @@ function target_one_spin(iso::Isochromat; M_tar = [0.0; 1.0; 0.0])
     My = mag[3,end]
     Mz = mag[4,end]
 
-    J_tar = (Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2
+    c = (Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2
 
-    return J_tar
+    return c/s.Nspins
 end
 
 function saturation_contrast(iso::Isochromat)
@@ -65,7 +65,7 @@ function saturation_contrast_My(iso::Isochromat)
     s = iso.spin
 
     if s.target == "max"
-        c = (1 - (0.6)*m[3,end] + 1e-15)/s.Nspins
+        c = (1 - (0.3)*m[3,end] + 1e-15)/s.Nspins
     elseif s.target == "min"
         c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/s.Nspins
     end
@@ -160,3 +160,6 @@ function saturation_contrast_steady_state(iso::Isochromat)
 
     return c
 end
+
+
+
