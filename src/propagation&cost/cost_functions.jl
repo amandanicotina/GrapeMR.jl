@@ -9,7 +9,7 @@ function cost_function(iso::Isochromat, cf::Symbol)
         :target_steady_state   => target_steady_state(iso)
         :targetB0_steady_state => targetB0_steady_state(iso)
         :saturation_contrast              => saturation_contrast(iso)
-        :saturation_contrast_Mxy          => saturation_contrast_Mxy(iso)
+        :saturation_contrast_My           => saturation_contrast_My(iso)
         :saturation_contrast_square       => saturation_contrast_square(iso)
         :saturation_contrast_steady_state => saturation_contrast_steady_state(iso)
         _                        => error("Cost function not defined")
@@ -59,13 +59,13 @@ function saturation_contrast(iso::Isochromat)
     return c
 end
 
-function saturation_contrast_Mxy(iso::Isochromat)
+function saturation_contrast_My(iso::Isochromat)
     c = 0.0;
     m = iso.magnetization.dynamics
     s = iso.spin
 
     if s.target == "max"
-        c = (1 - sqrt(sum(m[2:3,end].*m[2:3,end]) + 1e-15))/s.Nspins
+        c = (1 - (0.6)*m[3,end] + 1e-15)/s.Nspins
     elseif s.target == "min"
         c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/s.Nspins
     end

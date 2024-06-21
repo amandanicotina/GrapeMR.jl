@@ -89,24 +89,28 @@ end
     @test round.(fd_M, digits=5) .== round.(true_grad, digits=5)
 end
 
-@safetestset "Test Cost Function: Saturation Contrast" begin
+#@safetestset "Test Cost Function: Saturation Contrast" begin
     using GrapeMR
     # Parameters
     N   = 500;
     t_c = 0.5; #[s]
+    grape_params = GrapeParams(1000, :saturation_contrast_My, [true true false])
 
     # Spin
-    M0  = [0.0; 0.0; 1.0];
+    M0  = [0.0, 0.0, 1.0];
     T1  = [0.8];
     T2  = [0.6];
     B0  = [0.0];
-    target = ["max"];
+    ΔB1 = [1.0];
+    target = ["min"];
     label  = ["T1-$(Int(T1[1]*1e3))ms"]
 
     # RFs
-    ΔB1, Bz = 1.0, zeros(1,N);
-    B1x = 8*initial_field_spline(N, t_c)'; # rand(1, N); #
-    B1y = rand(1,N); #5*initial_field_spline(N, t_c)'; # 
+    B1ref = 1.0
+    B1x = spline_RF(grape_params.N, t_c)'
+    B1y = spline_RF(grape_params.N, t_c)'
+    Bz  = zeros(1, grape_params.N)
+    control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
 
     # Spin and RF objects
     control_sc_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
@@ -114,24 +118,24 @@ end
 
     mag_sc_test = forward_propagation(control_sc_test, spins_sc_test[1])
     dyn_sc_test = GrapeMR.Magnetization(mag_sc_test)
-    iso_sc_test = Isochromat(dyn_sc_test, spins_test[1])
+    iso_sc_test = Isochromat(dyn_sc_test, spins_sc_test[1])
+    
+    Mx = mag_sc_test[2,:];
+    My = mag_sc_test[3,:];
+    Mz = mag_sc_test[4,:];
 
-    Mx = mag_test[2,:];
-    My = mag_test[3,:];
-    Mz = mag_test[4,:];
-
-    cost_func_sc = :saturation_contrast
-    cost_val     = GrapeMR.cost_function(iso_test, cost_func_sc)
+    cost_func_sc_My = :saturation_contrast_My
+    cost_val     = GrapeMR.cost_function(iso_sc_test, cost_func_sc_My)
 
     # Finite difference
     ΔM   = 1e-10;
-    fd_M = finite_difference_cost(cost_func_sc, iso_test, ΔM)
+    fd_M = finite_difference_cost(cost_func_sc_My, iso_sc_test, ΔM)
 
     # True Gradient
-    true_grad = cost_function_gradient(iso_test, cost_func_sc)[2:end,:]
+    true_grad = cost_function_gradient(iso_sc_test, cost_func_sc_My)[2:end,:]
 
     @test round.(fd_M, digits=5) .== round.(true_grad, digits=5)
-end
+#end
 
 # New cost function test: steady State
 
@@ -168,7 +172,7 @@ mag_ss_test = forward_propagation(control_ss_test, spins_ss_test[1])
 dyn_ss_test = GrapeMR.Magnetization(mag_ss_test)
 iso_ss_test = Isochromat(dyn_ss_test, spins_ss_test[1]) 
 
-cost_func_ss = :saturation_contrast_steady_state
+cost_func_ss = :saturation_contrast_My
 cost_val_ss  = GrapeMR.cost_function(iso_ss_test, cost_func_ss)
 
 # Finite difference

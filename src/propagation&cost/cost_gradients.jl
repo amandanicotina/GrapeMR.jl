@@ -9,7 +9,7 @@ function cost_function_gradient(iso::Isochromat, cf::Symbol)
         :target_steady_state     => grad_target_steady_state(iso)
         :targetB0_steady_state   => grad_targetB0_steady_state(iso)
         :saturation_contrast     => grad_saturation_contrast(iso)
-        :saturation_contrast_Mxy => grad_saturation_contrast_Mxy(iso)
+        :saturation_contrast_My  => grad_saturation_contrast_My(iso)
         :saturation_contrast_square       => grad_saturation_contrast_square(iso)
         :saturation_contrast_steady_state => grad_saturation_contrast_steady_state(iso)
     end
@@ -70,14 +70,13 @@ function grad_saturation_contrast(iso::Isochromat)
     return P
 end
 
-function grad_saturation_contrast_Mxy(iso::Isochromat)
+function grad_saturation_contrast_My(iso::Isochromat)
     m = iso.magnetization.dynamics
     s = iso.spin
     P = [];
     if s.target == "max"
-        Px = -m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
-        Py = -m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
-        P = [0.0, Px, Py, 0.0]
+        Py = -(0.6)/(s.Nspins + 1e-15)
+        P = [0.0, 0.0, Py, 0.0]
         
     elseif s.target == "min"
         Px = m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
@@ -143,7 +142,7 @@ function grad_target_steady_state(iso::Isochromat)
         Mz = m[4,end]
 
         # Adjoint State
-        norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+        norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
         Px = (Mx - Mx_ss)/(s.Nspins*norm)
         Py = (My - My_ss)/(s.Nspins*norm)
         Pz = (Mz - Mz_ss)/(s.Nspins*norm)
@@ -169,7 +168,7 @@ function grad_targetB0_steady_state(iso::Isochromat)
     Mz = m[4,end]
 
     # Adjoint State
-    norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2)
+    norm = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
     Px = (Mx - Mx_ss)/(s.Nspins*norm)
     Py = (My - My_ss)/(s.Nspins*norm)
     Pz = (Mz - Mz_ss)/(s.Nspins*norm)
