@@ -8,8 +8,8 @@ function cost_function(iso::Isochromat, cf::Symbol)
         :target_one_spin       => target_one_spin(iso)
         :target_steady_state   => target_steady_state(iso)
         :targetB0_steady_state => targetB0_steady_state(iso)
+        :target_phase_encoding => target_phase_encoding(iso)
         :saturation_contrast              => saturation_contrast(iso)
-        :saturation_contrast_My           => saturation_contrast_My(iso)
         :saturation_contrast_square       => saturation_contrast_square(iso)
         :saturation_contrast_steady_state => saturation_contrast_steady_state(iso)
         _                        => error("Cost function not defined")
@@ -29,7 +29,7 @@ function euclidean_norm(iso::Isochromat)
 end
 
 function target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
-    s = iso.spin
+
     # Target Magnetization
     Mx_tar = M_tar[1,1]
     My_tar = M_tar[2,1]
@@ -41,10 +41,32 @@ function target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
     My = mag[3,end]
     Mz = mag[4,end]
 
-    c = (Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2
+    c = ((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2)/2
 
-    return c/s.Nspins
+    return c
 end
+
+function target_phase_encoding(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
+    s  = iso.spin
+    m  = iso.magnetization.dynamics
+    Δt = 0.1 # seconds
+    ϕ  = 2π*s.B0inho*Δt
+    
+    # Target Magnetization
+    Mx_tar = M_tar[1,1]
+    My_tar = M_tar[2,1]
+    Mz_tar = M_tar[3,1]
+
+    # Magnetization
+    Mx = (m[2,end] - Mx_tar)^2/2
+    My = (m[3,end] - My_tar)^2/2
+    Mz = (m[4,end] - Mz_tar)^2/2
+
+    c = (1 - (sin(ϕ)*Mx + cos(ϕ)*My + Mz))/s.Nspins
+
+    return c
+end
+
 
 function saturation_contrast(iso::Isochromat)
     c = 0.0;
@@ -65,7 +87,7 @@ function saturation_contrast_My(iso::Isochromat)
     s = iso.spin
 
     if s.target == "max"
-        c = (1 - (0.3)*m[3,end] + 1e-15)/s.Nspins
+        c = (1 - m[3,end] + 1e-15)/s.Nspins
     elseif s.target == "min"
         c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/s.Nspins
     end

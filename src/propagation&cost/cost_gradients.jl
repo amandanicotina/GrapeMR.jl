@@ -4,12 +4,13 @@ Cost Function's Gradients
 """
 function cost_function_gradient(iso::Isochromat, cf::Symbol)
     @match cf begin
-        :euclidean_norm          => grad_euclidean_norm(iso)
-        :target_one_spin         => grad_target_one_spin(iso)
-        :target_steady_state     => grad_target_steady_state(iso)
-        :targetB0_steady_state   => grad_targetB0_steady_state(iso)
-        :saturation_contrast     => grad_saturation_contrast(iso)
-        :saturation_contrast_My  => grad_saturation_contrast_My(iso)
+        :euclidean_norm         => grad_euclidean_norm(iso)
+        :target_one_spin        => grad_target_one_spin(iso)
+        :target_steady_state    => grad_target_steady_state(iso)
+        :targetB0_steady_state  => grad_targetB0_steady_state(iso)
+        :target_phase_encoding  => grad_target_phase_encoding(iso)
+        :saturation_contrast    => grad_saturation_contrast(iso)
+        :saturation_contrast_My => grad_saturation_contrast_My(iso)
         :saturation_contrast_square       => grad_saturation_contrast_square(iso)
         :saturation_contrast_steady_state => grad_saturation_contrast_steady_state(iso)
     end
@@ -29,26 +30,29 @@ end
 
 
 function grad_target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])  
+    m = iso.magnetization.dynamics
+    Px  = m[2,end] -  M_tar[1,1]
+    Py  = m[3,end] -  M_tar[2,1]
+    Pz  = m[4,end] -  M_tar[3,1]
 
-    # Target Magnetization
-    Mx_tar = M_tar[1,1]
-    My_tar = M_tar[2,1]
-    Mz_tar = M_tar[3,1]
-
-    # Magnetization
-    mag = iso.magnetization.dynamics
-    Mx  = mag[2,end]
-    My  = mag[3,end]
-    Mz  = mag[4,end]
-    M_norm = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2) 
-
-    Mx_tf = (Mx - Mx_tar)/M_norm
-    My_tf = (My - My_tar)/M_norm
-    Mz_tf = (Mz - Mz_tar)/M_norm
-
-    P_tar = [1.0, Mx_tf, My_tf, Mz_tf]
+    P_tar = [0.0, Px, Py, Pz]
 
     return P_tar
+end
+
+function grad_target_phase_encoding(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
+    s  = iso.spin
+    m  = iso.magnetization.dynamics
+    Δt = 0.1 # seconds
+    ϕ  = 2π*s.B0inho*Δt
+
+    Px = -sin(ϕ)*(m[2,end] -  M_tar[1,1])/s.Nspins
+    Py = -cos(ϕ)*(m[3,end] -  M_tar[2,1])/s.Nspins
+    Pz = -(m[4,end] -  M_tar[3,1])/s.Nspins
+
+    P = [0.0, Px, Py, Pz]
+    
+    return P
 end
 
 

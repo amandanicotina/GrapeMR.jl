@@ -3,7 +3,7 @@ using GrapeMR
 using JLD   
 
 # Grape Parameters 
-grape_params = GrapeParams(2000, :target_one_spin, [true true false])
+grape_params = GrapeParams(2000, :target_phase_encoding, [true true false])
 
 # Spin parameters
 # M0 = [0.0, 0.0, 1.0] 
@@ -24,7 +24,7 @@ T2 = [0.08]
 label  = ["T1=800ms"]
 target = ["max"]    
 B0 = 50.0
-offset = collect(0:1:B0) 
+offset = collect(-B0/2:1:B0/2) 
 ΔB1 = [1.0]
 spins = GrapeMR.Spin(M0, T1, T2, offset, ΔB1, target, label)
 
@@ -32,7 +32,7 @@ spins = GrapeMR.Spin(M0, T1, T2, offset, ΔB1, target, label)
 # bohb_max_iter = range(1000, stop=10000, step=500)
 # bohb_Tc = LinRange(0.05, 1.0, 20)
 # bohb = hyperoptimization(spins, grape_params, bohb_Tc, bohb_max_iter)
-Tc, poly_start, poly_degree, max_iter = 1.0, 0.01, 1, 2000 #   bohb.minimizer # 
+Tc, poly_start, poly_degree, max_iter = 0.5, 0.1, 2, 2000 #   bohb.minimizer # 
 opt_params   = OptimizationParams(poly_start, poly_degree, max_iter)
 
 # RF
@@ -51,18 +51,21 @@ plot_control_fields(grape_output.control_field)
 plot_cost_values(grape_output.cost_values, grape_params)
 plot_magnetization_time(grape_output.isochromats[2], Tc)
 
-pTrans = plot()
+pTrans = plot()#xlims=[-0.5, 0.5], ylims=[0.5, 1.0])
 isos = grape_output.isochromats
 for iso ∈ isos
     m = iso.magnetization.dynamics
     Mx = m[2,:]
     My = m[3,:]
     Mt = Mx + im*My
-   #plot!(pTrans, Mt, color = 2, label = false)
+   plot!(pTrans, Mt, color = 2, label = false)
     scatter!(pTrans, [Mt[end]], color = 2, label = false)
 end
 
 display(pTrans)
+
+
+@save "/Users/amandanicotina/Documents/Documents/ProgressReports/ResultsGrapeMR/2024-06-22/1spin_My_T1300ms_50Hz_phase.jl" grape_output opt_params grape_params
 # plot_Mtrans_offset_ss(grape_output.isochromats)
 # plot_magnetization_targetB0(grape_output.isochromats)
 # plot_magnetization_target_3D(grape_output.isochromats[5])
