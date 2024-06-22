@@ -90,40 +90,72 @@ function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}
 end
 
 
-function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
-    bohb = @hyperopt for i = i,
-        Tc = Tc,
-        poly_start  = poly_start, 
-        poly_degree = poly_degree, 
-        max_iter    = max_iter;
-        sampler = Hyperband(R=50, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
+function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
+    rand = @hyperopt for i = i,
+            Tc = Tc,
+            poly_start  = poly_start,
+            poly_degree = poly_degree,
+            max_iter    = max_iter;
+            sampler = Hyperband(R=50, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
         # BOHB
         # See: https://github.com/baggepinnen/Hyperopt.jl#bohb
         # And: https://arxiv.org/pdf/1807.01774
         # state is set by the BOHB algorithm and a KDE will estimate hyperparameters
         # that balance exploration and exploitation based on previous observations
 
-        if state !== nothing
-            Tc, poly_start, poly_degree, max_iter = state
-        end
         print("\n", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t", max_iter, "\t")
 
         # RFs
-        N   = 1000
         B1ref = 1.0
-        B1x = spline_RF(N, Tc)'
-        B1y = spline_RF(N, Tc)'
-        Bz  = zeros(1,N)
+        B1x = spline_RF(gp.N, Tc)'
+        B1y = spline_RF(gp.N, Tc)'
+        Bz  = zeros(1,gp.N)
         control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
 
         # Optimize
         opt_params   = OptimizationParams(poly_start, poly_degree, max_iter)
-        grape_output = @time grape(opt_params, gp, control_field, spins)
+        grape_output = grape(opt_params, gp, control_field, spins)
 
         cost = grape_output.cost_values[end]
-        @show cost
-        cost, (Tc, poly_start, poly_degree)
+        cost
     end
+
+    return rand
+end
+
+function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
+    bohb = @hyperopt for i = i, sampler = Hyperband(R=50, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
+        Tc = Tc,
+        poly_start  = poly_start,
+        poly_degree = poly_degree,
+        max_iter    = max_iter;
+   
+        if state !== nothing
+            Tc, poly_start, poly_degree, max_iter = state
+        end
+        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0 && max_iter >= 1.0
+            print("\n", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t", max_iter, "\t")
+
+            # RFs
+            B1ref = 1.0
+            B1x = spline_RF(gp.N, Tc)'
+            B1y = spline_RF(gp.N, Tc)'
+            Bz  = zeros(1,gp.N)
+            control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
+
+            # Optimize
+            opt_params   = OptimizationParams(poly_start, poly_degree, max_iter)
+            res = grape(opt_params, gp, control_field, spins)
+
+            cost = res.cost_values[end]
+            cost, [Tc, poly_start, poly_degree, max_iter]
+        else
+            1000.0, [0.0, 0.0, 0.0, 0.0]
+        end
+    end
+    # cleanup results and history
+    bohb.results = filter((x -> x != 1000.0), bohb.results)
+    bohb.history = filter((x -> x != [0.0, 0.0, 0.0, 0.0]), bohb.history)
 
     return bohb
 end
