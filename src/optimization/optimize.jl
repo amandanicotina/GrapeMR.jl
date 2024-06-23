@@ -123,18 +123,18 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
     return rand
 end
 
-function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
-    bohb = @hyperopt for i = i, sampler = Hyperband(R=50, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
-        Tc = Tc,
-        poly_start  = poly_start,
-        poly_degree = poly_degree,
-        max_iter    = max_iter;
+function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
+    bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
+            Tc = Tc,
+            poly_start  = poly_start,
+            poly_degree = poly_degree,
+            max_iter = range(1, step=1, stop=max_iter);
    
         if state !== nothing
-            Tc, poly_start, poly_degree, max_iter = state
+            Tc, poly_start, poly_degree, _ = state
         end
-        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0 && max_iter >= 1.0
-            print("\n", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t", max_iter, "\t")
+        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
+            print("\n resources: ", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
 
             # RFs
             B1ref = 1.0
@@ -144,11 +144,11 @@ function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange
             control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
 
             # Optimize
-            opt_params   = OptimizationParams(poly_start, poly_degree, max_iter)
+            opt_params   = OptimizationParams(poly_start, poly_degree, trunc(Int, i))
             res = grape(opt_params, gp, control_field, spins)
 
             cost = res.cost_values[end]
-            cost, [Tc, poly_start, poly_degree, max_iter]
+            cost, [Tc, poly_start, poly_degree, i]
         else
             1000.0, [0.0, 0.0, 0.0, 0.0]
         end

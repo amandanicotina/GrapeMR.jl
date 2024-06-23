@@ -45,8 +45,8 @@ control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
 
 # Run Optimization
 # grape_output = @time grape(opt_params, grape_params, control_field, spins)
-rand = @time random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=10000, step=500))
-bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), range(1000, stop=10000, step=1))
+bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), 10000, i=500)
+rand = @time random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=10000, step=500), i=500)
 
 # Plots
 # plot_magnetization_2D(grape_output.isochromats) 

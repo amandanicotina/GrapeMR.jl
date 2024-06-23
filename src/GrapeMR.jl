@@ -55,5 +55,6 @@ export plot_cost_values, plot_cost_offset, plot_control_fields
 export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
+export plot_evaluations
 
 end
