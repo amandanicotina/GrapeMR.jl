@@ -3,8 +3,6 @@ using GrapeMR
 using JLD
 using Hyperopt
 
-# Grape Parameters 
-grape_params = GrapeParams(2000, :target_phase_encoding, [true true false])
 
 # Spin parameters
 # M0 = [0.0, 0.0, 1.0] 
@@ -27,26 +25,29 @@ target = ["max"]
 B0 = 50.0
 offset = collect(-B0/2:1:B0/2) 
 ΔB1 = [1.0]
-spins = GrapeMR.Spin(M0, T1, T2, [0.0], ΔB1, target, label)
+spins = GrapeMR.Spin(M0, T1, T2, offset, ΔB1, target, label)
 
 # Optimization Parameters
 # bohb_max_iter = range(1000, stop=10000, step=500)
 # bohb_Tc = LinRange(0.05, 1.0, 20)
 # bohb = hyperoptimization(spins, grape_params, bohb_Tc, bohb_max_iter)
-Tc, poly_start, poly_degree, max_iter = 0.5, 0.1, 2, 2000 #   bohb.minimizer #
+# Tc, poly_start, poly_degree, max_iter = 0.5, 0.1, 2, 2000 #   bohb.minimizer #
 opt_params   = OptimizationParams(poly_start, poly_degree, max_iter)
 
+# Grape Parameters 
+grape_params = GrapeParams(2000, :target_phase_encoding, [true true false])
+
 # RF
-B1ref = 1.0
-B1x = spline_RF(grape_params.N, Tc)'
-B1y = spline_RF(grape_params.N, Tc)'
-Bz  = zeros(1, grape_params.N)
-control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
+# B1ref = 1.0
+# B1x = spline_RF(grape_params.N, Tc)'
+# B1y = spline_RF(grape_params.N, Tc)'
+# Bz  = zeros(1, grape_params.N)
+# control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
 
 # Run Optimization
 # grape_output = @time grape(opt_params, grape_params, control_field, spins)
-bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), 10000, i=500)
-rand = @time random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=10000, step=500), i=500)
+bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), 8000, i=100)
+rand = @time random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=8000, step=500), i=100)
 
 # Plots
 # plot_magnetization_2D(grape_output.isochromats) 

@@ -54,3 +54,4 @@ h1=heatmap(cost_matrix, xlabel="B0 Inhomogeneity", ylabel="B1 Inhomogeneity", ti
 
 display(p1)  
 display(h1)
+

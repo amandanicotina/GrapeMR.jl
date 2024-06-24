@@ -91,7 +91,7 @@ end
 
 
 function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
-    rand = @hyperopt for i = i,
+    random_hyperopt = @hyperopt for i = i,
             Tc = Tc,
             poly_start  = poly_start,
             poly_degree = poly_degree,
@@ -103,7 +103,7 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         # state is set by the BOHB algorithm and a KDE will estimate hyperparameters
         # that balance exploration and exploitation based on previous observations
 
-        print("\n", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t", max_iter, "\t")
+        # print("\n", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t", max_iter, "\t")
 
         # RFs
         B1ref = 1.0
@@ -120,7 +120,7 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         cost
     end
 
-    return rand
+    return random_hyperopt
 end
 
 function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
@@ -134,7 +134,7 @@ function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange
             Tc, poly_start, poly_degree, _ = state
         end
         if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-            print("\n resources: ", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
+            # print("\n resources: ", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
 
             # RFs
             B1ref = 1.0
