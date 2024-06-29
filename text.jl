@@ -44,3 +44,5 @@ p2 = plot(speed_up, label="Speedup", marker=:o, ylabel="Speedup", title="Speedup
 
 # Display the plots
 plot(p1, p2, layout=(1, 2), size=(1000, 400))
+
+

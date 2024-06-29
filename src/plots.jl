@@ -298,17 +298,18 @@ function bohb_params(bohb)
          color = :viridis)
          scatter!([t_min], [m_min], label = "Minimum = $c_min", 
          marker = :star5, markersize = 8, color = :red)
-    p_order =  scatter(t_c, max, zcolor=order, 
+    p_order =  scatter(cost, log.(max), zcolor=order, 
          markerstrokecolor = :auto, label = false, 
-         xlabel = "Control time [s]", ylabel = "Iter", colorbar_title="Iterations",
-         title = "Optimization", 
+         xlabel = "Cost Function", ylabel = "Resources - log scale", colorbar_title="Iterations",
+         title = "Hyperparameter Tuning - Random Sampler", 
          color = :viridis)
-         scatter!([t_min], [m_min], label = "Minimum = $c_min", 
+         scatter!([c_min], [log(m_min)], label = "Minimum = $c_min", 
          marker = :star5, markersize = 8, color = :red)
 
     return p_cost, p_order
 end
 
+# p1, p2 = bohb_params(rand_hopt)
 
 function plot_magnetization_targetB0(isos::Vector{Isochromat})
     p = plot()

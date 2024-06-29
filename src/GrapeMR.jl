@@ -8,6 +8,7 @@ using CSV
 using JLD
 using Plots
 using Dates
+using Logging
 using Match
 using Hyperopt
 using BlochSim
@@ -15,6 +16,7 @@ using DataFrames
 using CubicSplines
 using LinearAlgebra
 using ParameterSchedulers
+using Wandb
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")

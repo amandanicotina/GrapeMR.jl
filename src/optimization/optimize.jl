@@ -1,3 +1,5 @@
+const wandb_project::String = "GrapeMR"
+
 struct GrapeOutput
     isochromats::Vector{Isochromat}
     control_field::ControlField
@@ -90,21 +92,17 @@ function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}
 end
 
 
-function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::AbstractRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])
-    random_hyperopt = @hyperopt for i = i,
+function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3], logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
+    random_hyperopt = @thyperopt for i = i,
             Tc = Tc,
             poly_start  = poly_start,
             poly_degree = poly_degree,
-            max_iter    = max_iter;
-            sampler = Hyperband(R=50, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
+            max_iter    = max_iter
         # BOHB
         # See: https://github.com/baggepinnen/Hyperopt.jl#bohb
         # And: https://arxiv.org/pdf/1807.01774
         # state is set by the BOHB algorithm and a KDE will estimate hyperparameters
         # that balance exploration and exploitation based on previous observations
-
-        # print("\n", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t", max_iter, "\t")
-
         # RFs
         B1ref = 1.0
         B1x = spline_RF(gp.N, Tc)'
@@ -117,9 +115,24 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         grape_output = grape(opt_params, gp, control_field, spins)
 
         cost = grape_output.cost_values[end]
+        @info "metrics" hyperopt_i=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=max_iter
+        # Could add debug metrics too
+        # @debug "metrics" not_print=-1  # Will have to change debug level for this to be logged
+        # Tracking Hyperparameters
+        # Logging Values
+        Wandb.log(logger, Dict(
+            "hyperopt_i" => i, 
+            "cost" => cost,
+            "Tc" => Tc,
+            "poly_start" => poly_start,
+            "poly_degree" => poly_degree,
+            "max_iter" => max_iter
+        )
+        )
         cost
     end
 
+    close(logger)
     return random_hyperopt
 end
 
