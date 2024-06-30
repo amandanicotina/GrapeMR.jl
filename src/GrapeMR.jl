@@ -8,6 +8,7 @@ using CSV
 using JLD
 using Plots
 using Dates
+using Distributed
 using Logging
 using Match
 using Hyperopt
