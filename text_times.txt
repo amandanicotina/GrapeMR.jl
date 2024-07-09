@@ -1,9 +1,36 @@
 
-bohb.minimizer
-    time_c     = 0.8
-    poly_start = 0.1
-    poly_deg   = 1
-    max_iter   = 2900
+
+################################################
+# Vectorizing exponential
+################################################
+spins = 6, max_iter = 500
+no_vec: 33.491178 seconds (486.77 M allocations: 31.705 GiB, 9.14% gc time, 6.65% compilation time)
+wh_vec: 31.294787 seconds (408.16 M allocations: 30.238 GiB, 8.73% gc time, 1.04% compilation time)
+no_vec: 34.412552 seconds (480.46 M allocations: 31.309 GiB, 8.90% gc time)
+wh_vec: 35.442875 seconds (407.03 M allocations: 30.173 GiB, 8.81% gc time)
+no_vec: 36.005557 seconds (480.46 M allocations: 31.309 GiB, 9.43% gc time)
+wh_vec: 38.215112 seconds (407.83 M allocations: 30.329 GiB, 9.42% gc time)
+
+spins = 6, max_iter = 500
+no_vec: 127.236602 seconds (1.78 G allocations: 117.143 GiB, 9.77% gc time, 1.74% compilation time)
+wh_vec: 144.347337 seconds (1.55 G allocations: 120.867 GiB, 9.00% gc time, 0.28% compilation time)
+no_vec: 118.359055 seconds (1.77 G allocations: 116.747 GiB, 9.78% gc time)
+wh_vec: 111.958089 seconds (1.55 G allocations: 120.780 GiB, 9.79% gc time)
+no_vec: 118.128917 seconds (1.77 G allocations: 116.747 GiB, 9.82% gc time)
+wh_vec: 112.453285 seconds (1.55 G allocations: 120.780 GiB, 9.87% gc time)
+
+
+spins = 6, max_iter = 1500
+no_vec: 348.980242 seconds (5.32 G allocations: 350.637 GiB, 8.98% gc time, 0.56% compilation time)
+wh_vec: 331.360269 seconds (4.64 G allocations: 362.426 GiB, 9.29% gc time, 0.10% compilation time)
+no_vec: 350.013919 seconds (5.32 G allocations: 350.241 GiB, 9.31% gc time)
+wh_vec: 325.560176 seconds (4.64 G allocations: 362.453 GiB, 9.46% gc time)
+no_vec: 358.647114 seconds (5.32 G allocations: 350.418 GiB, 9.31% gc time)
+wh_vec: 328.380284 seconds (4.64 G allocations: 362.615 GiB, 9.53% gc time)
+
+
+
+
 
 ###
 No threading 
@@ -45,3 +72,9 @@ Tc = 0.8642857142857142
 poly_start = 0.1
 poly_deg = 1
 max_iter = 8500
+
+
+
+
+
+

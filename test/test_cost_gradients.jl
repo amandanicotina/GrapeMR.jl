@@ -17,8 +17,8 @@ using Test
     B0  = [0.0];
     Bz  = zeros(1,N);
     B1_max = 100.0; # [Hz]
-    B1x = initial_field_spline(N, t_c)'; 
-    B1y = initial_field_spline(N, t_c)';
+    B1x = spline_RF(N, t_c)'; 
+    B1y = spline_RF(N, t_c)';
 
     field_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
     spins_test = GrapeMR.Spin(M0, T1, T2, B0, [1.0], target, label)
@@ -30,11 +30,11 @@ using Test
     iso_test  = Isochromat(dyn_test, spin_test)
     cost_func = :saturation_contrast
     cost_grad = GrapeMR.cost_function_gradient(iso_test, cost_func)
-    adj_test  = backward_propagation(field_test, iso_test, cost_grad)
+    adj_test  = test_backward_propagation(field_test, iso_test, cost_grad)
 
     # Finite difference
     Δcf   = 1e-3;
-    fd_cf = GrapeMR.finite_difference_field(cost_func, field_test, spin_test, Δcf, "B1x")*55
+    fd_cf = GrapeMR.finite_difference_field(cost_func, field_test, spin_test, Δcf, "B1x")
 
     # True Gradient
     true_grad = gradient(adj_test, mag_test, Ix)

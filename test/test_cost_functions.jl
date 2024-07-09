@@ -145,12 +145,12 @@ using GrapeMR
 # Parameters
 N   = 1000;
 t_c = 0.5; #[s]
-grape_params = GrapeParams(1000, :target_phase_encoding, [true true false])
+grape_params = GrapeParams(1000, :saturation_contrast_Mx, [true true false])
 
 # Spin
 M0  = [0.0, 0.0, 1.0];
-T1  = [0.8];
-T2  = [0.6];
+T1  = [1.8];
+T2  = [0.06];
 B0  = [0.0];
 ΔB1 = [1.0];
 target = ["min"];

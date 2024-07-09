@@ -15,7 +15,6 @@ function grape(op::OptimizationParams, gp::GrapeParams, cf::ControlField, spins:
         # ϵ   = max(ϵ, eps)
         ∇x  = zeros(Float64, 1, gp.N)
         ∇y  = zeros(Float64, 1, gp.N)
-        # @show eps
         for spin ∈ spins
             # Propagation & cost
             mag = forward_propagation(cf, spin)
@@ -35,6 +34,58 @@ function grape(op::OptimizationParams, gp::GrapeParams, cf::ControlField, spins:
                 ∇y += gradient(adj, mag, Iy)
             end 
         end
+
+        # Control Field
+        (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
+        cf.B1x = u1x
+        cf.B1y = u1y
+    end
+
+    grape_output.control_field.B1x = u1x
+    grape_output.control_field.B1y = u1y
+
+    return grape_output
+end
+
+function par_grape(op::OptimizationParams, gp::GrapeParams, cf::ControlField, spins::Vector{<:Spins})
+    max_iter     = op.max_iter
+    lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=max_iter+1) 
+    cost_vals    = zeros(Float64, max_iter, 1)[:]
+    u1x, u1y     = [], []
+    iso_output   = Vector{Isochromat}(undef, length(spins)) 
+    grape_output = GrapeOutput(iso_output, deepcopy(cf), cost_vals)
+
+    for (ϵ, i) ∈ zip(lr_scheduler, 1:max_iter)
+        # ϵ   = max(ϵ, eps)
+        ∇x  = zeros(Float64, 1, gp.N)
+        ∇y  = zeros(Float64, 1, gp.N)
+        cf_bc = [cf; cf]
+
+        # Propagation & cost
+        mag = forward_propagation.(cf_bc, spins)
+        dyn = GrapeMR.Magnetization.(mag)
+        iso = Isochromat.(dyn, spins)
+        grape_output.cost_values[i,1] += sum(GrapeMR.cost_function.(iso, gp.cost_function))
+        cost_grad = GrapeMR.cost_function_gradient.(iso, gp.cost_function)
+        adj = backward_propagation.(cf_bc, iso, cost_grad)
+        if i == max_iter
+            grape_output.isochromats .= iso
+        end
+        # Gradient
+        ix=[]
+        push!(ix, Ix)
+        push!(ix, Ix)
+        iy=[]
+        push!(iy, Iy)
+        push!(iy, Iy)
+        if gp.fields_opt[1]
+            ∇x_bc = gradient.(adj, mag, ix)
+        end 
+        if gp.fields_opt[2]
+            ∇y_bc = gradient.(adj, mag, iy)
+        end 
+        ∇x = sum(∇x_bc)
+        ∇y = sum(∇y_bc)
 
         # Control Field
         (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
