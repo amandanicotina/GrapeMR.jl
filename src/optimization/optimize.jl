@@ -3,7 +3,20 @@ struct GrapeOutput
     control_field::ControlField
     cost_values::Array{Float64}
 end
+"""
+    grape(op::OptimizationParams, gp::GrapeParams, cf::ControlField, spins::Vector{<:Spins})
 
+Implements the grape algorithm [khaneja2005optimal](@cite) 
+
+## Keyword arguments
+### Input
+- 'op::OptimizationParams': Parameters for the optimization itself: max iterations, 
+- 'gp::GrapeParams': Parameters related to Grape itself: time points, cost function, mask for which fields are being optimized.
+- 'cf::ControlField': Initial control field - spline function -
+- 'spins::Vector{<:Spins}': Vector with all spins included in the optimization
+### Output
+- 'grape_output::GrapeOutput': Data type with the optimized control fields, spin information and spin dynamics.
+"""
 function grape(op::OptimizationParams, gp::GrapeParams, cf::ControlField, spins::Vector{<:Spins})
     max_iter     = op.max_iter
     lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=max_iter+1) 

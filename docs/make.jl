@@ -1,9 +1,17 @@
 push!(LOAD_PATH,"../src/")
 
-using Documenter
-using GrapeMR
+using Documenter, Literate, GrapeMR
 
-makedocs(
+Literate.markdown("./src/tutorial.jl", "./src")
+
+pages = [
+"Introduction" => "index.md",
+"Tutorial" => "tutorial.md",
+ # "API" => "api.md",
+]
+
+# compile to HTML:
+makedocs(pages,
     sitename = "GrapeMR",
     format = Documenter.HTML(),
     modules = [GrapeMR]
