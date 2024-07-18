@@ -9,6 +9,7 @@ using JLD
 using Plots
 using Dates
 using Match
+using Base.Threads
 using Hyperopt
 using BlochSim
 using DataFrames
@@ -45,7 +46,7 @@ export steady_state, steady_state_matrix, steady_state_geometric, steady_state_g
 export cost_function
 export cost_function_gradient
 
-export grape, par_grape, random_sample, hyperoptimization
+export grape, par_grape, tpar_grape, optimized_grape, random_sample, hyperoptimization
 export gradient, update!
 export finite_difference_cost, finite_difference_field
 
