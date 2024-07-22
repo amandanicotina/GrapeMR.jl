@@ -8,9 +8,9 @@ function spline_RF(N, t_c)
     spline_vec = [spline(ti) for ti in t_values]
 
     # Spline plot 
-    plot(time, spline[time])
-    scatter!(time, field_vals)  
-    plot!(t_values, spline_vec)
+    # plot(time, spline[time])
+    # scatter!(time, field_vals)  
+    # plot!(t_values, spline_vec)
    
     return spline_vec
 end
