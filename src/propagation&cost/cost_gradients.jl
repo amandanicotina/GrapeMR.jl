@@ -10,7 +10,7 @@ function cost_function_gradient(iso::Isochromat, cf::Symbol)
         :targetB0_steady_state  => grad_targetB0_steady_state(iso)
         :target_phase_encoding  => grad_target_phase_encoding(iso)
         :saturation_contrast    => grad_saturation_contrast(iso)
-        :saturation_contrast_My => grad_saturation_contrast_My(iso)
+        :saturation_contrast_Mx => grad_saturation_contrast_Mx(iso)
         :saturation_contrast_square       => grad_saturation_contrast_square(iso)
         :saturation_contrast_steady_state => grad_saturation_contrast_steady_state(iso)
     end
@@ -60,14 +60,15 @@ function grad_saturation_contrast(iso::Isochromat)
     m = iso.magnetization.dynamics
     s = iso.spin
     P = [];
+    norm = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
     if s.target == "max"
-        Pz = -m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Pz = -m[4,end]/(s.Nspins*norm)
         P = [0.0, 0.0, 0.0, Pz]
         
     elseif s.target == "min"
-        Px = m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
-        Py = m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
-        Pz = m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Px = m[2,end]/(s.Nspins*norm)
+        Py = m[3,end]/(s.Nspins*norm)
+        Pz = m[4,end]/(s.Nspins*norm)
         P = [0.0, Px, Py, Pz]
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")
@@ -76,18 +77,19 @@ function grad_saturation_contrast(iso::Isochromat)
     return P
 end
 
-function grad_saturation_contrast_My(iso::Isochromat)
+function grad_saturation_contrast_Mx(iso::Isochromat)
     m = iso.magnetization.dynamics
     s = iso.spin
     P = [];
+    norm = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)
     if s.target == "max"
-        Py = -(0.3)/(s.Nspins + 1e-15)
-        P = [0.0, 0.0, Py, 0.0]
+        Px = -m[2,end]/(s.Nspins*norm)
+        P = [0.0, Px, 0.0, 0.0]
         
     elseif s.target == "min"
-        Px = m[2,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
-        Py = m[3,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
-        Pz = m[4,end]/(s.Nspins*sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15))
+        Px = m[2,end]/(s.Nspins*norm)
+        Py = m[3,end]/(s.Nspins*norm)
+        Pz = m[4,end]/(s.Nspins*norm)
         P = [0.0, Px, Py, Pz]
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")

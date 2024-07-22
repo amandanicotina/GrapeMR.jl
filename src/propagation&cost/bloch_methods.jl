@@ -52,6 +52,30 @@ function forward_propagation(cf::ControlField, s::Spins)
 
     return M    
 end
+function test_forward_propagation(cf::ControlField, s::Spins)
+    Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
+    Δt_diff = diff(Δt_arr)
+    M       = zeros(Float64, 4, length(cf.B1x)+1)
+    M[:, 1] = [1.0, s.M_init[1], s.M_init[2], s.M_init[3]];
+    
+    B0 = 2π*s.B0inho
+    B1 = s.B1inho
+    Bz = cf.Bz .+ B0
+    Bx = 2π*B1.*cf.B1x
+    By = 2π*B1.*cf.B1y 
+
+    bloch_mat     = bloch_matrix.(Bx, By, Bz, s.T1, s.T2)
+    exp_bloch_mat = [Matrix{Float64}(undef, 4, 4) for _ in 1:length(Δt_diff)]
+    exp_bloch_mat = [exp(Δt * bloch_mat[i]) for (i, Δt) in enumerate(Δt_diff)]
+    
+    # Perform the forward propagation in a vectorized manner
+    for i in 1:length(Δt_diff)
+        M[:, i+1] = exp_bloch_mat[i] * M[:, i]
+    end
+
+    return M    
+end
+
 
 """
 backward_propagation
@@ -86,5 +110,34 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vect
 
     return round.(χ, digits = 5)
 end
+
+
+function test_backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vector{Float64})
+    t_arr      = range(0.0, cf.t_control, length(cf.B1x)+1)
+    Δt_diff    = diff(t_arr)
+    back_steps = length(Δt_diff)
+    χ          = zeros(Float64, 4, length(cf.B1x)+1)
+    χ[:, end]  = cost_grad;
+    s          = iso.spin
+
+    B0 = 2π*s.B0inho
+    B1 = s.B1inho
+    Bz = 2π*cf.Bz .+ B0
+    Bx = 2π*B1.*cf.B1x
+    By = 2π*B1.*cf.B1y
+
+    bloch_mat     = bloch_matrix.(Bx, By, Bz, s.T1, s.T2)
+    bloch_mat_adj = adjoint.(bloch_mat)
+    exp_bloch_mat = [Matrix{Float64}(undef, 4, 4) for _ in 1:back_steps]
+    exp_bloch_mat = [exp(Δt_diff[i] * bloch_mat_adj[i]) for i in back_steps:-1:1]
+
+    for i in back_steps:-1:1 
+        χ[:, i] = exp_bloch_mat[i]*χ[:, i+1]
+    end
+
+    return round.(χ, digits = 5)
+end
+
+
 
 

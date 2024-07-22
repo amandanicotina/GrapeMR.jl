@@ -86,6 +86,3 @@ end
 # JLD2.@save "/Users/daviddodel/Documents/amanda/rand_hopt.jl" rand_hopt
 # JLD.@save "/Users/daviddodel/Documents/amanda/rand_hopt.jld" rand_hopt
 # JLD.@save "/Users/daviddodel/Documents/amanda/rand_hopt.jl" rand_hopt
-
-
-

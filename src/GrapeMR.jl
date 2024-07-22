@@ -11,6 +11,7 @@ using Dates
 using Distributed
 using Logging
 using Match
+using Base.Threads
 using Hyperopt
 using BlochSim
 using DataFrames
@@ -43,21 +44,23 @@ export OptimizationParams, GrapeParams
 export Spins, Spin, SteadyState, Magnetization, Isochromat
 
 export forward_propagation, backward_propagation
+export test_forward_propagation, test_backward_propagation
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
 export cost_function
 export cost_function_gradient
 
-export grape, par_grape, random_sample, hyperoptimization
+export grape, par_grape, tpar_grape, optimized_grape, random_sample, hyperoptimization
 export gradient, update!
 export finite_difference_cost, finite_difference_field
 
 export save_grape_data
 export spline_RF, sinc_RF, bSSFP_RF
 
-export plot_cost_values, plot_cost_offset, plot_control_fields
+export plot_cost_values, plot_cost_offset, plot_control_fields, plot_control_fields_phase
 export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
+export plot_transverse_magnetization, plot_magnetization_control_field
 export plot_evaluations
 
 end

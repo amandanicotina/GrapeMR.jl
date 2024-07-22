@@ -1,7 +1,5 @@
 # GrapeMR.jl
 
-![Grape Logo](../images/grape_logo.png)
-
 Documentation for GrapeMR.jl
 # Magnetic systems 
 - Given a homogeneus magnetic field $\vec{B}_0 = |B_0|\textbf{z}$ 
@@ -20,7 +18,7 @@ where $\Delta t$ is the duration of the $B_1(t)$ field. Because the gyromagnetic
 - The relaxation parameters, $T_1$ and $T_2$, are individual to each molecule, therefore, generating different decays for different molecules excited by the same RF pulse.
 - From the signal detected, one can calculate the magnetization values.
 
-
+<!-- 
 # Optimal Control
 ## Description of System Dynamics
 The dynamics of a system can be mathematically described by the following system of equations:
@@ -84,7 +82,4 @@ The basic algorithm for optimization is Gradient Ascent, which can be described 
 5. Repeat 2-4 until convergence.
 
 While this is the simplest way to apply the gradient ascent algorithm, a more precise approach involves using forward and backward propagation to update the control field. This approach will be discussed in the following section.
-
-![GRAPE optimization](../images/grape_pulse.jpeg)
-
-
+ -->
