@@ -9,8 +9,8 @@ using JLD
 using Plots
 using Dates
 using Match
-using Base.Threads
 using Hyperopt
+using Symbolics
 using BlochSim
 using DataFrames
 using CubicSplines

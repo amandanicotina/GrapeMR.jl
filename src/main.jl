@@ -24,17 +24,17 @@ using GrapeMR
 # t1gycon = 0.730
 
 M0 = [0.0, 0.0, 1.0] 
-T1 = [1.3, 0.73]
-T2 = [2.0, 0.04]
-label  = ["T1=$(T1[1]*1e3)ms", "T1=$(T1[2]*1e3)ms"]  
-target = ["min", "max"]
+T1 = [1.3]#, 0.73]
+T2 = [2.0]#, 0.04]
+label  = ["T1=$(T1[1]*1e3)ms"]#, "T1=$(T1[2]*1e3)ms"]  
+target = ["min"]#, "max"]
 B0 = 30.0
 offset = collect(-B0/2:3:B0/2) 
 ΔB1 = [1.0]
-spins = Spin(M0, T1, T2, offset, ΔB1, target, label)
+spins = Spin(M0, T1, T2, [0.0], ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, :saturation_contrast_Mx, [true true false])
+grape_params = GrapeParams(1500, :euclidean_norm, [true true false])
 
 # Optimization Parameters
 #bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), 5000, i=10)
@@ -49,7 +49,7 @@ Bz  = zeros(1, grape_params.N)
 control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
 
 # Run Optimization
-grape_output_test1 = @time grape(opt_params, grape_params, control_field, spins);
+grape_output_test1 = @time grape(opt_params, grape_params, control_field, spins)
 # 139.937298 seconds (2.62 G allocations: 174.438 GiB, 5.13% gc time, 0.00% compilation time)
 # 177.664103 seconds (2.62 G allocations: 174.526 GiB, 7.60% gc time)
 grape_output_test2 = @time par_grape(opt_params, grape_params, control_field, spins);

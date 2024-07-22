@@ -13,20 +13,41 @@ function cost_function(iso::Isochromat, cf::Symbol)
         :saturation_contrast_Mx           => saturation_contrast(iso)
         :saturation_contrast_square       => saturation_contrast_square(iso)
         :saturation_contrast_steady_state => saturation_contrast_steady_state(iso)
-        _                        => error("Cost function not defined")
+        _                       => error("Cost function not defined")
     end
 end
 
+function calculate_cost_gradient(cost_func::Function, dict::Dict, vars::Vector{Num})
+    dMx = Differential(vars[1])
+    dMy = Differential(vars[2])
+    dMz = Differential(vars[3])
+
+    dCost_Mx = expand_derivatives(dMx(cost_func))
+    dCost_My = expand_derivatives(dMy(cost_func))
+    dCost_Mz = expand_derivatives(dMz(cost_func))
+    Px = substitute.(dCost_Mx, (dict,))
+    Py = substitute.(dCost_My, (dict,))
+    Pz = substitute.(dCost_Mz, (dict,))
+
+    cost_grad = [0.0, Px, Py, Pz]
+    return cost_grad
+ end
               
 function euclidean_norm(iso::Isochromat)
-    mag = iso.magnetization.dynamics
-    Mx = mag[2,end]
-    My = mag[3,end]
-    Mz = mag[4,end]
+    # Cost Function
+    cost(Mx::Float64, My::Float64, Mz::Float64) = sqrt(Mx^2 + My^2 + Mz^2)
 
-    J = (Mx^2 + My^2 + Mz^2)/2
+    # Numerical cost_values
+    m = iso.magnetization.dynamics
+    mx, my, mz = m[2,end], m[3,end], m[4,end]
+    c = cost(mx, my, mz)
 
-    return J
+    # Calculating gradient
+    vars = @variables Mx, My, Mz
+    dict = Dict(vars .=> [mx, my, mz])
+    c_grad = calculate_cost_gradient(cost, dict, vars)
+
+    return c, c_grad
 end
 
 function target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
