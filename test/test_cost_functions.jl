@@ -145,13 +145,15 @@ using GrapeMR
 # Parameters
 N   = 1000;
 t_c = 0.5; #[s]
-grape_params = GrapeParams(1000, :saturation_contrast_Mx, [true true false])
+grape_params = GrapeParams(1000, :target_steady_state, [true true false])
 
 # Spin
 M0  = [0.0, 0.0, 1.0];
 T1  = [1.8];
 T2  = [0.06];
-B0  = [0.0];
+α, Δϕ, TR, TE = 2π/9, 2π, 5.6e-3, 2.8e-3
+B0 = round(1/TR)
+offset = collect(-B0/2:5:B0/2) 
 ΔB1 = [1.0];
 target = ["min"];
 label  = ["T1-$(Int(T1[1]*1e3))ms"]
@@ -165,7 +167,7 @@ control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
 
 # Spin and RF objects
 control_sc_test = ControlField(B1x, B1y, 1.0, Bz, t_c)
-spins_sc_test   = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
+spins_sc_test = GrapeMR.SteadyState(M0, T1, T2, [0.0], ΔB1, target, label, α, Δϕ, TR, TE)
 
 mag_sc_test = forward_propagation(control_sc_test, spins_sc_test[1])
 dyn_sc_test = GrapeMR.Magnetization(mag_sc_test)

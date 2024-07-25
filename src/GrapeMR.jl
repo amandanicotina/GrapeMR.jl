@@ -18,7 +18,7 @@ using DataFrames
 using CubicSplines
 using LinearAlgebra
 using ParameterSchedulers
-using Wandb
+# using Wandb
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
@@ -35,7 +35,11 @@ include("optimization/finite_difference.jl")
 include("utilities/save_data.jl")
 include("utilities/rf_shapes.jl")
 
-include("plots.jl")
+include("plots/plots_bohb.jl")
+include("plots/plots_control_field.jl")
+include("plots/plots_cost_functions.jl")
+include("plots/plots_magnetization.jl")
+include("plots/plots_time_dynamics.jl")
 
 export γ_¹H, Ix, Iy
 
@@ -61,6 +65,6 @@ export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
 export plot_transverse_magnetization, plot_magnetization_control_field
-export plot_evaluations
+export plot_evaluations, plot_bohb
 
 end

@@ -18,12 +18,15 @@ function cost_function_gradient(iso::Isochromat, cf::Symbol)
 end
                 
 function grad_euclidean_norm(iso::Isochromat)
-    mag = iso.magnetization.dynamics
-    Mx_tf = mag[2,end]
-    My_tf = mag[3,end]
-    Mz_tf = mag[4,end]
+    m = iso.magnetization.dynamics
+    s = iso.spin
+    norm =  sqrt(sum(m[2:3,end].*m[2:3,end]) + 1e-15)
+    Mx_tf = m[2,end]/norm
+    My_tf = m[3,end]/norm
+    Mz_tf = m[4,end]/norm
 
-    P = [0.0, Mx_tf, My_tf, Mz_tf]
+
+    P = [0.0, Mx_tf, My_tf, 0.0]
 
     return P
 end

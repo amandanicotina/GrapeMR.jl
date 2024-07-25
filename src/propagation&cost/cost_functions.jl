@@ -19,12 +19,12 @@ end
 
               
 function euclidean_norm(iso::Isochromat)
-    mag = iso.magnetization.dynamics
-    Mx = mag[2,end]
-    My = mag[3,end]
-    Mz = mag[4,end]
+    m = iso.magnetization.dynamics
+    Mx = m[2,end]
+    My = m[3,end]
+    Mz = m[4,end]
 
-    J = (Mx^2 + My^2 + Mz^2)/2
+    J = sqrt(Mx^2 + My^2)# + Mz^2)
 
     return J
 end

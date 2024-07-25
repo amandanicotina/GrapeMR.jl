@@ -132,11 +132,3 @@ save_grape_data(gp_output, folder_path="/path/to/folder")
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-
-function optimal_flip_angle(T1::Float64, T2::Float64, TR::Float64)
-    Γ_T1 = (2π*TR)/T1;
-    Γ_T2 = (2π*TR)/T2;
-    ernst_sol = (exp(-Γ_T1) + exp(-Γ_T2)) / (1 + exp(-(Γ_T1 + Γ_T2))) 
-    α_opt = acos(ernst_sol)
-    return α_opt
-end

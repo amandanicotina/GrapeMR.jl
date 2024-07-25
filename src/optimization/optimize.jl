@@ -259,7 +259,7 @@ function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}
 end
 
 
-function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3], logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
+function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])#, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
     random_hyperopt = @phyperopt for i = i,
             Tc = Tc,
             poly_start  = poly_start,
@@ -289,15 +289,15 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         # @debug "metrics" not_print=-1  # Will have to change debug level for this to be logged
         # Tracking Hyperparameters
         # Logging Values
-        Wandb.log(logger, Dict(
-            "hyperopt_i" => i, 
-            "cost" => cost,
-            "Tc" => Tc,
-            "poly_start" => poly_start,
-            "poly_degree" => poly_degree,
-            "max_iter" => max_iter
-        )
-        )
+        # Wandb.log(logger, Dict(
+        #     "hyperopt_i" => i, 
+        #     "cost" => cost,
+        #     "Tc" => Tc,
+        #     "poly_start" => poly_start,
+        #     "poly_degree" => poly_degree,
+        #     "max_iter" => max_iter
+        # )
+        # )
         cost
     end
 
@@ -305,7 +305,7 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
     return random_hyperopt
 end
 
-function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3], logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
+function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])#, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
     bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
             Tc = Tc,
             poly_start  = poly_start,
@@ -331,15 +331,15 @@ function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange
 
             cost = res.cost_values[end]
             @info "metrics" resources=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=i
-            Wandb.log(logger, Dict(
-            "resources" => i,
-            "cost" => cost,
-            "Tc" => Tc,
-            "poly_start" => poly_start,
-            "poly_degree" => poly_degree,
-            "max_iter" => i
-        )
-        )
+        #     Wandb.log(logger, Dict(
+        #     "resources" => i,
+        #     "cost" => cost,
+        #     "Tc" => Tc,
+        #     "poly_start" => poly_start,
+        #     "poly_degree" => poly_degree,
+        #     "max_iter" => i
+        # )
+        # )
             cost, [Tc, poly_start, poly_degree, i]
         else
             1000.0, [0.0, 0.0, 0.0, 0.0]
