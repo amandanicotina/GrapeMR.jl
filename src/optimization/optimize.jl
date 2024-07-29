@@ -36,8 +36,9 @@ function grape(op::OptimizationParams, gp::GrapeParams, cf::ControlField, spins:
             mag = forward_propagation(cf, spin)
             dyn = GrapeMR.Magnetization(mag)
             iso = Isochromat(dyn, spin)
-            grape_output.cost_values[i,1] += GrapeMR.cost_function(iso, gp.cost_function)
-            cost_grad = GrapeMR.cost_function_gradient(iso, gp.cost_function)
+            (cost, cost_grad) = GrapeMR.cost_function(iso, gp.cost_function)
+            grape_output.cost_values[i,1] += cost
+            # cost_grad = GrapeMR.cost_function_gradient(iso, gp.cost_function)
             adj = backward_propagation(cf, iso, cost_grad)
             if i == max_iter
                 push!(grape_output.isochromats, iso)
