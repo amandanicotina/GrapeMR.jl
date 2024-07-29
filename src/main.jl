@@ -6,46 +6,37 @@
 
 # @everywhere begin
 using GrapeMR
-using Plots
 using JLD2
 using Hyperopt
 
+# Spin System
 M0 = [0.0, 0.0, 1.0]
 T1 = [1.830] # collect(range(10, stop = 250, length=100).*1e-3)#, 1.0]
 T2 = [0.184] # collect(range(10, stop = 250, length=100).*1e-3)#, 0.6]
 label  = fill("-", length(T1)) 
 target = fill("min", length(T1))
 ΔB1 = [1.0]
-α, Δϕ, TR, TE = 2π/9, π, 5.6e-3, 2.8e-3
 B0 = round(1/TR)
-offset = collect(-B0:5:B0) 
-spins = GrapeMR.SteadyState(M0, T1, T2, offset, ΔB1, target, label, α, Δϕ, TR, TE)
-ss = steady_state_matrix.(spins)
-Mx = getproperty.(ss, :x)
-My = getproperty.(ss, :y)
-Mxy = sqrt.(Mx.^2 + My.^2)
-# spins = GrapeMR.Spin(M0, T1, T2, [0.0], ΔB1, target, label)
-plot(offset, Mxy)
+offset = collect(-B0:5:B0)
+spins = GrapeMR.Spin(M0, T1, T2, [0.0], ΔB1, target, label)
+
 
 # Grape Parameters 
-grape_params = GrapeParams(1000, :target_steady_state, [true true false])
-# end
+grape_params = GrapeParams(1000, :saturation_contrast, [true true false])
 
+# Hyperparameter searct
 # const wandb_project::String = "GrapeMR"
 # logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing)
 # bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.5, 100), 5000, i=100)
-# # rand_hopt = random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=5000, step=100), i=20)
-# # close(logger)
-
-# p1, p2 = plot_bohb(bohb)
-# display(p1)
+# rand_hopt = random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=5000, step=100), i=20)
+# close(logger)
+# bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), 5000, i=10)
 
 # Optimization Parameters
-#bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.0, 100), 5000, i=10)
 Tc, poly_start, poly_degree, max_iter = 0.836, 0.1, 2, 100 # bohb.minimizer # 
 opt_params   = OptimizationParams(poly_start, poly_degree,  Int(ceil(max_iter)))
 
-# RF
+# Initial RF Pulse
 B1ref = 1.0
 B1x = spline_RF(grape_params.N, Tc)'
 B1y = spline_RF(grape_params.N, Tc)'
@@ -55,9 +46,10 @@ control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
 # Run Optimization
 grape_output = @time grape(opt_params, grape_params, control_field, spins)
 
+# Save data
 # JLD2.@save joinpath(folder_path, folder_name, file_name) grape_output opt_params grape_params
 
-# # Plots
+# Plots
 # grape_output.cost_values[end]
 # plot_cost_values(grape_output.cost_values, grape_params)
 # plot_magnetization_2D(grape_output.isochromats)
