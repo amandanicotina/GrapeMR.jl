@@ -13,7 +13,9 @@ function finite_difference_cost(cost::Symbol, iso::Isochromat, ΔM::Float64)
         iso_perturbed = Isochromat(dyn_perturbed, spin)
 
         # Calculate the finite difference for the current variable
-        finite_diffs[i,1] = (GrapeMR.cost_function(iso_perturbed, cost) - GrapeMR.cost_function(iso_vals, cost)) / ΔM
+        (cost_pert, grad) = GrapeMR.cost_function(iso_perturbed, cost)
+        (cost_vals, grad) = GrapeMR.cost_function(iso_vals, cost)
+        finite_diffs[i,1] = (cost_pert - cost_vals) / ΔM
         
         # Reset the perturbed value for the next iteration
         M_perturbed[i+1,end] = M_perturbed[i+1,end] - ΔM 

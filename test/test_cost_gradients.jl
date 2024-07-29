@@ -303,4 +303,3 @@ true_grad = gradient(adj_ss_test, mag_ss_test, Iy)
  
 plot(fd_cf')
 plot!(true_grad')
-end
