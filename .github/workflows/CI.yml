@@ -23,11 +23,13 @@ jobs:
           # TODO: ARM64 seems to be broken at a very low level. Possibly julia support missing in general.
           # See: https://github.com/amandanicotina/GrapeMR.jl/actions/runs/10759836671/job/29837029142?pr=17
           # - arm64
-          - x86
+          # TODO: Doesn't work due to dependency issues
+          # - x86
         include:
-          - version: '1.9.4'
-            os: windows-latest
-            arch: x86
+          # TODO: SciMLBase → SciMLBasePythonCallExt seems to blow this one up
+          # - version: '1.9.4'
+          #   os: windows-latest
+          #   arch: x86
           - version: '1.9.4'
             os: windows-latest
             arch: x64
