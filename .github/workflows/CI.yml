@@ -20,7 +20,9 @@ jobs:
           - ubuntu-latest
         arch:
           - x64
-          - arm64
+          # TODO: ARM64 seems to be broken at a very low level. Possibly julia support missing in general.
+          # See: https://github.com/amandanicotina/GrapeMR.jl/actions/runs/10759836671/job/29837029142?pr=17
+          # - arm64
           - x86
         include:
           - version: '1.9.4'
@@ -41,15 +43,12 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v2
         with:
           files: lcov.info
-      ## submit coverage data
-      # TODO: codecov => interesting for OSS and when the project becomes public
-      # - run: julia --color=yes --project=. --code-coverage=user etc/codecov.jl
-      #   working-directory: ${{ github.workspace }}
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
