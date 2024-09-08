@@ -14,3 +14,14 @@ $ cd docs && julia --project make.jl
 $ open build/index.html
 ```
 
+## Test Coverage
+
+In your global julia installation, ensure you have `TestTools` installed.
+
+```julia
+using Pkg
+Pkg.add("TestTools")
+using TestTools; TestTools.install()
+```
+
+then add `export PATH="$PATH:/Users/daviddodel/.julia/bin"` to your `~/.zshrc` or equivalent shell configuration file. 
