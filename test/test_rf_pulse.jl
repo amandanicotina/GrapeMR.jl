@@ -45,7 +45,7 @@ function RF_testing(rf::ControlField, Δt::Float64)
     t = range(0.0, Δt*steps, steps);
 
     return rf_BS, rf_grape, t
-end;
+end
 
 # Test RF elements individually
 rf_data_BxOnByOff[1]
@@ -71,7 +71,9 @@ function plot_RF_testing(rf_data)
     return pRF 
 end;
 
-plot_RF_testing(rf_data_BxOnByOff)
-plot_RF_testing(rf_data_BxOffByOn)
-plot_RF_testing(rf_data_spline)
+    plot_RF_testing(rf_data_BxOnByOff)
+    plot_RF_testing(rf_data_BxOffByOn)
+    plot_RF_testing(rf_data_spline)
 end
+
+

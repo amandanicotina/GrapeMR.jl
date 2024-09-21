@@ -15,8 +15,7 @@ If no path is provided, it saves the files inside the folder where the package w
 folder name format : yyyy-mm-dd
 """
 
-
-function save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
+function save_grape_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
     # General folder yyyy-mm-dd
     folder_name      = Dates.format(today(), "yyyy-mm-dd")
     full_folder_path = joinpath(folder_path, folder_name)   
@@ -31,10 +30,7 @@ function save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
     end
 
     # Optimization especific folder hh-mm
-    tar = gp.isochromats[1].spin.target
-    lab = gp.isochromats[1].spin.label
-    ΔB0 = string(abs(Int(round(gp.isochromats[1].spin.B0inho, digits = 1))))
-    opt_folder = "$tar _$lab _$ΔB0"
+    opt_folder = file_name_string(go)
     file_path  = joinpath(full_folder_path, opt_folder)
     # Create/Check folder
     try
@@ -47,12 +43,14 @@ function save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
     end
 
     try
-        gp_dicts = grape_output_to_dict(gp)
-        save_gp_dicts(gp_dicts, file_path)
-        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(gp_dicts)
+        go_dicts = grape_output_to_dict(go)
+        # save_gp_dicts(go_dicts, file_path)
+        save_gp_struct(go, file_path)
+        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
         CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
         CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
         CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
+        return file_path
     catch
         error("Unable to save data to CSV files.")
         return
@@ -98,5 +96,24 @@ function save_gp_dicts(gp_dicts::Tuple{Dict, Dict, Vector}, file_path::String)
         "control_field" => dict_control_field,
         "iso_spins" => dict_iso_spins
     )
-    save(joinpath(file_path, "grape_output_dict.jld"), "gp_output_dict", gp_output_dict)
+    save(joinpath(file_path, "grape_output_dict.jld2"), "gp_output_dict", gp_output_dict)
+end
+
+function save_gp_struct(grape_output::GrapeMR.GrapeOutput, file_path::String)
+    JLD2.@save joinpath(file_path, "grape_output.jld2") grape_output
+end
+
+function file_name_string(go::GrapeMR.GrapeOutput)
+    l = go.isochromats[1].spin.label
+    s = go.isochromats[1].spin
+    p = go.params.grape_params
+    ΔB0 = string(abs(Int(round(go.isochromats[1].spin.B0inho, digits = 1))))
+    return string(l, "_", p.cost_function, "_", s.target, "_", "$ΔB0", "Hz")
+end
+
+
+function load_grape_data(folder_path::String)
+    file_name = "grape_output.jld2"
+    JLD2.@load joinpath(folder_path, file_name) grape_output
+    return grape_output
 end

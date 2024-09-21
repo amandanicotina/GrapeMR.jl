@@ -1,16 +1,20 @@
-abstract type Parameters end 
 
-struct OptimizationParams <: Parameters
+
+struct OptimizationParams
     poly_start::Float64
     poly_degree::Int
     max_iter::Int
 end
 
-
-struct GrapeParams <: Parameters
+struct GrapeParams 
     N::Int64
-    cost_function::Symbol # □ use @enum to get all the cost functions
+    cost_function::Symbol
     fields_opt::Array{Bool, 2}
+end
+
+struct Parameters
+    grape_params::GrapeParams
+    opt_params::OptimizationParams
 end
 
 """

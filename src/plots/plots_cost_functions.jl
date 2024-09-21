@@ -7,6 +7,7 @@ Cost Function plots
 
 function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     p = plot(cost, label = string(gp.cost_function), lw = 2,
+    ylims = (0.0, 1.0),
     xlabel = "Iterations",
     ylabel = "Cost Value",
     title  = "Cost Function Convergence",
@@ -18,21 +19,32 @@ end
 
 function plot_cost_offset(isos::Vector{Isochromat}, cost::Symbol)
     # Cost function values for all isochromats
-    c = cost_function.(isos, cost)
+    ans = cost_function.(isos, cost)
+    c = [x[1] for x in ans]
+
 
     # Offset frequencies
+    # ν_ini = isos[1].spin.B0inho
+    # ν_end = isos[end].spin.B0inho
+    # ν_len = Int(ceil(length(isos)/2))
+    # ν = range(ν_ini, stop=ν_end, length=ν_len)
+
+    # p = plot(xlabel = "Offset [Hz]",
+    #     ylabel = "Cost Value",
+    #     title  = "Cost Function Offset profile",
+    #     titlefontsize = 12)
+    #     plot!(p, ν, c[1:ν_len], label =  "min", lw = 2)
+    #     plot!(p, ν, c[ν_len:end], label = "max", lw = 2)
+
     ν_ini = isos[1].spin.B0inho
     ν_end = isos[end].spin.B0inho
-    ν_len = Int(ceil(length(isos)/2))
+    ν_len = ceil(length(isos))
     ν = range(ν_ini, stop=ν_end, length=ν_len)
-
     p = plot(xlabel = "Offset [Hz]",
         ylabel = "Cost Value",
         title  = "Cost Function Offset profile",
         titlefontsize = 12)
-        plot!(p, ν, c[1:ν_len], label =  "min", lw = 2)
-        plot!(p, ν, c[ν_len+1:end], label = "max", lw = 2)
-
+        plot!(p, ν, c, label =  "min", lw = 2)
     return p
 end
 
@@ -46,7 +58,8 @@ function plot_cost_offset(spins::Vector{GrapeMR.Spin}, cost::Symbol)
         push!(isos, iso)
     end
     # Cost function values for all isochromats
-    c = cost_function.(isos, cost)
+    ans = cost_function.(isos, cost)
+    c = [x[1] for x in ans]
 
     # Offset frequencies
     ν_ini = isos[1].spin.B0inho

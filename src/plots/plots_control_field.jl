@@ -3,15 +3,31 @@
 Control Field Plots
 
 """
+function plot_control_fields_BxBy(cf::ControlField)
+    time = range(0.0, cf.t_control, length = length(cf.B1x))
+    Bx = cf.B1x
+    By = cf.B1y
+    
+    p_Bx = plot(time, vec(Bx), linewidth=2, label=false, ylabel="Bx [Hz]", title="Control Fields", titlefontsize=15)
+    p_By = plot(time, vec(By), linewidth=2, label=false, ylabel="By [Hz]", xlabel="t [s]")
+    xticks_values = [-π, -π/2, 0, π/2, π]
+    xticks_labels = ["-π", "-π/2", "0", "π/2", "π"]
+    p_By = plot!(p_By, xticks=(xticks_values, xticks_labels))
 
-function plot_control_fields(cf::ControlField)
+    p = plot(p_Bx, p_By, layout = (2,1))
+
+    return p
+end
+
+
+function plot_control_fields_AmpPhase(cf::ControlField)
     time = range(0.0, cf.t_control, length = length(cf.B1x))
     Bx = cf.B1x
     By = cf.B1y
 
-    B1 = vec(Bx + im * By)
-
-    p_Bx = plot(time, abs.(B1), linewidth=2, label=false, ylabel="|B1| [Hz]", title="Control Fields", titlefontsize=15)
+    B1 = 2π*vec(Bx + im * By)
+    
+    p_Bx = plot(time, abs.(B1), linewidth=2, label=false, ylabel="|B1| [rads/s]", title="Control Fields", titlefontsize=15)
     p_By = plot(time, angle.(B1), linewidth=2, label=false, ylabel="ϕ [rad]", xlabel="t [s]")
     xticks_values = [-π, -π/2, 0, π/2, π]
     xticks_labels = ["-π", "-π/2", "0", "π/2", "π"]
@@ -21,6 +37,7 @@ function plot_control_fields(cf::ControlField)
 
     return p
 end
+
 
 
 function plot_control_fields_tesla(cf::ControlField)
@@ -62,9 +79,11 @@ end
 function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochromat})
     max_label_plotted = false
     min_label_plotted = false
-    pTrans = plot(title = "Transverse Magnetization",
+    pTrans = plot(title = "Magnetization Trajectory",
             titlefontsize = 12,
-            xlabel="Mx", ylabel="My",
+            xlabel="Transverse", ylabel="Longitudinal",
+            # xlims = (-1.0, 0.2),
+            # ylims = (-0.01, 0.03),
             framestyle=:box)
     for iso ∈ isos
         m = iso.magnetization.dynamics
@@ -73,7 +92,7 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
             Mt =  m[2,:] + im*m[3,:]
             Mx = real.(Mt)
             My = imag.(Mt)
-            plot!(pTrans, Mx, My, color = cgrad(:viridis)[128], lw = 1.5,
+            plot!(pTrans, Mx, My, color = cgrad(:viridis)[128], lw = 0.5,
             label = max_label_plotted ? false : "$(s.target) - $(s.label)")
             scatter!(pTrans, [Mx[end]], [My[end]], label = false, color = cgrad(:viridis)[128], markersize=4)
             max_label_plotted = true
@@ -82,9 +101,20 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
             Mt =  m[2,:] + im*m[3,:]
             Mx = real.(Mt)
             My = imag.(Mt)
-            plot!(pTrans, Mx, My, color = "black", lw = 1.5,
+            plot!(pTrans, Mx, My, color = "black", lw = 0.5,
             label = min_label_plotted ? false : "$(s.target) - $(s.label)") 
             scatter!(pTrans, [Mx[end]], [My[end]], label = false, color = "black", markersize=4)
+            min_label_plotted = true
+        
+        else
+            Mt =  m[2,:] + im*m[3,:]
+            Mx = real.(Mt)
+            My = imag.(Mt)
+            Mz = m[4,:]
+            mt = sqrt.(Mx.^2 .+ My.^2)
+            plot!(pTrans, mt, Mz, color = :viridis, lw = 2,
+            label = min_label_plotted ? false : "$(s.label)") 
+            scatter!(pTrans, [mt[end]], [Mz[end]], label = false, color = :viridis, markersize=4)
             min_label_plotted = true
         end
     end
@@ -105,3 +135,25 @@ end
 
 
 
+
+# using Plots
+# function plot_control_fields_AmpPhase(cf::ControlField)
+#     time = range(0.0, cf.t_control, length = length(cf.B1x))
+#     Bx = cf.B1x
+#     By = cf.B1y
+
+#     B1 = 2π*vec(Bx + im * By)
+    
+#     p_Bx = plot(time, abs.(B1), linewidth=2, label=false, ylabel="|B1| [rads/s]", title="Control Fields", titlefontsize=15)
+#     p_By = plot(time, angle.(B1), linewidth=2, label=false, ylabel="ϕ [rad]", xlabel="t [s]")
+#     xticks_values = [-π, -π/2, 0, π/2, π]
+#     xticks_labels = ["-π", "-π/2", "0", "π/2", "π"]
+#     p_By = plot!(p_By, xticks=(xticks_values, xticks_labels))
+
+#     p = plot(p_Bx, p_By, layout = (2,1))
+
+#     return p
+# end
+
+# plot_control_fields_AmpPhase(res_grape.control_field)
+# plot_control_fields_BxBy(control_field)

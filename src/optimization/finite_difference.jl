@@ -48,13 +48,13 @@ function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spins, Δ
             iso_perturbed = Isochromat(dyn_perturbed, spin)
 
             # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_function(iso_perturbed, cost) - cost_function(iso_vals, cost)) / Δcf
+            finite_diffs[1, i] = (cost_function(iso_perturbed, cost)[1] - cost_function(iso_vals, cost)[1]) / Δcf
 
             # Reset the perturbed value for the next iteration
             perturbation[1, i] = perturbation[1, i] - Δcf
         end
 
-    else
+    elseif field == "B1y"
         # Copy of the variable values to avoid modifying the original
         cf_vals      = cf.B1y
         perturbation = copy(cf_vals) 
@@ -75,12 +75,36 @@ function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spins, Δ
 
 
             # Calculate the finite difference for the current variable
-            finite_diffs[1, i] = (cost_function(iso_perturbed, cost) - cost_function(iso_vals, cost)) / Δcf
+            finite_diffs[1, i] = (cost_function(iso_perturbed, cost)[1] - cost_function(iso_vals, cost)[1]) / Δcf
 
             # Reset the perturbed value for the next iteration
             perturbation[1, i] = perturbation[1, i] - Δcf
         end       
+    else
+        error("Parameter not defined. Acceptable inputs are \"B1x\" or \"B1y\"")
     end
 
     return finite_diffs
+end
+
+function finite_difference_field_symmetric(cost::Symbol, iso::Isochromat, spin::Spins, Δ::Float64)
+    perturbed_iso = deepcopy(iso)  # Make a deep copy to modify
+    
+    # Iterate over each element of the magnetization dynamics
+    grad = zeros(Float64, size(iso.magnetization.dynamics))
+
+    for i in 1:length(iso.magnetization.dynamics)
+        perturbed_iso.magnetization.dynamics[i] += Δ
+        cost_positive = cost_function(forward_propagation(perturbed_iso, spin), cost)[1]
+        
+        perturbed_iso.magnetization.dynamics[i] -= 2Δ
+        cost_negative = cost_function(forward_propagation(perturbed_iso, spin), cost)[1]
+        
+        grad[i] = (cost_positive - cost_negative) / (2 * Δ)
+        
+        # Reset perturbation for next iteration
+        perturbed_iso.magnetization.dynamics[i] += Δ
+    end
+    
+    return grad
 end

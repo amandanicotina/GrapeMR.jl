@@ -11,7 +11,7 @@ function plot_transverse_magnetization(isos::Vector{Isochromat})
         Mx = m[2,:]
         My = m[3,:]
         Mt = Mx + im*My
-        plot!(pTrans, Mt, color = 2, label = false)
+        plot!(pTrans, Mt, color = 2, label = false, lw = 0.5)
         scatter!(pTrans, [Mt[end]], color = 2, label = false)
     end
     return pTrans
@@ -40,7 +40,10 @@ function plot_magnetization_2D(isos::Vector{Isochromat})
             scatter!(p, [Mxy[end]], [m[4, end]], label = false, color =  :viridis, markersize = 5)
             min_label_plotted = true
         else
-            error(" $(s.target) is not a matching target. Valid targets are max or min")
+            plot!(p, Mxy, m[4, :], 
+            label = min_label_plotted ? false : "$(s.target) - $(s.label)", color = "black", lw = 1)
+            scatter!(p, [Mxy[end]], [m[4, end]], label = false, color = "black", markersize = 5)
+            min_label_plotted = true        
         end
     end
     xlims!(-0.05, 1.0)

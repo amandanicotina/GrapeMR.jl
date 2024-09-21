@@ -1,3 +1,52 @@
+function normalization(spins::Vector{Spin}, cf::ControlField)
+    # Reference frequency
+    b_ref = cf.B1_ref
+
+    # Normalize Spins
+    norm_spins = SpinNormalized[]
+    for s ∈ spins
+        Γ1 = b_ref*s.T1
+        Γ2 = b_ref*s.T2
+        Δ0_inho = s.B0inho/b_ref
+        norm_spin = SpinNormalized(s.M_init, Γ1, Γ2, Δ0_inho, s.B1inho, s.target, s.label, s.Nspins)
+        push!(norm_spins, norm_spin)
+    end
+
+    # Normalize Control Field
+    ux = cf.B1x./b_ref
+    uy = cf.B1y./b_ref
+    uz = cf.Bz./b_ref
+    tn = cf.t_control*b_ref
+    norm_control_field = ControlFieldNormalized(ux, uy, b_ref, uz, tn)
+
+    return norm_spins, norm_control_field
+end
+
+# function inverse_normalization(go::GrapeOutput)
+#     # Reference frequency
+#     b_ref = go.control_field.B1_ref
+
+#     # Inverse Spin normalization
+#     isos = GrapeMR.Isochromat[]
+#     for iso ∈ iso_norm
+#         s = iso.spin
+#         Γ1 = s.T1/b_ref
+#         Γ2 = s.T2/b_ref
+#         Δ0_inho = s.B0inho*b_ref
+#         spin = SpinNormalized(s.M_init, Γ1, Γ2, Δ0_inho, s.B1inho, s.target, s.label, s.Nspins)
+#         push!(isos, iso)
+#     end
+
+#     # Normalize Control Field
+#     Bx = go.B1x.*b_ref
+#     By = go.B1y.*b_ref
+#     Bz = go.Bz.*b_ref
+#     t = go.t_control/b_ref
+#     control_field = ControlField(Bx, By, b_ref, Bz, t)
+
+#     return GrapeOutput(iso, control_field, go.cost, go.params)
+# end
+
 
 """
     bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2::Float64)
@@ -17,9 +66,9 @@ function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, T1::Float64, T2::
 
     bloch_matrix = 
         [0.0   0.0   0.0   0.0;
-         0.0  -1/T2  Bz   -B1y;
-         0.0  -Bz   -1/T2  B1x;
-         1/T1  B1y  -B1x  -1/T1] 
+         0.0  -1/T2  Bz    -B1y;
+         0.0  -Bz   -1/T2   B1x;
+         1/T1  B1y   -B1x  -1/T1] 
     
     return bloch_matrix
 end
@@ -34,10 +83,10 @@ forward_propagation
     # Output
     - Magnetization vector 4xN
 """
-function forward_propagation(cf::ControlField, s::Spins)
+function forward_propagation(cf::ControlField, s::Spin) 
     Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
-    M[:, 1] = [1.0, s.M_init[1], s.M_init[2], s.M_init[3]];
+    M[:, 1] = [1.0, s.M_init[1], s.M_init[2], s.M_init[3]]
     
     B0 = 2π*s.B0inho
     B1 = s.B1inho
@@ -52,7 +101,29 @@ function forward_propagation(cf::ControlField, s::Spins)
 
     return M    
 end
-function test_forward_propagation(cf::ControlField, s::Spins)
+
+function forward_propagation(cf::ControlFieldNormalized, s::SpinNormalized) 
+    Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
+    M       = zeros(Float64, 4, length(cf.B1x)+1)
+    M[:, 1] = [1.0, s.M_init[1], s.M_init[2], s.M_init[3]]
+    
+    B0 = 2π*s.B0inho
+    B1 = s.B1inho
+    Bz = cf.Bz .+ B0
+    Bx = 2π*B1*cf.B1x
+    By = 2π*B1*cf.B1y
+
+    for (i, Δt) ∈ enumerate(diff(Δt_arr))
+        b_m = bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
+        M[:, i+1] = exp(Δt*b_m)*M[:, i]
+    end
+
+    return M    
+end
+
+
+
+function test_forward_propagation(cf::ControlField, s::Vector{<:Spins})
     Δt_arr  = range(0.0, cf.t_control, length(cf.B1x)+1)
     Δt_diff = diff(Δt_arr)
     M       = zeros(Float64, 4, length(cf.B1x)+1)
@@ -111,6 +182,28 @@ function backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vect
     return round.(χ, digits = 5)
 end
 
+function backward_propagation(cf::ControlFieldNormalized, iso::Isochromat, cost_grad::Vector{Float64})
+    t_arr      = range(0.0, cf.t_control, length(cf.B1x)+1)
+    Δt         = diff(t_arr)
+    back_steps = length(Δt)
+    χ          = zeros(Float64, 4, length(cf.B1x)+1)
+    χ[:, end]  = cost_grad;
+    s          = iso.spin
+
+    B0 = 2π*s.B0inho
+    B1 = s.B1inho
+    Bz = 2π*cf.Bz .+ B0
+    Bx = 2π*B1*cf.B1x
+    By = 2π*B1*cf.B1y
+
+    for i in back_steps:-1:1 
+        b_m = bloch_matrix(Bx[i], By[i], Bz[i], s.T1, s.T2)
+        bloch_matrix_adjoint = adjoint(b_m)
+        χ[:, i] = exp(Δt[i]*bloch_matrix_adjoint)*χ[:, i+1]
+    end
+
+    return round.(χ, digits = 5)
+end
 
 function test_backward_propagation(cf::ControlField, iso::Isochromat, cost_grad::Vector{Float64})
     t_arr      = range(0.0, cf.t_control, length(cf.B1x)+1)
