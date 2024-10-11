@@ -1,0 +1,3 @@
+This is an example of writing to a text file in Julia.
+You can add multiple lines of text like this.
+Julia makes file handling quite easy!

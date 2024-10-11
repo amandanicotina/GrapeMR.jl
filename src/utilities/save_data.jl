@@ -15,6 +15,8 @@ If no path is provided, it saves the files inside the folder where the package w
 folder name format : yyyy-mm-dd
 """
 
+# Add writing a .txt that had all parameters written down?
+
 function save_grape_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
     # General folder yyyy-mm-dd
     folder_name      = Dates.format(today(), "yyyy-mm-dd")

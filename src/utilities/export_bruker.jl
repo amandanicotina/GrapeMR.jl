@@ -1,6 +1,6 @@
 using Printf
 
-function export_bruker(go::GrapeMR.GrapeOutput) # Add file_path as keyword argument
+function export_bruker(go::GrapeMR.GrapeOutput; folder_path = pwd()) # Add file_path as keyword argument
     # Get control field data
     (amplitudes, phases) = bruker_normalized_amplitudes_and_phases(go.control_field)
 

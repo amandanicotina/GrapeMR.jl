@@ -1,10 +1,3 @@
-# using Distributed
-# const num_processes::Int = 6;
-# addprocs(num_processes)
-# println(nprocs()) 
-# println(workers())
-
-# @everywhere begin
 using GrapeMR
 
 # Spin System
@@ -16,202 +9,82 @@ using GrapeMR
 ## Water
 # T1_water = collect(range(1150, stop = 3000, length=2).*1e-3)
 # T2_water = collect(range(1500, stop = 3000, length=2).*1e-3)
-# label_water  = fill("Water", length(T1_water)) 
+# label_water  = fill("Water", length(T1 _water)) 
 # target_water = fill("min", length(T1_water))
+
 M0 = [0.0, 0.0, 1.0]
 ΔB1 = [1.0]
-B0 = 50.0
-target = ["[0.0, 1.0, 0.0]"]
-label  = ["s1"]
-T1 = [1.0]
-T2 = [0.6]
-offset = collect(-B0:5:B0) 
-# spins = GrapeMR.Spin(M0, [T1_gycons; T1_water], [T2_gycons; T2_water], B0, ΔB1, [target_gycons; target_water], [label_gycons; label_water])
-spins = GrapeMR.Spin(M0, T1, T2, [-1.0, 0.0, 1.0], ΔB1, target, label)
+B0 = 15.0
+offsets = collect(-B0:1:B0)
+
+# Water
+T1_water = 0.5
+T2_water = 0.1
+label_water = "S1"
+target_water = "[1.0, 0.0, 0.0]"
+
+# Glycerol
+# T1_glycerol = collect(range(0.3, 0.4, 3))
+# T2_glycerol = collect(range(0.07, 0.11, 3))
+# label_glycerol= fill("Glycerol", length(T1_glycerol)) 
+# target_glycerol = fill("max", length(T1_glycerol))
+
+# T1_glycerol = 0.35
+# T2_glycerol = 0.1
+# label_glycerol= "Water"
+# target_glycerol = "min"
+
+# spins = GrapeMR.Spin(M0, [T1_water; T1_glycerol], [T2_water; T2_glycerol],
+#                     offset, ΔB1, [target_water; target_glycerol], [label_water; label_glycerol])
+
+spins = GrapeMR.Spin(M0, [T1_water], [T2_water], offsets, ΔB1, [target_water], [label_water])
+
+# Grape Parameters 
+grape_params = GrapeParams(2000, :spin_target, [false false false])
 
 # Optimization Parameters
+# bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
+# plot_bohb(bohb)
+# spline_bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
+# Tc, poly_start, poly_degree, max_iter = spline_bohb.minimizer
 Tc = 0.8
 poly_start = 0.1
 poly_degree = 1.0
-max_iter = 750.0
+max_iter = 2000.0
 opt_params   = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
-
-# Grape Parameters 
-grape_params = GrapeParams(2000, :euclidean_norm, [true true false])
 
 # Parameters 
 params = Parameters(grape_params, opt_params)
 
 # Initial RF Pulse
 B1ref = 1.0
-control_field = spline_RF(grape_params.N, Tc, B1ref)
+BW_Hz = 1000.0
+control_field = spline_RF(grape_params.N, Tc, B1ref) 
 
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
-#norm_grape_output = @time norm_grape(params, control_field, spins); 
+spin = grape_output.isochromats[1].spin
+@time run_cost_analysis(grape_output.control_field, spin, 50.0, 50, grape_params.cost_function)
 
-# Save data
-folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
-experiment_folder = save_grape_data(grape_output; folder_path)
-go = load_grape_data(experiment_folder)
+# # Save data
+# folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
+# experiment_folder = save_grape_data(grape_output; folder_path)
+# go = load_grape_data(experiment_folder)
 
-# export_bruker(res_grape)
+# # Export data
+# export_bruker(grape_output)
 
 # Plots
-grape_output.cost_values[end]
-plot_cost_values(grape_output.cost_values/maximum(grape_output.cost_values), grape_params)
-plot_magnetization_2D(grape_output.isochromats)
+plot_cost_values(grape_output.cost_values, grape_params)
+# plot_magnetization_2D(grape_output.isochromats)
 plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats)
-plot_magnetization_time(grape_output.isochromats[1], grape_output.control_field.t_control)
-
-
-# using Plots
-# mag_analysis = false
-# if mag_analysis == true
-
-# using DataFrames, Plots
-# function topspin_dynamics_comparison(file_path::String, iso::GrapeMR.Isochromat; s::String="Longitudinal")
-#     # Call the function and store the result
-#     rf_time = 1.0
-#     data = read_nmrsim_data(file_path)
-#     if s == "Transverse"
-#         p = plot_tmagnetization_simul_vs_topspin(data, iso, rf_time)
-#     else 
-#         p = plot_magnetization_simul_vs_topspin(data, iso, rf_time) 
-#     end
-
-#     return p
-# end
-
-# function read_nmrsim_data(file_path::String)
-#     # Empty arrays to hold the data
-#     Mx = Float64[]
-#     My = Float64[]
-#     Mz = Float64[]
-
-#     # Open file
-#     open(file_path, "r") do file
-#         for line in eachline(file)
-#             if startswith(line, ";")
-#                 continue
-#             end
-#             # Split the line into components by whitespace and convert to Float64
-#             values = split(strip(line), r"\s+")
-#             if length(values) == 3
-#                 push!(Mx, parse(Float64, values[1]))
-#                 push!(My, parse(Float64, values[2]))
-#                 push!(Mz, parse(Float64, values[3]))
-#             end
-#         end
-#     end
-
-#     # Return the data as a DataFrame
-#     return DataFrame(Mx=Mx, My=My, Mz=Mz)
-# end
-
-
-# function plot_magnetization_simul_vs_topspin(df::DataFrame, iso::GrapeMR.Isochromat, t::Float64)
-#         # TopSpin nmrsim
-#         Mx_ts = df.Mx
-#         My_ts = df.My
-#         Mz_ts = df.Mz
-    
-#         # Grape
-#         m  = iso.magnetization.dynamics
-#         s = iso.spin
-#         time = range(0.0, t, length = length(m[1,:]))
-
-#         pMx = plot(time, m[2,:], label = false, lw = 2, color = cgrad(:viridis)[128],
-#             ylabel = "Mx",
-#             title  = "Magnetization Dynamics - Sample = $(s.label), Target = $(s.target)",
-#             titlefontsize = 12)
-#             scatter!(time, Mx_ts, label = false, markersize = 0.8, color = "black")
-    
-#         pMy = plot(time, -m[3,:], label = false, lw = 2, color = cgrad(:viridis)[128],
-#             ylabel = "My")
-#             scatter!(time, My_ts, label = false, markersize = 0.8, color = "black")
-
-    
-#         pMz =   plot(time, m[4,:], label = "GrapeMR", lw = 2, color = cgrad(:viridis)[128], 
-#                 ylabel = "Mz",
-#                 xlabel = "t [s]",
-#                 legend = :bottomleft)
-#                 scatter!(time, Mz_ts, label = "TopSpin", markersize = 0.8, color = "black")
-#         pMag = plot(pMx, pMy, pMz, layout = (3,1))
-    
-#         return pMag
-# end
-
-# function plot_tmagnetization_simul_vs_topspin(df::DataFrame, iso::GrapeMR.Isochromat, t::Float64)
-#     # TopSpin nmrsim
-#     Mz_ts = df.Mz
-#     Mt_ts = sqrt.(df.Mx.^2 + df.My.^2)
-
-#     # Grape
-#     m  = iso.magnetization.dynamics
-#     s = iso.spin
-#     time = range(0.0, t, length = length(m[1,:]))
-#     mtrans = sqrt.(m[2,:].^2 + m[3,:].^2)
-
-#     pTrans = plot(time, mtrans, label = false, lw = 2, color = cgrad(:viridis)[128],
-#                 ylabel = "Transverse",                
-#                 xlabel = "t [s]",
-#                 legend = :bottomleft)
-#                 scatter!(time, Mt_ts, label = false, markersize = 1, color = "black")
-#     pMz =   plot(time, m[4,:], label = "GrapeMR", lw = 2, color = cgrad(:viridis)[128], 
-#                 ylabel = "Longitudinal",
-#                 title  = "Magnetization Dynamics - Sample = $(s.label)", #, Target = $(s.target)",
-#                 titlefontsize = 12)
-
-#                 scatter!(time, Mz_ts, label = "TopSpin", markersize = 1, color = "black")
-#     pMag = plot(pMz, pTrans, layout = (2,1))
-
-#     return pMag
-# end
-
-# spins = GrapeMR.Spin([0.0, 0.0, 1.0], [1e8], [1e8], [0.0], [1.0], ["-"], ["-"])
-# mag = forward_propagation(grape_output.control_field, spins[1])
-# dyn = GrapeMR.Magnetization(mag)
-# iso = Isochromat(dyn, spins[1])
-# filepath="/Users/amandanicotina/Documents/Documents/ProgressReports/ResultsGrapeMR/Metabolomics/TopSpin/target_one_spin_26-08.txt"
-# topspin_dynamics_comparison(filepath, iso)
-
-# end
+plot_control_fields(grape_output.control_field; unit="Hz")
+plot_magnetization_time(grape_output.isochromats[2], grape_output.control_field.t_control)
 
 
 
-# using Profile
-# @profview grape(opt_params, grape_params, control_field, spins)
 
-# using Plots
+#hyperopt = 63895.310865 seconds
 
-# function plot_grad_x(g)
-#     px=plot() 
-#     for i in 1:length(g[1])
-#         grad_x = vec(g[1][i])
-#         plot!(px,grad_x, label = false, title = "∇x")
-#     end
-#     return px
-# end
-# function plot_grad_y(g)
-#     py=plot() 
-#     for i in 1:length(g[2])
-#         grad_y = vec(g[2][i])
-#         plot!(py, grad_y, label = false, title = "∇y")
-#     end
-#     return py
-# end
 
-# px = plot_grad_x(g)
-# py = plot_grad_y(g)
 
-# display(px)  
-# display(py) 
-
-# # Hyperparameter searct
-# # const wandb_project::String = "GrapeMR"
-# # logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, n ame = nothing)
-# # bohb = @time hyperoptimization(spins, grape_params, LinRange(0.05, 1.5, 100), 5000, i=100)
-# # rand_hopt = random_sample(spins, grape_params, LinRange(0.05, 1.0, 20), range(1000, stop=5000, step=100), i=20)
-# # close(logger)
-# bohb = @time hyperoptimization(spins, grape_params, LinRange(0.1, 1.5, 100), 3000, i=10)

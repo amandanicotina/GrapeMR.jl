@@ -1,5 +1,3 @@
-
-
 struct OptimizationParams
     poly_start::Float64
     poly_degree::Int

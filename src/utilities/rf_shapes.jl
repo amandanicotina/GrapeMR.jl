@@ -6,6 +6,7 @@ Generates a cubic spline pulse
 # Arguments
 - `N::Int`: Points
 - `t_c::Float64`: Shaped pulse time in seconds
+- `B1_ref::Float64`: Reference, normally pulse maximum amplitude
 
 # Output
 - ControlField struct 
@@ -21,13 +22,13 @@ function spline_RF(N, t_c, B1ref)
     len = 10
     time = range(0.0, t_c, length=len)
     # B1x
-    field_vals = rand(Float64, len)
+    field_vals = rand(Float64, len)*B1ref
     spline = CubicSpline(time, field_vals)
     t_values = range(0.0, t_c, length=N)
     spline_vec = [spline(ti) for ti in t_values]
-    B1x = spline_vec' # Make this output already in the correct format please
+    B1x = spline_vec'
     # B1y
-    field_vals = rand(Float64, len)
+    field_vals = rand(Float64, len)*B1ref
     spline = CubicSpline(time, field_vals)
     t_values = range(0.0, t_c, length=N)
     spline_vec = [spline(ti) for ti in t_values]
@@ -45,7 +46,51 @@ function spline_RF(N, t_c, B1ref)
     return control_field
 end
 
+# function spline_RF(N::Int64, t_c::Float64, B1ref::Float64; BW_Hz=10.0)
+#     len = 10
+#     time = range(0.0, t_c, length=len)
 
+#     # Smoothing factor based on the desired bandwidth
+#     smoothing_factor = BW_Hz / (1.0 / t_c)  # Approximate relationship between BW and smoothing
+
+#     # Generate smoother random field values by controlling variation
+#     field_vals = cumsum(randn(len))  # Generate cumulative sum of random numbers
+    
+#     # Manually calculate mean and standard deviation
+#     mean_val = sum(field_vals) / length(field_vals)
+#     std_val = sqrt(sum((field_vals .- mean_val).^2) / length(field_vals))
+
+#     # Normalize
+#     field_vals = (field_vals .- mean_val) ./ std_val
+#     field_vals = field_vals .* B1ref .* smoothing_factor  # Apply B1ref scaling and smoothing
+
+#     # B1x
+#     spline = CubicSpline(time, field_vals)
+#     t_values = range(0.0, t_c, length=N)
+#     spline_vec_x = [spline(ti) for ti in t_values]
+#     B1x = spline_vec_x'
+
+#     # B1y (Generate independently, similar to B1x)
+#     field_vals = cumsum(randn(len))  # Same idea: generate smooth random values
+    
+#     # Manually calculate mean and standard deviation for B1y
+#     mean_val = sum(field_vals) / length(field_vals)
+#     std_val = sqrt(sum((field_vals .- mean_val).^2) / length(field_vals))
+
+#     # Normalize
+#     field_vals = (field_vals .- mean_val) ./ std_val
+#     field_vals = field_vals .* B1ref .* smoothing_factor
+
+#     spline = CubicSpline(time, field_vals)
+#     spline_vec_y = [spline(ti) for ti in t_values]
+#     B1y = spline_vec_y'
+
+#     # Bz remains zero
+#     Bz = zeros(1, N)
+
+#     control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
+#     return control_field
+# end
 
 """
     hard_RF(N::Int, t_c::Float64)
@@ -75,14 +120,10 @@ function hard_RF(N, t_c, B1ref)
     Bz = zeros(1, N)
     
     control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
-
-    # Spline plot 
-    # plot(time, spline[time])
-    # scatter!(time, field_vals)  
-    # plot!(t_values, spline_vec)
    
     return control_field
 end
+
 
 """
     sinc_RF(N::Int, t_c::Float64, BW_Hz::Real, flip_angle::Float64)
@@ -105,15 +146,26 @@ bSSFP(gp_output, folder_path="/path/to/folder")
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-function sinc_RF(N::Int, t_c::Float64, BW_Hz::Real, α::Float64)
-    time = range(0.0, t_c, N);
-    t    = time .- t_c/2;
-    rot  = rad2deg(α)/360;
-    flip = rot/diff(t)[1];
-    x    = BW_Hz.*t;
-    B1   = ((flip.*sinc.(x))./2π)'; # sinc(x) = sin(πx)/(πx)
-    return B1
+function sinc_RF(N::Int, t_c::Float64, B1ref::Float64; BW_Hz = 500.0, α = π/2)
+    t_array = range(0.0, stop=t_c, length=N)
+    t = t_array .- t_c / 2
+    rot = rad2deg(α) / 360
+    flip = rot / diff(t)[1]
+    x = BW_Hz .* t
+    
+    # Generate the B1x component using a sinc function
+    B1x = ((flip .* sinc.(x)) ./ 2π)'
+
+    # Generate the B1y component with a 90-degree phase shift (Hilbert transform)
+    B1y = ((flip .* sinc.(x .+ π/2)) ./ 2π)'
+    Bz = zeros(N)
+
+    # Return the ControlField struct with non-zero B1y
+    control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
+    return control_field
 end
+
+
 
 
 

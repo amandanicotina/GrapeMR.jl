@@ -1,7 +1,7 @@
 using Test
 using GrapeMR
 
-function test_cost_function_1spin(cost_func::Symbol)
+function test_cost_one_spin(cost_func::Symbol)
     # Parameters
     N   = 1000;
     t_c = 0.5; #[s]
@@ -32,7 +32,7 @@ function test_cost_function_1spin(cost_func::Symbol)
     iso = Isochromat(dyn, spins[1])
 
     # Cost gradient
-    (cost_val, cost_grad) = GrapeMR.cost_function(iso, grape_params.cost_function)
+    (_, cost_grad) = GrapeMR.cost_function(iso, grape_params.cost_function)
 
     # Finite difference
     ΔM   = 1e-10;
@@ -42,7 +42,7 @@ function test_cost_function_1spin(cost_func::Symbol)
 end
 
 
-function test_cost_function_2spins(cost_func::Symbol)
+function test_cost_two_spins(cost_func::Symbol)
     # Parameters
     N   = 1000;
     t_c = 0.5; #[s]
@@ -73,7 +73,7 @@ function test_cost_function_2spins(cost_func::Symbol)
     iso = Isochromat(dyn, spins[1])
 
     # Cost gradient
-    (cost_val, cost_grad) = GrapeMR.cost_function(iso, grape_params.cost_function)
+    (_, cost_grad) = GrapeMR.cost_function(iso, grape_params.cost_function)
 
     # Finite difference
     ΔM   = 1e-10;
@@ -83,17 +83,17 @@ function test_cost_function_2spins(cost_func::Symbol)
 end
 
 
-(fd_M_en, cost_grad_en) = test_cost_function_1spin(:euclidean_norm)
+(fd_M_en, cost_grad_en) = test_cost_one_spin(:euclidean_norm)
 @test all(round.(fd_M_en, digits=3) .== round.(cost_grad_en[2:end,:], digits=3))
 
-(fd_M_tos, cost_grad_tos) = test_cost_function_1spin(:target_one_spin)
+(fd_M_tos, cost_grad_tos) = test_cost_one_spin(:spin_target)
 @test all(round.(fd_M_tos, digits=3) .== round.(cost_grad_tos[2:end,:] , digits=3))
 
-(fd_M_sc, cost_grad_sc) = test_cost_function_2spins(:saturation_contrast)
+(fd_M_sc, cost_grad_sc) = test_cost_two_spins(:saturation_contrast)
 @test all(round.(fd_M_sc, digits=3) .== round.(cost_grad_sc[2:end,:] , digits=3))
 
-(fd_M_scMx, cost_grad_scMx) = test_cost_function_2spins(:saturation_contrast_Mx)
+(fd_M_scMx, cost_grad_scMx) = test_cost_two_spins(:saturation_contrast_Mx)
 @test all(round.(fd_M_scMx, digits=3) .== round.(cost_grad_scMx[2:end,:] , digits=3))
 
-(fd_M_scMt, cost_grad_scMt) = test_cost_function_2spins(:saturation_contrast_Mtrans)
+(fd_M_scMt, cost_grad_scMt) = test_cost_two_spins(:saturation_contrast_Mtrans)
 @test all(round.(fd_M_scMt, digits=3) .== round.(cost_grad_scMt[2:end,:] , digits=3))

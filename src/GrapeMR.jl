@@ -10,10 +10,11 @@ using Plots
 using Dates
 using Distributed
 using Logging
+using ColorSchemes
 using Match
 using Hyperopt
 using Symbolics
-# using BlochSim
+using BlochSim
 using DataFrames
 using CubicSplines
 using LinearAlgebra
@@ -25,11 +26,15 @@ include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
 include("data_types/Spins.jl")
 
+include("bSSFP/data_types.jl")
+include("bSSFP/steady_state.jl")
+include("bSSFP/plots.jl")
+
 include("analysis/rf_analysis.jl")
+include("analysis/cost_analysis.jl")
 include("analysis/magnetization_analysis.jl")
 
 include("propagation&cost/bloch_methods.jl")
-include("propagation&cost/steady_state.jl")
 include("propagation&cost/cost_functions.jl")
 
 include("optimization/optimize.jl")
@@ -41,39 +46,41 @@ include("utilities/rf_shapes.jl")
 
 include("plots/plots_bohb.jl")
 include("plots/plots_control_field.jl")
-include("plots/plots_cost_functions.jl")
 include("plots/plots_magnetization.jl")
-include("plots/plots_time_dynamics.jl")
 
 export γ_¹H, Ix, Iy
 
-export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-export integral_factor, fast_fourier_transform, average_pulse_power
-
-export ControlField, ControlFieldbSSFP, ControlFieldNormalized
+# Data types
+export ControlField, ControlFieldbSSFP
 export OptimizationParams, GrapeParams, Parameters, GrapeOutput
-export Spins, Spin, SpinNormalized, SteadyState, SpinRange, Magnetization, Isochromat
+export Spins, Spin, SpinRange, Magnetization, Isochromat
 
-export forward_propagation, backward_propagation, bloch_matrix, normalization, inverse_normalization
-export test_forward_propagation, test_backward_propagation
-export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
-export cost_function
-export cost_function_gradient
+# Analysis
+export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
+export integral_factor, fast_fourier_transform, average_pulse_power # check exportinh these functions when the run_rf_analysis is ready
 
-export grape, par_grape, tpar_grape, norm_grape, random_sample, hyperoptimization
-export gradient, update!
-export finite_difference_cost, finite_difference_field, finite_difference_field_symmetric
+export run_cost_analysis
 
+# 
+export SteadyState, SteadyStateData
+export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
+export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz  # check exportinh these functions when the run_rf_analysis is ready
+
+# Grape 
+export grape, old_grape, random_sample, hyperoptimization
+
+# Save/load/export files
 export save_grape_data, load_grape_data, file_name_string
 export export_bruker
 export spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
-export plot_cost_values, plot_cost_offset
-export plot_control_fields, plot_control_fields_phase, plot_control_fields_BxBy
+# Plots
+export plot_cost_values, plot_magnetization_control_field
+export plot_control_fields, plot_control_fields_phase_shift
 export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
-export plot_transverse_magnetization, plot_magnetization_control_field
+export plot_transverse_magnetization
 export plot_evaluations, plot_bohb
 
 end
