@@ -63,7 +63,7 @@ Calculate calibration analysis of shaped pulse
 """
 function RF_pulse_analysis(cf::ControlField; attenuation_ref = 0.0, B1_ref = 1.0, power_ref = 500.0)
     B1 = complex_signal(cf)
-
+    println("---------- RF Analysis ---------- \n")
     # RF maximum amplitude
     max_amp = max_peak_amp(B1)
     println("Pulse Peak Amplitude = $max_amp [Hz]")

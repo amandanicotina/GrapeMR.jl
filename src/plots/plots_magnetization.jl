@@ -6,23 +6,48 @@ color_palette(var::Int) = ColorScheme(get(ColorSchemes.rainbow, range(0.0, 1.0, 
 
 """
 function plot_transverse_magnetization(isos::Vector{Isochromat})
-    colors = color_palette(1:6)
+    colors = color_palette(1:10)
     pTrans = plot(title = "Transverse Magnetization",
-    guidefontsize = 12, 
-    legendfontsize = 10,
-    tickfontsize = 10,
-    titlefontsize = 12,
-    framestyle = :box, 
-    grid = false)
-    #xlims=[-0.5, 0.5], ylims=[0.5, 1.0])
+                xlabel = "Mx",
+                ylabel = "My",
+                guidefontsize = 12, 
+                legendfontsize = 10,
+                tickfontsize = 10,
+                titlefontsize = 12,
+                framestyle = :box, 
+                grid = false)
+
+    max_label_plotted = false
+    min_label_plotted = false
+    no_label_plotted  = false
+
     for iso ∈ isos
         m = iso.magnetization.dynamics
+        s = iso.spin
         Mx = m[2,:]
         My = m[3,:]
-        Mt = Mx + im*My
-        plot!(pTrans, Mt, color = colors[2], label = false, lw = 0.5)
-        scatter!(pTrans, [Mt[end]], color = 2, label = false)
+        if s.target == "max" 
+            plot!(pTrans, Mx, My, 
+            label = max_label_plotted ? false : "$(s.target) - $(s.label)", color = colors[2], lw = 1.5)
+            scatter!(pTrans, [Mx[end]], [My[end]], label = false, color = colors[2], markersize = 5)
+            max_label_plotted = true
+            
+        elseif s.target == "min" 
+            plot!(pTrans, Mx, My,  
+            label = min_label_plotted ? false : "$(s.target) - $(s.label)", color = colors[9], lw = 1.5)
+            scatter!(pTrans, [Mx[end]], [My[end]], label = false, color = colors[9], markersize = 5)
+            min_label_plotted = true
+        else
+            plot!(pTrans, Mx, My, 
+            label = min_label_plotted ? false : "$(s.label)", color = colors[5], lw = 1.5)
+            scatter!(pTrans, [Mx[end]], [My[end]], label = false, color = colors[5], markersize = 5)
+            no_label_plotted = true        
+        end
     end
+    xlims!(-1.01, 0.05)
+    ylims!(-0.01, 0.03)
+    display(pTrans)
+
     return pTrans
 end
 
@@ -39,6 +64,7 @@ function plot_magnetization_2D(isos::Vector{Isochromat})
 
     max_label_plotted = false
     min_label_plotted = false
+    no_label_plotted  = false
 
     for iso ∈ isos
         m = iso.magnetization.dynamics
@@ -59,7 +85,7 @@ function plot_magnetization_2D(isos::Vector{Isochromat})
             plot!(p, Mxy, m[4, :], 
             label = min_label_plotted ? false : "$(s.label)", color = colors[5], lw = 1)
             scatter!(p, [Mxy[end]], [m[4, end]], label = false, color = colors[5], markersize = 5)
-            min_label_plotted = true        
+            no_label_plotted = true        
         end
     end
     xlims!(-0.05, 1.0)
@@ -69,7 +95,6 @@ function plot_magnetization_2D(isos::Vector{Isochromat})
 
     return p
 end
-
 
 # Revisit this target plot functions
 function plot_magnetization_target(isos::Vector{Isochromat})
@@ -274,3 +299,48 @@ function plot_magnetization_time(iso::Isochromat, t::Float64)
     return p
 end
  
+
+function plot_transverse_time(isos::Vector{Isochromat}, t::Float64)
+    colors = color_palette(1:10)
+    pTrans = plot(title = "Transverse Magnetization",
+                xlabel = "t [sec]",
+                ylabel = "Mxy",
+                guidefontsize = 12, 
+                legendfontsize = 10,
+                tickfontsize = 10,
+                titlefontsize = 12,
+                framestyle = :box, 
+                grid = false)
+
+    max_label_plotted = false
+    min_label_plotted = false
+    no_label_plotted  = false
+
+    mag = isos[1].magnetization.dynamics
+    time = range(0.0, t, length = length(mag[1,:]))
+
+    for iso ∈ isos
+        m = iso.magnetization.dynamics
+        s = iso.spin
+        Mxy = sqrt.(m[2,:].^2 + m[3,:].^2)
+        if s.target == "max" 
+            plot!(pTrans, time, Mxy, 
+            label = max_label_plotted ? false : "$(s.target) - $(s.label)", color = colors[2], lw = 2)
+            scatter!(pTrans, [time[end]], [Mxy[end]], label = false, color = colors[2], markersize = 5)
+            max_label_plotted = true
+            
+        elseif s.target == "min" 
+            plot!(pTrans, time, Mxy, 
+            label = min_label_plotted ? false : "$(s.target) - $(s.label)", color = colors[9], lw = 2)
+            scatter!(pTrans, [time[end]], [Mxy[end]], label = false, color = colors[9], markersize = 5)
+            min_label_plotted = true
+        else
+            plot!(pTrans, time,  Mxy,
+            label = min_label_plotted ? false : "$(s.label)", color = colors[5], lw = 2)
+            scatter!(pTrans, [time[end]], [Mxy[end]], label = false, color = colors[5], markersize = 5)
+            no_label_plotted = true        
+        end
+    end
+
+    return pTrans
+end

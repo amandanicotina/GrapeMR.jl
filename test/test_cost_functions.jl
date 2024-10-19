@@ -3,16 +3,12 @@ using GrapeMR
 
 function test_cost_one_spin(cost_func::Symbol)
     # Parameters
-    N   = 1000;
-    t_c = 0.5; #[s]
+    N = 1000;
     grape_params = GrapeParams(N, cost_func, [true true false])
 
     # RFs
+    t_c   = 0.5; #[s]
     B1ref = 1.0
-    B1x = spline_RF(grape_params.N, t_c)'
-    B1y = spline_RF(grape_params.N, t_c)'
-    Bz  = zeros(1, grape_params.N)
-    control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
 
     # Spin
     M0  = [0.0, 0.0, 1.0];
@@ -24,16 +20,15 @@ function test_cost_one_spin(cost_func::Symbol)
     label  = ["T1-$(Int(T1[1]*1e3))ms"]
 
     # Spin and RF objects
-    control_field = ControlField(B1x, B1y, 1.0, Bz, t_c)
+    control_field = spline_RF(grape_params.N, t_c, B1ref)
     spins   = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
-    mag = forward_propagation(control_field, spins[1])
-    dyn = GrapeMR.Magnetization(mag)
-    iso = Isochromat(dyn, spins[1])
+    iso_vec = dynamics.(control_field, spins)
 
     # Cost gradient
-    (_, cost_grad) = GrapeMR.cost_function(iso, grape_params.cost_function)
-
+    cost_vars = GrapeMR.cost_function(iso_vec, grape_params.cost_function)
+    cost_grad = getindex.(cost_vars, 2)
+   
     # Finite difference
     ΔM   = 1e-10;
     fd_M = finite_difference_cost(grape_params.cost_function, iso, ΔM)
@@ -44,16 +39,12 @@ end
 
 function test_cost_two_spins(cost_func::Symbol)
     # Parameters
-    N   = 1000;
-    t_c = 0.5; #[s]
+    N = 1000;
     grape_params = GrapeParams(N, cost_func, [true true false])
 
     # RFs
+    t_c   = 0.5; #[s]
     B1ref = 1.0
-    B1x = spline_RF(grape_params.N, t_c)'
-    B1y = spline_RF(grape_params.N, t_c)'
-    Bz  = zeros(1, grape_params.N)
-    control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
 
     # Spin
     M0  = [0.0, 0.0, 1.0];
@@ -65,15 +56,13 @@ function test_cost_two_spins(cost_func::Symbol)
     label  = ["T1-$(Int(T1[1]*1e3))ms", "T1-$(Int(T1[2]*1e3))ms"]
 
     # Spin and RF objects
-    control_field = ControlField(B1x, B1y, 1.0, Bz, t_c)
+    control_field = spline_RF(grape_params.N, t_c, B1ref)
     spins   = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
-    mag = forward_propagation(control_field, spins[1])
-    dyn = GrapeMR.Magnetization(mag)
-    iso = Isochromat(dyn, spins[1])
+    iso = dynamics(Ref(control_field), spins)
 
     # Cost gradient
-    (_, cost_grad) = GrapeMR.cost_function(iso, grape_params.cost_function)
+    cost_vars = GrapeMR.cost_function(iso, grape_params.cost_function)
 
     # Finite difference
     ΔM   = 1e-10;

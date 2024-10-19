@@ -1,4 +1,6 @@
 const wandb_project::String = "GrapeMR"
+Base.broadcastable(cf::ControlField) = Ref(cf)
+
 
 struct GrapeOutput
     isochromats::Vector{Isochromat}
@@ -7,7 +9,6 @@ struct GrapeOutput
     params::Parameters
 end
 
-Base.broadcastable(cf::ControlField) = Ref(cf)
 
 """
     grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
@@ -31,23 +32,22 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     cost_vals    = zeros(Float64, max_iter, 1)[:]
     u1x, u1y     = [], []
     grape_output = GrapeOutput([], deepcopy(cf), cost_vals, p)
-    ∇xoutput  = Vector{Matrix{Float64}}()
-    ∇youtput  = Vector{Matrix{Float64}}()
+    ∇x  = zeros(Float64, 1, gp.N)
+    ∇y  = zeros(Float64, 1, gp.N)
     
     for (ϵ, i) ∈ zip(lr_scheduler, 1:max_iter)
         # ϵ   = max(ϵ, eps)
-        ∇x  = zeros(Float64, 1, gp.N)
-        ∇y  = zeros(Float64, 1, gp.N)
-        # Propagation & cost
-        iso = dynamics(cf, spins)
+        fill!(∇x, 0.0)
+        fill!(∇y, 0.0)
 
-        cost_variables = GrapeMR.cost_function.(iso, gp.cost_function)
-        cost_value = sum(getindex.(cost_variables, 1))
-        adj_ini    = getindex.(cost_variables, 2)
-        # cost_value     = sum([cost_variables[i][1] for i in 1:length(spins)])
-        # adj_ini        = [cost_variables[i][2] for i in 1:length(spins)]
-        adj            = backward_propagation.(Ref(cf), iso, adj_ini)
-        grape_output.cost_values[i,1] = cost_value
+        # Propagation & cost
+        iso = dynamics.(cf, spins)
+        cost_vars = GrapeMR.cost_function.(iso, gp.cost_function)
+        cost_val = sum(first.(cost_vars)) 
+        adj_ini  = last.(cost_vars)    
+        adj      = backward_propagation.(Ref(cf), iso, adj_ini)
+        grape_output.cost_values[i,1] = cost_val
+
         # Save final magnetization trajectory
         if i == max_iter
             append!(grape_output.isochromats, iso)
@@ -59,8 +59,6 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
         if gp.fields_opt[2]
             ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy)))
         end 
-        push!(∇xoutput, ∇x)
-        push!(∇youtput, ∇y)
 
         # Control Field
         (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
@@ -70,11 +68,16 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
 
     grape_output.control_field.B1x = u1x
     grape_output.control_field.B1y = u1y
-
+    
+    # Print Infos
+    final_cost = round(grape_output.cost_values[end], digits = 3)
+    println("\n Final Cost Function Value = $final_cost \n")
+    
     RF_pulse_analysis(grape_output.control_field)
 
     return grape_output
 end
+
 
 """
     dynamics(cf::ControlField, spins::Vector{Spin})
@@ -88,12 +91,13 @@ Function that returns the Isochromat object with the already calculated dynamics
     # Output
     - iso::Vector{Isochromat}
 """
-function dynamics(cf::ControlField, spins::Vector{<:Spins})
-    mag = forward_propagation.(Ref(cf), spins)
-    dyn = GrapeMR.Magnetization.(mag)
-    iso = Isochromat.(dyn, spins)
+function dynamics(cf::ControlField, spins::Spin)
+    mag = forward_propagation(cf, spins)
+    dyn = GrapeMR.Magnetization(mag)
+    iso = Isochromat(dyn, spins)
     return iso
 end
+
 
 """
     gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
@@ -233,56 +237,3 @@ function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange
     return bohb
 end
 
-
-
-## Original grape function
-function old_grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
-    op, gp = p.opt_params, p.grape_params
-    max_iter     = op.max_iter
-    lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=max_iter+1) 
-    cost_vals    = zeros(Float64, max_iter, 1)[:]
-    u1x, u1y     = [], []
-    grape_output = GrapeOutput([], deepcopy(cf), cost_vals, p)
-    ∇xoutput  = Vector{Matrix{Float64}}()
-    ∇youtput  = Vector{Matrix{Float64}}()
-    
-    for (ϵ, i) ∈ zip(lr_scheduler, 1:max_iter)
-        # ϵ   = max(ϵ, eps)
-        ∇x  = zeros(Float64, 1, gp.N)
-        ∇y  = zeros(Float64, 1, gp.N)
-        for spin ∈ spins
-            # Propagation & cost
-            mag = forward_propagation(cf, spin)
-            dyn = GrapeMR.Magnetization(mag)
-            iso = Isochromat(dyn, spin)
-            (cost, cost_grad) = GrapeMR.cost_function(iso, gp.cost_function)
-            grape_output.cost_values[i,1] += cost
-            # cost_grad = GrapeMR.cost_function_gradient(iso, gp.cost_function)
-            adj = backward_propagation(cf, iso, cost_grad)
-            if i == max_iter
-                push!(grape_output.isochromats, iso)
-            end
-            # Gradient
-            if gp.fields_opt[1]
-                ∇x += gradient(adj, mag, Ix)
-            end 
-            if gp.fields_opt[2]
-                ∇y += gradient(adj, mag, Iy)
-            end 
-            push!(∇xoutput, ∇x)
-            push!(∇youtput, ∇y)
-        end
-
-        # Control Field
-        (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
-        cf.B1x = u1x
-        cf.B1y = u1y
-    end
-
-    grape_output.control_field.B1x = u1x
-    grape_output.control_field.B1y = u1y
-
-    RF_pulse_analysis(grape_output.control_field)
-
-    return grape_output
-end

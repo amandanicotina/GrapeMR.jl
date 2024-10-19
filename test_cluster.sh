@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=testjob
+#SBATCH --job-name=test_nicotina
 #SBATCH --chdir=/home/
 
 # Resources

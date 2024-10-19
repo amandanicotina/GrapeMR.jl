@@ -15,7 +15,7 @@ Calculates the cost values for a given control field (`control_field`) and spin 
 function cost_offsets(control_field::ControlField, spin_system::Spin, offsets::Vector{Float64}, cost::Symbol)
     ΔB1 = [1.0]
     spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, ΔB1, [spin_system.target], [spin_system.label])        
-    isochromats = dynamics(control_field, spins_b0)
+    isochromats = dynamics.(control_field, spins_b0)
 
     cost_terms = cost_function.(isochromats,  cost)  
     cost_profile = getindex.(cost_terms, 1) 
@@ -28,7 +28,7 @@ function cost_offsets(control_field::ControlField, spin_system::SteadyState, off
     spins_b0 = GrapeMR.SteadyState(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, ΔB1, [spin_system.target], 
                             [spin_system.label], spin_system.α, spin_system.Δϕ, spin_system.TR, spin_system.TE)      
 
-    isochromats = dynamics(control_field, spins_b0)
+    isochromats = dynamics.(control_field, spins_b0)
 
     cost_terms = cost_function.(isochromats, :spin_target)  
     cost_profile = getindex.(cost_terms, 1) 
@@ -57,7 +57,7 @@ function create_cost_matrix(control_field::ControlField, spin_system::Spin, offs
 
     for (i, b1) in enumerate(b1_inhomogeneities)
         spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, b1, [spin_system.target], [spin_system.label])        
-        isochromats = dynamics(control_field, spins_b0)
+        isochromats = dynamics.(control_field, spins_b0)
 
         cost_terms = cost_function.(isochromats, cost)  
         cost_profile = getindex.(cost_terms, 1)  
@@ -73,7 +73,7 @@ function create_cost_matrix(control_field::ControlField, spin_system::SteadyStat
     for (i, b1) in enumerate(b1_inhomogeneities)
         spins_b0 = GrapeMR.SteadyState(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, b1, [spin_system.target], 
                                         [spin_system.label], spin_system.α, spin_system.Δϕ, spin_system.TR, spin_system.TE)     
-        isochromats = dynamics(control_field, spins_b0)
+        isochromats = dynamics.(control_field, spins_b0)
 
         cost_terms = cost_function.(isochromats, cost)  
         cost_profile = getindex.(cost_terms, 1)  

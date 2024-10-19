@@ -141,8 +141,8 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
             min_label_plotted = true
         else
             plot!(pMag, Mxy, m[4, :], 
-            label = min_label_plotted ? false : "$(s.label)", color = colors[5], lw = 2)
-            scatter!(pMag, [Mxy[end]], [m[4, end]], label = false, color = colors[5], markersize = 5)
+            label = min_label_plotted ? false : "$(s.label)", color = colors[2], lw = 2)
+            scatter!(pMag, [Mxy[end]], [m[4, end]], label = false, color = colors[2], markersize = 5)
             min_label_plotted = true        
         end
     end

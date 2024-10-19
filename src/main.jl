@@ -14,14 +14,14 @@ using GrapeMR
 
 M0 = [0.0, 0.0, 1.0]
 ΔB1 = [1.0]
-B0 = 15.0
+B0 = 5.0
 offsets = collect(-B0:1:B0)
 
 # Water
 T1_water = 0.5
 T2_water = 0.1
 label_water = "S1"
-target_water = "[1.0, 0.0, 0.0]"
+target_water = "[0.0, 1.0, 0.0]"
 
 # Glycerol
 # T1_glycerol = collect(range(0.3, 0.4, 3))
@@ -40,17 +40,17 @@ target_water = "[1.0, 0.0, 0.0]"
 spins = GrapeMR.Spin(M0, [T1_water], [T2_water], offsets, ΔB1, [target_water], [label_water])
 
 # Grape Parameters 
-grape_params = GrapeParams(2000, :spin_target, [false false false])
+grape_params = GrapeParams(1500, :spin_target, [true true false])
 
 # Optimization Parameters
 # bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
 # plot_bohb(bohb)
 # spline_bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
 # Tc, poly_start, poly_degree, max_iter = spline_bohb.minimizer
-Tc = 0.8
+Tc = 0.5
 poly_start = 0.1
 poly_degree = 1.0
-max_iter = 2000.0
+max_iter = 1000.0
 opt_params   = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 
 # Parameters 
@@ -58,15 +58,17 @@ params = Parameters(grape_params, opt_params)
 
 # Initial RF Pulse
 B1ref = 1.0
-BW_Hz = 1000.0
 control_field = spline_RF(grape_params.N, Tc, B1ref) 
 
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
+no_threads_grape_output = @time no_threads_grape(params, control_field, spins);
+threads_grape_output = @time threads_grape(params, control_field, spins);
+
 spin = grape_output.isochromats[1].spin
 @time run_cost_analysis(grape_output.control_field, spin, 50.0, 50, grape_params.cost_function)
 
-# # Save data
+# # # Save data
 # folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
 # experiment_folder = save_grape_data(grape_output; folder_path)
 # go = load_grape_data(experiment_folder)
@@ -75,16 +77,10 @@ spin = grape_output.isochromats[1].spin
 # export_bruker(grape_output)
 
 # Plots
-plot_cost_values(grape_output.cost_values, grape_params)
-# plot_magnetization_2D(grape_output.isochromats)
-plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats)
+plot_cost_values(threads_grape_output.cost_values, grape_params)
+plot_magnetization_2D(grape_output.isochromats)
+plot_magnetization_control_field(threads_grape_output.control_field, grape_output.isochromats)
 plot_control_fields(grape_output.control_field; unit="Hz")
-plot_magnetization_time(grape_output.isochromats[2], grape_output.control_field.t_control)
-
-
-
-
-#hyperopt = 63895.310865 seconds
-
+plot_magnetization_time(grape_output.isochromats[11], grape_output.control_field.t_control)
 
 

@@ -38,6 +38,7 @@ include("propagation&cost/bloch_methods.jl")
 include("propagation&cost/cost_functions.jl")
 
 include("optimization/optimize.jl")
+include("optimization/opt_test_func.jl")
 include("optimization/finite_difference.jl")
 
 include("utilities/save_data.jl")
@@ -67,10 +68,11 @@ export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profil
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz  # check exportinh these functions when the run_rf_analysis is ready
 
 # Grape 
-export grape, old_grape, random_sample, hyperoptimization
+export grape, random_sample, hyperoptimization, dynamics
+export threads_grape, old_grape, no_threads_grape
 
 # Save/load/export files
-export save_grape_data, load_grape_data, file_name_string
+export save_grape_data, save_bohb_data, load_grape_data, load_bohb_data
 export export_bruker
 export spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
@@ -80,7 +82,7 @@ export plot_control_fields, plot_control_fields_phase_shift
 export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
-export plot_transverse_magnetization
+export plot_transverse_magnetization, plot_transverse_time
 export plot_evaluations, plot_bohb
 
 end
