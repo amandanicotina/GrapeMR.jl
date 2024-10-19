@@ -53,12 +53,12 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             append!(grape_output.isochromats, iso)
         end
         # Gradient
-        if gp.fields_opt[1]
-            ∇x = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Ix)))
-        end 
-        if gp.fields_opt[2]
-            ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy)))
-        end 
+        # if gp.fields_opt[1]
+        ∇x = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Ix)))
+        # end 
+        # if gp.fields_opt[2]
+        ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy)))
+        # end 
 
         # Control Field
         (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)

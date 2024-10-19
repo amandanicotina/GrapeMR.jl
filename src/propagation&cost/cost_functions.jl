@@ -11,9 +11,9 @@ Function that gets called cost function form the cost function dictionary
 ### Output
     - '(cost_val, cost_gradient)::Tuple{Float64, Vector{Float64}}': Tuple with cost funciton value and 4x1 gradient.
 """
-function cost_function(iso::Isochromat, cf::Symbol)
-    if haskey(COST_FUNCTIONS, cf)
-        return COST_FUNCTIONS[cf](iso)
+function cost_function(iso::Isochromat, cf::String)
+    if haskey(COST_FUNCTIONS, Symbol(cf))
+        return COST_FUNCTIONS[Symbol(cf)](iso)
     else
         error("Cost Function $cf not defined")
     end

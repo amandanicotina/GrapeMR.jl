@@ -58,13 +58,13 @@ export Spins, Spin, SpinRange, Magnetization, Isochromat
 
 # Analysis
 export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-export integral_factor, fast_fourier_transform, average_pulse_power # check exportinh these functions when the run_rf_analysis is ready
+export integral_factor, average_pulse_power # check exportinh these functions when the run_rf_analysis is ready
 
-export run_cost_analysis
+# export run_cost_analysis
 
 # 
 export SteadyState, SteadyStateData
-export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
+# export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz  # check exportinh these functions when the run_rf_analysis is ready
 
 # Grape 
