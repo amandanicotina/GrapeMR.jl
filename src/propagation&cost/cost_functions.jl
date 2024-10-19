@@ -9,7 +9,7 @@ Function that gets called cost function form the cost function dictionary
     - 'cf::Symbol': Cost Function
 
 ### Output
-    - '(cost_val, cost_gradient)::Tuple{Float64, Vector{Float64}}': Tuple with cost funcito value and 4x1 gradient.
+    - '(cost_val, cost_gradient)::Tuple{Float64, Vector{Float64}}': Tuple with cost funciton value and 4x1 gradient.
 """
 function cost_function(iso::Isochromat, cf::Symbol)
     if haskey(COST_FUNCTIONS, cf)
@@ -18,6 +18,9 @@ function cost_function(iso::Isochromat, cf::Symbol)
         error("Cost Function $cf not defined")
     end
 end
+
+#  cost_function(iso::Isochromat, cf::Function) = cf(iso)
+
 
 """
     calculate_cost_gradient(cost_func::Num, dict::Dict, vars::Vector{Num})
@@ -66,26 +69,33 @@ function get_cost_and_gradient(iso::Isochromat, cost_expr::Num, vars::Vector{Num
     return Symbolics.unwrap(cost), c_grad
 end
 
-"""
-    Cost Functions
-"""
+############################################################################################
+#                                     Cost Functions                                       #
+############################################################################################
 function euclidean_norm(iso::Isochromat)
     vars = @variables Mx, My, Mz
     cost = sqrt(Mx^2 + My^2 + Mz^2 + 1e-15)
     return get_cost_and_gradient(iso, cost, vars)
 end
 
-function target_one_spin(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
+function cost_func_do_dawid(iso::Isochromat)
+    vars = @variables Mx, My, Mz
+    cost = (sin(Mx) - cos(My))*atan(Mz)
+    return get_cost_and_gradients(iso, cost, vars)
+end
+
+function spin_target(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
+    s = iso.spin
     vars = @variables Mx My Mz
+    M_tar = eval(Meta.parse(iso.spin.target))
     Mx_tar, My_tar, Mz_tar = M_tar
-    cost_expr = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2)
+    cost_expr = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2) / s.Nspins
     return get_cost_and_gradient(iso, cost_expr, vars)
 end
 
 function saturation_contrast(iso::Isochromat)
     vars = @variables Mx My Mz
     s = iso.spin
-
     if s.target == "max"
         cost_expr = (1 - sqrt(Mz^2 + 1e-15)) / s.Nspins
     elseif s.target == "min"
@@ -100,11 +110,10 @@ end
 function saturation_contrast_Mx(iso::Isochromat)
     vars = @variables Mx My Mz
     s = iso.spin
-
     if s.target == "max"
-        cost_expr = (1 - sqrt(Mx^2 + 1e-15)) / s.Nspins
+        cost_expr = (1 - sqrt(Mx^2 + 1e-15)) / s.Nspins 
     elseif s.target == "min"
-        cost_expr = sqrt(Mx^2 + My^2 + Mz^2 + 1e-15) / s.Nspins
+        cost_expr = sqrt(Mx^2 + My^2 + 1e-15) / s.Nspins
     else
         error("Invalid target $(s.target). Valid targets are 'max' or 'min'.")
     end
@@ -112,13 +121,26 @@ function saturation_contrast_Mx(iso::Isochromat)
     return get_cost_and_gradient(iso, cost_expr, vars)
 end
 
+function saturation_contrast_Mtrans(iso::Isochromat)
+    vars = @variables Mx My Mz
+    s = iso.spin
 
-function target_different_offsets_steady_state(iso::Isochromat) 
+    if s.target == "max"
+        cost_expr = (1 - sqrt(Mx^2 + My^2 + 1e-15)) / s.Nspins
+    elseif s.target == "min"
+        cost_expr = sqrt(Mx^2 + My^2 + 1e-15) / s.Nspins
+    else
+        error("Invalid target $(s.target). Valid targets are 'max' or 'min'.")
+    end
+
+    return get_cost_and_gradient(iso, cost_expr, vars)
+end
+
+function steady_state_offset_targets(iso::Isochromat) 
     vars = @variables Mx, My, Mz
     s = iso.spin
 
-    # Steady State
-    ss = steady_state_matrix(s)
+    ss = steady_state_matrix(iso)
     Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
 
     cost_expr = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)/s.Nspins
@@ -130,26 +152,25 @@ function saturation_contrast_steady_state(iso::Isochromat)
     vars = @variables Mx, My, Mz
     s = iso.spin
     if s.target == "min"
-        # Magnetization
-        m = iso.magnetization.dynamics
-        sqrt(Mx^2 + My^2 + Mz^2 + 1e-15)
-        c = sqrt(sum(m[2:end,end].*m[2:end,end]) + 1e-15)/s.Nspins
+        cost_expr = sqrt(Mx^2 + My^2 + Mz^2 + 1e-15) / s.Nspins
     elseif s.target == "max"
         # Steady State
-        ss = steady_state_matrix(s)
+        ss = steady_state_matrix(iso)
         Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
-        # Magnetization
-        m  = iso.magnetization.dynamics
-        Mx = m[2,end]
-        My = m[3,end]
-        Mz = m[4,end]
-        # c = (1 - sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15))/s.Nspins
-        c = (1 - sqrt((Mz - Mz_ss)^2 + 1e-15))/s.Nspins
+
+        # cost_expr = (1 - sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15))/s.Nspins
+        cost_expr = (1 - sqrt((Mz - Mz_ss)^2 + 1e-15))/s.Nspins
     else
         error(" $(s.target) is not a matching target. Valid targets are max or min")
     end
 
-    return c
+    return get_cost_and_gradient(iso, cost_expr, vars)
+end
+
+function cos_func_do_dawid(iso::Isochromat)
+    vars = @variables Mx, My, Mz
+    cost = (sin(Mx) - cos(My))*atan(Mz)
+    return get_cost_and_gradients(iso, cost, vars)
 end
 
 
@@ -158,11 +179,11 @@ Cost Function's dictionary
 """
 const COST_FUNCTIONS = Dict(
     :euclidean_norm => euclidean_norm,
-    :target_one_spin => target_one_spin,
-    # :target_steady_state => target_steady_state,
-    :target_different_offsets_steady_state => target_different_offsets_steady_state,
+    :spin_target => spin_target,
+    :steady_state_offset_targets => steady_state_offset_targets,
     :saturation_contrast => saturation_contrast,
     :saturation_contrast_Mx => saturation_contrast_Mx,
+    :saturation_contrast_Mtrans => saturation_contrast_Mtrans,
     :saturation_contrast_steady_state => saturation_contrast_steady_state
 )
 

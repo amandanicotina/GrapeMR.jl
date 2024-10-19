@@ -1,11 +1,11 @@
-using GrapeMR
 using Test
+using GrapeMR
 using SafeTestsets
 
-# @testset "Check Bloch methods" begin include("test_bloch_methods.jl") end
-
-# @testset "Cost Function: Gradient vs Finite difference" begin include("test_cost_functions.jl") end
-
-# @testset "True gradient vs finite difference" begin include("test_cost_gradients.jl") end
 
 # TODO automatic differention test for calculating the cost funcs derivatives
+@time begin
+    # @time @safetestset "Cost Function: Gradient vs Finite difference" begin include("test_cost_functions.jl") end
+    # @time @safetestset "Bloch Methods: BlochSim vs GrapeMR" begin include("test_bloch_methods.jl") end
+    # @time @safetestset "Gradient vs Finite Differences" begin include("test_gradients.jl") end
+end

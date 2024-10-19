@@ -65,7 +65,7 @@ end
 # Plotting results
 pMag   = plot(B0_vals, sig_mat_abs, label = false, lw = 2.5, color = 4,
          xlabel = "Offset [Hz]", ylabel = "Magnitude", title = "bSSFP Off-Resonace profile")
-         #plot!(pMag, B0_vals, sig_geo_abs, label = "Geometric", lw= 2)
+         plot!(pMag, B0_vals, sig_geo_abs, label = "Geometric", lw= 2)
          #plot!(pMag, B0_vals, sig_abs, label = "Manual", lw= 2) 
          #plot!(pMag, B0_vals, ss_vec_abs, label = "Spin calculated", lw= 2)
 pPhase = plot(B0_vals, sig_mat_phase, label = false, ylabel = "Phase [rad]", lw= 2.5)
@@ -75,9 +75,9 @@ pSig   = plot(pMag, pPhase; layout = (2,1))
 
 pMz = plot(B0_vals, sig_mat_Mz, label = false, lw= 2.5,
         xlabel = "Offset [Hz]", ylabel = "Mz - Magnetization", title = "bSSFP Off-Resonace profile")
-       #plot!(pMz, B0_vals, sig_geo_Mz, label = "Geometric", lw= 2)
+       plot!(pMz, B0_vals, sig_geo_Mz, label = "Geometric", lw= 2)
        #plot!(pMz, B0_vals, ss_vec_Mz, label = "Spin calculated", lw= 2)
 
 display(pSig)
-# display(pMz)
+display(pMz)
 

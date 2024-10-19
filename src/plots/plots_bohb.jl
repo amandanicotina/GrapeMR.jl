@@ -4,39 +4,40 @@ function plot_bohb(bohb)
     t_c   = []
     start = []
     deg   = []
-    max   = []
+    iter   = []
     for i ∈ eachindex(bohb.results)
         push!(cost, bohb.results[i][1])
         push!(t_c, bohb.history[i][1])
         push!(start, bohb.history[i][2])
         push!(deg, bohb.history[i][3])
-        push!(max, bohb.history[i][4])
+        push!(iter, bohb.history[i][4])
     end
-    function get_eps(start, deg, max_iter)
-        return start / (1 - (max_iter/2 - 1) / max_iter)^deg
-    end
-    eps = [get_eps(start, deg, it) for (start, deg, it) in zip(start, deg, max)]
-    t_min = bohb.minimizer[1]
-    st_min = bohb.minimizer[2]
-    d_min = bohb.minimizer[3]
-    m_min = bohb.minimizer[4]
-    c_min = round(bohb.minimum[1], digits=4)
+
+    time_opt = bohb.minimizer[1]
+    iter_opt = bohb.minimizer[4]
+    cost_opt = round(bohb.minimum, digits=4)
     order = collect(1:length(t_c))
-    m_iter = 1000:100:5000
-    p_cost =  scatter(t_c, max, zcolor=cost, 
+
+    # Time
+    p_cost = scatter(t_c, iter, zcolor=cost, 
         markerstrokecolor = :auto, label = false,
-        xlabel = "Control time [s]", ylabel = "Iter", colorbar_title="Cost Value",
-        title = "Optimization",
+        xlabel = "Control time [s]", ylabel = "Iterations ", colorbar_title = "Cost Value",
+        title = "Hyperparameter Tuning - Control Time",
         color = :viridis)
-        scatter!([t_min], [m_min], label = "Minimum = $c_min", 
+        scatter!([time_opt], [iter_opt], label = "Minimum = $cost_opt", 
         marker = :star5, markersize = 8, color = :red)
-    p_order =  scatter(cost, m_iter, zcolor=order, 
+
+    # Iter
+    p_order =  scatter(cost, log.(iter), zcolor=order, 
         markerstrokecolor = :auto, label = false, 
-        xlabel = "Cost Function", ylabel = "Resources - log scale", colorbar_title="Iterations",
-        title = "Hyperparameter Tuning - Random Sampler", 
+        xlabel = "Cost Function", ylabel = "Iterations - log scale", colorbar_title = "Order",
+        title = "Hyperparameter Tuning - Sampling Order", 
         color = :viridis)
-        scatter!([c_min], [m_min], label = "Minimum = $c_min", 
+        scatter!([cost_opt], [log.(iter_opt)], label = "Minimum = $cost_opt", 
         marker = :star5, markersize = 8, color = :red)
+        
+        display(p_cost)
+        display(p_order)
 
     return p_cost, p_order
 end

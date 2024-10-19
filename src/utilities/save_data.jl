@@ -1,63 +1,106 @@
 """
-    save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
+    create_folder(path::String)
 
-Save data related to Grape optimization into files organized in folders.
+Creates a folder at the specified path if it doesn't already exist.
 
 # Arguments
-- `gp::GrapeMR.GrapeOutput`: Grape optimization output.
-- `folder_path::String = pwd()`: Folder path where data will be saved.
+- `path::String`: The path where the folder will be created.
 
-# Example
-```julia
-save_grape_data(gp_output, folder_path="/path/to/folder")
+# Output
+Returns the path to the created folder. If the folder already exists, it simply returns the path.
+"""
+function create_folder(path::String)
+    try
+        if !isdir(path)
+            mkdir(path)
+        end
+    catch
+        error("Unable to create folder: $path.")
+        return
+    end
+end
+
+"""
+    save_grape_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
+
+Save data related to GRAPE optimization into a folder organized by date.
+
+# Arguments
+- `go::GrapeMR.GrapeOutput`: The output from a GRAPE optimization process.
+- `folder_path::String = pwd()`: The folder path where data will be saved. Defaults to the current working directory.
+
+# Output
+Returns the full path to the folder where the data was saved.
+
+# Saved Files
+- `grape_output.jld2`: Contains the entire `GrapeOutput` struct in JLD2 format.
+- `dict_cost_values.csv`: CSV file containing the cost values from the optimization process.
+- `dict_control_field.csv`: CSV file containing control field values (B1x, B1y, Bz, and RF time).
+- `dict_iso_spins.csv`: CSV file containing isochromat spin parameters.
 
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-
-
-function save_grape_data(gp::GrapeMR.GrapeOutput; folder_path = pwd())
+function save_grape_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
     # General folder yyyy-mm-dd
     folder_name      = Dates.format(today(), "yyyy-mm-dd")
-    full_folder_path = joinpath(folder_path, folder_name)   
-    # Create/Check folder
-    try
-        if !isdir(full_folder_path)
-            mkdir(full_folder_path)
-        end
-    catch
-        error("Unable to create general folder.")
-        return
-    end
+    full_folder_path = create_folder(joinpath(folder_path, folder_name))  
 
     # Optimization especific folder hh-mm
-    tar = gp.isochromats[1].spin.target
-    lab = gp.isochromats[1].spin.label
-    ΔB0 = string(abs(Int(round(gp.isochromats[1].spin.B0inho, digits = 1))))
-    opt_folder = "$tar _$lab _$ΔB0"
-    file_path  = joinpath(full_folder_path, opt_folder)
-    # Create/Check folder
+    opt_folder = file_name_string(go)
+    file_path  = create_folder(joinpath(full_folder_path, opt_folder))
+    
     try
-        if !isdir(file_path)
-            mkdir(file_path)
-        end
-    catch
-        error("Unable to create optimization-specific folder.")
-        return
-    end
-
-    try
-        gp_dicts = grape_output_to_dict(gp)
-        save_gp_dicts(gp_dicts, file_path)
-        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(gp_dicts)
+        go_dicts = grape_output_to_dict(go)
+        # save_gp_dicts(go_dicts, file_path)
+        save_grape_output(go, file_path)
+        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
         CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
         CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
         CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
+        return file_path
     catch
-        error("Unable to save data to CSV files.")
+        error("Unable to save GRAPE data.")
         return
     end
 
+end
+
+"""
+    save_bohb_data(bohb::GrapeMR.GrapeOutput; folder_path = pwd())
+
+Save data related to BOHB optimization into a folder organized by date.
+
+# Arguments
+- `bohb::GrapeMR.GrapeOutput`: The output from a BOHB optimization process.
+- `folder_path::String = pwd()`: The folder path where data will be saved. Defaults to the current working directory.
+
+# Output
+Returns the full path to the folder where the data was saved.
+
+# Saved Files
+- `bohb.jld2`: Contains BOHB result in JLD2 format.
+"""
+function save_bohb_data(bohb; folder_path = pwd())
+    folder_name = Dates.format(today(), "yyyy-mm-dd")
+    full_folder_path = create_folder(joinpath(folder_path, folder_name))
+
+    # Save the BOHB data
+    try
+        save_bohb(bohb, full_folder_path)
+        return full_folder_path
+    catch
+        error("Unable to save BOHB data.")
+    end
+end
+
+
+function file_name_string(go::GrapeMR.GrapeOutput)
+    l = go.isochromats[1].spin.label
+    s = go.isochromats[1].spin
+    p = go.params.grape_params
+    ΔB0 = string(abs(Int(round(go.isochromats[1].spin.B0inho, digits = 1))))
+    return string(l, "_", p.cost_function, "_", s.target, "_", "$ΔB0", "Hz")
 end
 
 function grape_output_to_dict(gp::GrapeMR.GrapeOutput)
@@ -98,5 +141,23 @@ function save_gp_dicts(gp_dicts::Tuple{Dict, Dict, Vector}, file_path::String)
         "control_field" => dict_control_field,
         "iso_spins" => dict_iso_spins
     )
-    save(joinpath(file_path, "grape_output_dict.jld"), "gp_output_dict", gp_output_dict)
+    save(joinpath(file_path, "grape_output_dict.jld2"), "gp_output_dict", gp_output_dict)
+end
+
+function save_grape_output(grape_output::GrapeMR.GrapeOutput, file_path::String)
+    JLD2.@save joinpath(file_path, "grape_output.jld2") grape_output
+end
+
+function save_bohb(bohb, file_path::String)
+    JLD2.@save joinpath(file_path, "bohb.jld2") bohb
+end
+
+function load_grape_data(folder_path::String)
+    JLD2.@load joinpath(folder_path, "grape_output.jld2") grape_output
+    return grape_output
+end
+
+function load_bohb_data(folder_path::String)
+    JLD2.@load joinpath(folder_path, "bohb.jld2") bohb
+    return bohb
 end
