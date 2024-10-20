@@ -152,20 +152,26 @@ function plot_magnetization_tracking(M_bs::Vector{BlochSim.Magnetization{Float64
         plot!(pMz, time, Mz_gp, label = "Forward Propagation")
     
     pMag = plot(pMx, pMy; layout= (2,1), xlims = [0.0, t_rf], ylims = [-1.05, 1.05])
+
+    display(pMag)
+    display(pMz)
     return pMag, pMz
 end 
 
+@safetestset "Rotation Dynamics" begin
+    (mag_bs_rot, mag_gp_rot, rf_time_rot)  = test_rotation_dynamics()
+    Mx_bs, Mx_bs, Mx_bs    = getproperty.(mag_bs_rot, :x), getproperty.(mag_bs_rot, :y), getproperty.(mag_bs_rot, :z);
+    Mx_gp, My_gp, Mz_gp    = mag_gp_rot[2,:], mag_gp_rot[3,:], mag_gp_rot[4,:]
+
+    @test all(round(Mx_gp, digits = 1) .== round(Mx_bs, digits = 1))
+    @test all(round(My_gp, digits = 1) .== round(Mx_bs, digits = 1))
+    @test all(round(Mz_gp, digits = 1) .== round(Mx_bs, digits = 1))
+end
+
+# (mag_bs_relax, mag_gp_relax, rf_time_relax) = test_relaxation_dynamics()
+(mag_bs_rot, mag_gp_rot, rf_time_rot)  = test_rotation_dynamics()
 (mag_bs_shape, mag_gp_shape, rf_time_shape) = test_shaped_pulse_dynamics()
-(pMag, pMz) = plot_magnetization_tracking(mag_bs_shape[2], mag_gp_shape[2], rf_time_shape)
-display(pMag)
-display(pMz) 
 
-(mag_bs_relax, mag_gp_relax, rf_time_relax) = test_relaxation_dynamics()
-(pMag, pMz) = plot_magnetization_tracking(mag_bs_relax[2], mag_gp_relax[2], rf_time_relax)
-display(pMag)
-display(pMz) 
-
-(mag_bs_rot, mag_gp_rot, rf_time_rot) = test_rotation_dynamics()
-(pMag, pMz) = plot_magnetization_tracking(mag_bs_rot[2], mag_gp_rot[2], rf_time_rot)
-display(pMag) 
-display(pMz)
+(pMag, pMz) = plot_magnetization_tracking.(mag_bs_relax, mag_gp_relax, rf_time_relax)
+(pMag, pMz) = plot_magnetization_tracking.(mag_bs_rot, mag_gp_rot, rf_time_rot)
+(pMag, pMz) = plot_magnetization_tracking.(mag_bs_shape, mag_gp_shape, rf_time_shape)

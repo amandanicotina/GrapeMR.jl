@@ -27,15 +27,14 @@ Implements the grape algorithm [khaneja2005optimal](@cite)
 """
 function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
-    max_iter     = op.max_iter
-    lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=max_iter+1) 
-    cost_vals    = zeros(Float64, max_iter, 1)[:]
+    lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=op.max_iter+1) 
+    cost_vals    = zeros(Float64, op.max_iter, 1)[:]
     u1x, u1y     = [], []
     grape_output = GrapeOutput([], deepcopy(cf), cost_vals, p)
     ∇x  = zeros(Float64, 1, gp.N)
     ∇y  = zeros(Float64, 1, gp.N)
     
-    for (ϵ, i) ∈ zip(lr_scheduler, 1:max_iter)
+    for (ϵ, i) ∈ zip(lr_scheduler, 1:op.max_iter)
         # ϵ   = max(ϵ, eps)
         fill!(∇x, 0.0)
         fill!(∇y, 0.0)
@@ -49,15 +48,17 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
         grape_output.cost_values[i,1] = cost_val
 
         # Save final magnetization trajectory
-        if i == max_iter
+        if i == op.max_iter
             append!(grape_output.isochromats, iso)
         end
         # Gradient
+        t = range(0.0, cf.t_control, length = gp.N)
+        Δt = round(t[2]-t[1], digits = 5)
         if gp.fields_opt[1]
-            ∇x = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Ix)))
+            ∇x = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Ix), Δt))
         end 
         if gp.fields_opt[2]
-            ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy)))
+            ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy), Δt))
         end 
 
         # Control Field
@@ -111,7 +112,7 @@ gradient
     # Output
     - ΔJ - 1xN matrix
 """
-function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
+function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix{Int64}, Δt::Float64)
     grad = zeros(Float64, 1, length(M[1,:])-1)
     for i ∈ 1:(length(M[1,:])-1)
         grad[1,i] = transpose(χ[:,i+1])*H*M[:,i+1]

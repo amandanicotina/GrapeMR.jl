@@ -84,10 +84,10 @@ function no_threads_grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins
         end
         # Gradient
         if gp.fields_opt[1]
-            ∇x = sum(gradient.(adjs, getfield.(getfield.(isos, :magnetization), :dynamics), Ref(Ix)))
+            ∇x = sum(gradient.(adjs, getfield.(getfield.(isos, :magnetization), :dynamics), Ref(Ix), 1.0))
         end 
         if gp.fields_opt[2]
-            ∇y = sum(gradient.(adjs, getfield.(getfield.(isos, :magnetization), :dynamics), Ref(Iy)))
+            ∇y = sum(gradient.(adjs, getfield.(getfield.(isos, :magnetization), :dynamics), Ref(Iy), 1.0))
         end 
 
         # Control Field

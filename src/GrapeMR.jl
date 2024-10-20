@@ -20,7 +20,6 @@ using CubicSplines
 using LinearAlgebra
 using NumericalIntegration
 using ParameterSchedulers
-# using Wandb
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
@@ -52,24 +51,23 @@ include("plots/plots_magnetization.jl")
 export γ_¹H, Ix, Iy
 
 # Data types
-export ControlField, ControlFieldbSSFP
+export ControlField
 export OptimizationParams, GrapeParams, Parameters, GrapeOutput
 export Spins, Spin, SpinRange, Magnetization, Isochromat
 
 # Analysis
 export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-export integral_factor, fast_fourier_transform, average_pulse_power # check exportinh these functions when the run_rf_analysis is ready
-
+export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
 export run_cost_analysis
 
-# 
+# bSSFP
 export SteadyState, SteadyStateData
 export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz  # check exportinh these functions when the run_rf_analysis is ready
 
 # Grape 
-export grape, random_sample, hyperoptimization, dynamics
-export threads_grape, old_grape, no_threads_grape
+export grape, random_sample, hyperoptimization, dynamics, backward_propagation
+export finite_difference_cost, finite_difference_field
 
 # Save/load/export files
 export save_grape_data, save_bohb_data, load_grape_data, load_bohb_data
