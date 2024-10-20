@@ -1,0 +1,31 @@
+title = "GrapeMR Configuration"
+
+plot = true
+
+[spins]
+M0 = [0.0, 0.0, 1.0]
+delta_B1 = [1.0]
+offset = 0.0
+intrinsics = [
+    {T1 = 0.3, T2 = 0.1, label = "S2", target = "min"},
+    {T1 = 0.9, T2 = 0.6, label = "S1", target = "max"}
+]
+
+[grape_parameters]
+time_steps      = 1500
+cost_function   = "saturation_contrast"
+fields2optimize = [true, true, false]
+
+[optimization_parameters]
+poly_start   = 0.1
+poly_degree  = 1.0
+max_iter     = 1500.0
+
+[control_field]
+control_time = 1.0
+B1ref = 1.0
+
+[save_files]
+enabled = false
+folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
+export_bruker = false

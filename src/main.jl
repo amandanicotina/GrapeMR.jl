@@ -1,7 +1,6 @@
 using GrapeMR
 using TOML
 
-
 tm = TOML.parsefile("src/default_config.toml")
 
 offsets = collect(-tm["spins"]["offset"]:1:tm["spins"]["offset"])
@@ -23,7 +22,6 @@ grape_params = GrapeParams(
 )
 
 # Optimization Parameters
-# bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
 opt_params   = OptimizationParams(
     tm["optimization_parameters"]["poly_start"], 
     tm["optimization_parameters"]["poly_degree"], 
@@ -37,15 +35,9 @@ params = Parameters(grape_params, opt_params)
 control_field = spline_RF(grape_params.N, tm["control_field"]["control_time"], tm["control_field"]["B1ref"]) 
 
 # Run Optimization
-grape_output = @time no_threads_grape(params, control_field, spins); 
+grape_output = @time grape(params, control_field, spins); 
 
-# no_threads_grape_output = @time no_threads_grape(params, control_field, spins);
-# threads_grape_output = @time threads_grape(params, control_field, spins);
-
-spin = grape_output.isochromats[1].spin
-#@time run_cost_analysis(grape_output.control_field, spin, 50.0, 50, grape_params.cost_function)
-
-# # # Save data
+# Save data
 if tm["save_files"]["enabled"]
     experiment_folder = save_grape_data(grape_output; folder_path= tm["save_files"]["folder_path"])
     if tm["save_files"]["export_bruker"]

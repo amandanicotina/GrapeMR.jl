@@ -31,8 +31,8 @@ adjoint   = backward_propagation.(control_field, iso_vals, cost_grad)
 # True Gradient
 t = range(0.0, control_field.t_control, length = grape_params.N)
 Δt = round(t[2]-t[1], digits =5)
-true_grad_Bx = GrapeMR.gradient.(adjoint, getfield.(getfield.(iso_vals, :magnetization), :dynamics), Ref(Ix), Δt)
-true_grad_By = GrapeMR.gradient.(adjoint, getfield.(getfield.(iso_vals, :magnetization), :dynamics), Ref(Iy), Δt)
+true_grad_Bx = GrapeMR.gradient.(adjoint, getfield.(getfield.(iso_vals, :magnetization), :dynamics), Ref(Ix))
+true_grad_By = GrapeMR.gradient.(adjoint, getfield.(getfield.(iso_vals, :magnetization), :dynamics), Ref(Iy))
 
 # Finite difference
 Δcf = 1e-6 

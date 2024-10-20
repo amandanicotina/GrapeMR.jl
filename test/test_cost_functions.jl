@@ -14,14 +14,15 @@ function test_cost_one_spin(cost_func::Symbol; target::String = "-")
     M0  = [0.0, 0.0, 1.0];
     T1  = [0.8];
     T2  = [0.6];
-    B0  = [0.0];
+    B0 = 10.0
+    offsets = collect(-B0:5:B0)
     ΔB1 = [1.0];
     target = [target];
     label  = ["T1-$(Int(T1[1]*1e3))ms"]
 
     # Spin and RF objects
     control_field = spline_RF(grape_params.N, t_c, B1ref)
-    spins   = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
+    spins   = GrapeMR.Spin(M0, T1, T2, offsets, ΔB1, target, label)
 
     iso_vec = dynamics.(control_field, spins)
 
@@ -31,7 +32,7 @@ function test_cost_one_spin(cost_func::Symbol; target::String = "-")
    
     # Finite difference
     ΔM   = 1e-10;
-    fd_M = finite_difference_cost(grape_params.cost_function, iso_vec[1], ΔM)
+    fd_M = finite_difference_cost.(grape_params.cost_function, iso_vec, ΔM)
 
     return fd_M, cost_grad
 end

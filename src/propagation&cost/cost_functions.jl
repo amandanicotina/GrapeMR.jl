@@ -86,15 +86,15 @@ end
 
 function spin_target(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
     s = iso.spin
-    vars = @variables Mx My Mz
+    vars  = @variables Mx, My, Mz
     M_tar = eval(Meta.parse(iso.spin.target))
     Mx_tar, My_tar, Mz_tar = M_tar
-    cost_expr = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2) / s.Nspins
+    cost_expr = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2 + 1e-15) / s.Nspins
     return get_cost_and_gradient(iso, cost_expr, vars)
 end
 
 function saturation_contrast(iso::Isochromat)
-    vars = @variables Mx My Mz
+    vars = @variables Mx, My, Mz
     s = iso.spin
     if s.target == "max"
         cost_expr = (1 - sqrt(Mz^2 + 1e-15)) / s.Nspins
@@ -108,7 +108,7 @@ function saturation_contrast(iso::Isochromat)
 end
 
 function saturation_contrast_Mx(iso::Isochromat)
-    vars = @variables Mx My Mz
+    vars = @variables Mx, My, Mz
     s = iso.spin
     if s.target == "max"
         cost_expr = (1 - sqrt(Mx^2 + 1e-15)) / s.Nspins 
@@ -122,7 +122,7 @@ function saturation_contrast_Mx(iso::Isochromat)
 end
 
 function saturation_contrast_Mtrans(iso::Isochromat)
-    vars = @variables Mx My Mz
+    vars = @variables Mx, My, Mz
     s = iso.spin
 
     if s.target == "max"

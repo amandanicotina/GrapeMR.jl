@@ -13,13 +13,13 @@ bloch_matrix
     # Output
     - Calculated 4x4 Bloch matrix
 """
-function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, invT1::Float64, invT2::Float64)
+function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, T1::Float64, T2::Float64)
 
     bloch_matrix = 
-        [0.0    0.0    0.0    0.0;
-         0.0   -invT2  Bz    -B1y;
-         0.0   -Bz    -invT2  B1x;
-         invT1  B1y   -B1x   -invT1] 
+        [0.0    0.0   0.0    0.0;
+         0.0   -1/T2  Bz    -B1y;
+         0.0   -Bz   -1/T2   B1x;
+         1/T1   B1y  -B1x   -1/T1] 
     
     return bloch_matrix
 end
@@ -44,12 +44,9 @@ function forward_propagation(cf::ControlField, s::Spins)
     Bz = cf.Bz .+ B0
     Bx = 2π*B1*cf.B1x
     By = 2π*B1*cf.B1y
-    
-    invT1 = 1 / s.T1
-    invT2 = 1 / s.T2
 
     for (i, Δt) ∈ enumerate(diff(Δt_arr))
-        b_m = bloch_matrix(Bx[i], By[i], Bz[i], invT1, invT2)
+        b_m = bloch_matrix(Bx[i], By[i], Bz[i], s.T1,  s.T2)
         M[:, i+1] = exp(Δt*b_m)*M[:, i]
     end
 
