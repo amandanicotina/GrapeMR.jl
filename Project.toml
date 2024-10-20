@@ -35,6 +35,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 ColorSchemes = "3.26.0"
 Hyperopt = "0.5.6"
 Symbolics = "6.11.0"
+BenchmarkTools = "1.5.0"
 julia = "1"
 
 [extras]
