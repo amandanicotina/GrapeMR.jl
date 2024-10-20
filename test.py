@@ -3,18 +3,25 @@ from hpbandster.core.worker import Worker
 import hpbandster.core.nameserver as hpns
 import hpbandster.optimizers as optimizers
 import threading
+import logging
 
 from juliacall import Main as jl
 from juliacall import Pkg as jlPkg
 
+jlPkg.activate(".")
+jlPkg.instantiate()
+jl.seval("using GrapeMR")
+
+logging.basicConfig(level=logging.DEBUG)
 jl_yield = getattr(jl, "yield")
 
 
 class GrapeWorker(Worker):
 
     def __init__(self, *args, **kwargs):
-        jlPkg.activate(".")
-        jl.seval("using GrapeMR")
+        # jlPkg.activate(".")
+        # jlPkg.instantiate()
+        # jl.seval("using GrapeMR")
         print("kwargs: ", kwargs)
         super().__init__(*args, **kwargs)
         M0 = [0.0, 0.0, 1.0]
@@ -30,28 +37,31 @@ class GrapeWorker(Worker):
         self.spins = jl.GrapeMR.Spin(M0, [T1_water], [T2_water], range(-B0, B0+1, 1), delta_B1, [target_water], [label_water])
         self.gp = jl.GrapeParams(1500, "spin_target")
 
+        self._timer = threading.Timer(1e-2, jl_yield)
+        self._timer.start()
 
     def compute(self, config_id, config, budget, working_directory):
         B1ref = 1.0
-        # jl_yield()
-        control_field = jl.GrapeMR.spline_RF(self.gp.N, config['Tc'], B1ref)
-        # jl_yield()
-        # Optimize
-        opt_params = jl.GrapeMR.OptimizationParams(config['poly_start'], config['poly_degree'], int(budget))
-        opt_params._jl_display()
-        params     = jl.GrapeMR.Parameters(self.gp, opt_params)
-        params._jl_display()
+        test = jl.Array([0, 1, 2, 3, 10])
+        test._jl_display()
+        control_field = jl.spline_RF(self.gp.N, config['Tc'], B1ref)
+        control_field._jl_display()
+        # # Optimize
+        # opt_params = jl.OptimizationParams(config['poly_start'], config['poly_degree'], int(budget))
+        # # opt_params._jl_display()
+        # params     = jl.Parameters(self.gp, opt_params)
+        # # params._jl_display()
         
-        res = jl.GrapeMR.grape(params, control_field, self.spins)
+        # res = jl.grape(params, control_field, self.spins)
+        # res._jl_display()
 
-        loss = res.cost_values[-1]
-        # loss = 10
+        # loss = res.cost_values[-1]
+        loss = test[0]
 
-        return({
-                    'loss': float(loss),  # this is the a mandatory field to run hyperband
-                    # 'loss': float(10),
-                    'info': {}  # can be used for any user-defined information - also mandatory
-                })
+        return ({
+            'loss': float(loss),  # this is the a mandatory field to run hyperband
+            'info': {}  # can be used for any user-defined information - also mandatory
+        })
     
     @staticmethod
     def get_configspace():
@@ -64,14 +74,13 @@ class GrapeWorker(Worker):
 
 if __name__ == "__main__":
     jl.seval("ccall(:jl_enter_threaded_region, Cvoid, ())")
-
-    timer = threading.Timer(1e-4, jl_yield)
-    timer.start()
+    
+    print("Starting")
 
     NS = hpns.NameServer(run_id="example1", host="127.0.0.1", port=None)
     NS.start()
 
-    w = GrapeWorker(nameserver="127.0.0.1", run_id="example1", timeout=5)
+    w = GrapeWorker(nameserver="127.0.0.1", run_id="example1")
     w.run(background=True)
     
     bohb = optimizers.BOHB(  configspace = GrapeWorker.get_configspace(),
