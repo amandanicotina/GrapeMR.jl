@@ -41,3 +41,8 @@ wandb/
 
 # Experimentation
 scratchpad/
+results/
+
+# Binaries
+bin/
+GrapeMRCompiled/

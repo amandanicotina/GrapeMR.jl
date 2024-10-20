@@ -144,96 +144,96 @@ end
 
 
 
-function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])#, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
-    random_hyperopt = @phyperopt for i = i,
-            Tc = Tc,
-            poly_start  = poly_start,
-            poly_degree = poly_degree,
-            max_iter    = max_iter
-        # BOHB
-        # See: https://github.com/baggepinnen/Hyperopt.jl#bohb
-        # And: https://arxiv.org/pdf/1807.01774
-        # state is set by the BOHB algorithm and a KDE will estimate hyperparameters
-        # that balance exploration and exploitation based on previous observations
-        # RFs
-        B1ref = 1.0;
-        B1x = spline_RF(gp.N, Tc)';
-        B1y = spline_RF(gp.N, Tc)';
-        Bz  = zeros(1,gp.N);
-        control_field = ControlField(B1x, B1y, B1ref, Bz, Tc);
+# function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange; i::Int = 50, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])#, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
+#     random_hyperopt = @phyperopt for i = i,
+#             Tc = Tc,
+#             poly_start  = poly_start,
+#             poly_degree = poly_degree,
+#             max_iter    = max_iter
+#         # BOHB
+#         # See: https://github.com/baggepinnen/Hyperopt.jl#bohb
+#         # And: https://arxiv.org/pdf/1807.01774
+#         # state is set by the BOHB algorithm and a KDE will estimate hyperparameters
+#         # that balance exploration and exploitation based on previous observations
+#         # RFs
+#         B1ref = 1.0;
+#         B1x = spline_RF(gp.N, Tc)';
+#         B1y = spline_RF(gp.N, Tc)';
+#         Bz  = zeros(1,gp.N);
+#         control_field = ControlField(B1x, B1y, B1ref, Bz, Tc);
 
-        # Optimize
-        opt_params   = OptimizationParams(poly_start, poly_degree, max_iter);
-        grape_output = grape(opt_params, gp, control_field, spins);
+#         # Optimize
+#         opt_params   = OptimizationParams(poly_start, poly_degree, max_iter);
+#         grape_output = grape(opt_params, gp, control_field, spins);
 
-        cost = grape_output.cost_values[end];
-        # i,cost,Tc,poly_start,poly_degree,max_iter
-        # println("$i,$cost,$Tc,$poly_start,$poly_degree,$max_iter");
-        @info "metrics" hyperopt_i=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=max_iter
-        # Could add debug metrics too
-        # @debug "metrics" not_print=-1  # Will have to change debug level for this to be logged
-        # Tracking Hyperparameters
-        # Logging Values
-        # Wandb.log(logger, Dict(
-        #     "hyperopt_i" => i, 
-        #     "cost" => cost,
-        #     "Tc" => Tc,
-        #     "poly_start" => poly_start,
-        #     "poly_degree" => poly_degree,
-        #     "max_iter" => max_iter
-        # )
-        # )
-        cost
-    end
+#         cost = grape_output.cost_values[end];
+#         # i,cost,Tc,poly_start,poly_degree,max_iter
+#         # println("$i,$cost,$Tc,$poly_start,$poly_degree,$max_iter");
+#         @info "metrics" hyperopt_i=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=max_iter
+#         # Could add debug metrics too
+#         # @debug "metrics" not_print=-1  # Will have to change debug level for this to be logged
+#         # Tracking Hyperparameters
+#         # Logging Values
+#         # Wandb.log(logger, Dict(
+#         #     "hyperopt_i" => i, 
+#         #     "cost" => cost,
+#         #     "Tc" => Tc,
+#         #     "poly_start" => poly_start,
+#         #     "poly_degree" => poly_degree,
+#         #     "max_iter" => max_iter
+#         # )
+#         # )
+#         cost
+#     end
 
-    close(logger)
-    return random_hyperopt
-end
+#     close(logger)
+#     return random_hyperopt
+# end
 
-function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int; i::Int=5, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])#, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
+# function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int; i::Int=5, poly_start::Vector{Float64} = [1e-1, 1e-2], poly_degree::Vector{Int} = [1, 2, 3])#, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
 
-    bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
-            Tc = Tc,
-            poly_start  = poly_start,
-            poly_degree = poly_degree,
-            max_iter = range(1, step=1, stop=max_iter);
+#     bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])), 
+#             Tc = Tc,
+#             poly_start  = poly_start,
+#             poly_degree = poly_degree,
+#             max_iter = range(1, step=1, stop=max_iter);
 
-        if state !== nothing
-            Tc, poly_start, poly_degree, _ = state
-        end
-        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-             print("\n resources: ", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
+#         if state !== nothing
+#             Tc, poly_start, poly_degree, _ = state
+#         end
+#         if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
+#              print("\n resources: ", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
 
-            # RFs
-            B1ref = 1.0
-            control_field = spline_RF(gp.N, Tc, B1ref) 
+#             # RFs
+#             B1ref = 1.0
+#             control_field = spline_RF(gp.N, Tc, B1ref) 
 
-            # Optimize
-            opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, i))
-            params     = Parameters(gp, opt_params)
-            res = grape(params, control_field, spins)
+#             # Optimize
+#             opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, i))
+#             params     = Parameters(gp, opt_params)
+#             res = grape(params, control_field, spins)
 
-            cost = res.cost_values[end]
-            @info "metrics" resources=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=i
-        #     Wandb.log(logger, Dict(
-        #     "resources" => i,
-        #     "cost" => cost,
-        #     "Tc" => Tc,
-        #     "poly_start" => poly_start,
-        #     "poly_degree" => poly_degree,
-        #     "max_iter" => i
-        # )
-        # )
-            cost, [Tc, poly_start, poly_degree, i]
-        else
-            1000.0, [0.0, 0.0, 0.0, 0.0]
-        end
-    end
-    # cleanup results and history
-    bohb.results = filter((x -> x != 1000.0), bohb.results)
-    bohb.history = filter((x -> x != [0.0, 0.0, 0.0, 0.0]), bohb.history)
+#             cost = res.cost_values[end]
+#             @info "metrics" resources=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=i
+#         #     Wandb.log(logger, Dict(
+#         #     "resources" => i,
+#         #     "cost" => cost,
+#         #     "Tc" => Tc,
+#         #     "poly_start" => poly_start,
+#         #     "poly_degree" => poly_degree,
+#         #     "max_iter" => i
+#         # )
+#         # )
+#             cost, [Tc, poly_start, poly_degree, i]
+#         else
+#             1000.0, [0.0, 0.0, 0.0, 0.0]
+#         end
+#     end
+#     # cleanup results and history
+#     bohb.results = filter((x -> x != 1000.0), bohb.results)
+#     bohb.history = filter((x -> x != [0.0, 0.0, 0.0, 0.0]), bohb.history)
 
-    # close(logger)
-    return bohb
-end
+#     # close(logger)
+#     return bohb
+# end
 

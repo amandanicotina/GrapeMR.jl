@@ -93,31 +93,31 @@ end
 #########################################################
 ################# Fourier Analysis ######################
 #########################################################
-function fast_fourier_transform(cf::ControlField)
-    # RF Pulse 
-    N = length(cf.B1x)
-    B1 = complex_signal(cf)
-    time = range(0.0, stop=cf.t_control, length=N)
+# function fast_fourier_transform(cf::ControlField)
+#     # RF Pulse 
+#     N = length(cf.B1x)
+#     B1 = complex_signal(cf)
+#     time = range(0.0, stop=cf.t_control, length=N)
 
-    # Compute FFT
-    Δt = cf.t_control/N
-    sampling_rate = 1/Δt
-    fft_RF = FFTW.fft(B1)
-    frequencies = fftfreq(N, sampling_rate) |> fftshift
+#     # Compute FFT
+#     Δt = cf.t_control/N
+#     sampling_rate = 1/Δt
+#     fft_RF = FFTW.fft(B1)
+#     frequencies = fftfreq(N, sampling_rate) |> fftshift
 
-    # Plot
-    plot_layout = @layout [a; b]
-    pTime = plot()
-        plot!(pTime, time, abs.(B1), label = false, ylabel = "Magnitude", xlabel = "Time [s]", title = "Time-Domain Pulse")
-    pFreq = plot()
-        plot!(pFreq, frequencies, fftshift(abs.(fft_RF)), label = false, ylabel = "Magnitude", xlabel = "Frequency [kHz]", title = "Frequency-Domain Pulse")
-    p = plot(pTime, pFreq, layout = plot_layout)
+#     # Plot
+#     plot_layout = @layout [a; b]
+#     pTime = plot()
+#         plot!(pTime, time, abs.(B1), label = false, ylabel = "Magnitude", xlabel = "Time [s]", title = "Time-Domain Pulse")
+#     pFreq = plot()
+#         plot!(pFreq, frequencies, fftshift(abs.(fft_RF)), label = false, ylabel = "Magnitude", xlabel = "Frequency [kHz]", title = "Frequency-Domain Pulse")
+#     p = plot(pTime, pFreq, layout = plot_layout)
 
-    # cf = res_grape.control_field 
-    # pFFT = fast_fourier_transform(cf)
+#     # cf = res_grape.control_field 
+#     # pFFT = fast_fourier_transform(cf)
 
-    return p
-end
+#     return p
+# end
 
 
 #########################################################

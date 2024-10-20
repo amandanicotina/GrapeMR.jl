@@ -2,61 +2,26 @@ import ConfigSpace as CS
 from hpbandster.core.worker import Worker
 import hpbandster.core.nameserver as hpns
 import hpbandster.optimizers as optimizers
-import threading
 import logging
+from subprocess import Popen, PIPE
+import re
 
-from juliacall import Main as jl
-from juliacall import Pkg as jlPkg
-
-jlPkg.activate(".")
-jlPkg.instantiate()
-jl.seval("using GrapeMR")
-
+LOSS_REGEX = re.compile(r".*Final Cost Function Value = (\d+\.\d+)")
 logging.basicConfig(level=logging.DEBUG)
-jl_yield = getattr(jl, "yield")
+
+
+def run_grape() -> float:
+    p = Popen(["./GrapeMRCompiled/bin/GrapeMR"], stdout=PIPE, stderr=PIPE, text=True)
+    stdout, _ = p.communicate()
+    return float(LOSS_REGEX.search(stdout).group(1))
 
 
 class GrapeWorker(Worker):
-
     def __init__(self, *args, **kwargs):
-        # jlPkg.activate(".")
-        # jlPkg.instantiate()
-        # jl.seval("using GrapeMR")
-        print("kwargs: ", kwargs)
         super().__init__(*args, **kwargs)
-        M0 = [0.0, 0.0, 1.0]
-        delta_B1 = [1.0] 
-        B0 = 5
-
-        # Water
-        T1_water = 0.5
-        T2_water = 0.1
-        label_water = "S1"
-        target_water = "[0.0, 1.0, 0.0]"
-
-        self.spins = jl.GrapeMR.Spin(M0, [T1_water], [T2_water], range(-B0, B0+1, 1), delta_B1, [target_water], [label_water])
-        self.gp = jl.GrapeParams(1500, "spin_target")
-
-        self._timer = threading.Timer(1e-2, jl_yield)
-        self._timer.start()
 
     def compute(self, config_id, config, budget, working_directory):
-        B1ref = 1.0
-        test = jl.Array([0, 1, 2, 3, 10])
-        test._jl_display()
-        control_field = jl.spline_RF(self.gp.N, config['Tc'], B1ref)
-        control_field._jl_display()
-        # # Optimize
-        # opt_params = jl.OptimizationParams(config['poly_start'], config['poly_degree'], int(budget))
-        # # opt_params._jl_display()
-        # params     = jl.Parameters(self.gp, opt_params)
-        # # params._jl_display()
-        
-        # res = jl.grape(params, control_field, self.spins)
-        # res._jl_display()
-
-        # loss = res.cost_values[-1]
-        loss = test[0]
+        loss = run_grape()
 
         return ({
             'loss': float(loss),  # this is the a mandatory field to run hyperband
@@ -73,7 +38,6 @@ class GrapeWorker(Worker):
 
 
 if __name__ == "__main__":
-    jl.seval("ccall(:jl_enter_threaded_region, Cvoid, ())")
     
     print("Starting")
 
@@ -82,9 +46,12 @@ if __name__ == "__main__":
 
     w = GrapeWorker(nameserver="127.0.0.1", run_id="example1")
     w.run(background=True)
+    import hpbandster.core.result as hpres
+    result_logger = hpres.json_result_logger(directory="results", overwrite=True)
     
     bohb = optimizers.BOHB(  configspace = GrapeWorker.get_configspace(),
                             run_id = "example1", nameserver="127.0.0.1",
+                            result_logger=result_logger,
                             min_budget=1, max_budget=1
                         )
     res = bohb.run(n_iterations=10)
@@ -103,4 +70,57 @@ if __name__ == "__main__":
     print('A total of %i unique configurations where sampled.' % len(id2config.keys()))
     print('A total of %i runs where executed.' % len(res.get_all_runs()))
     print('Total budget corresponds to %.1f full function evaluations.'%(sum([r.budget for r in res.get_all_runs()])/1.0))
-    jl.seval("ccall(:jl_exit_threaded_region, Cvoid, ())")
+    
+    import matplotlib.pyplot as plt
+    import hpbandster.core.result as hpres
+    import hpbandster.visualization as hpvis
+
+
+
+    # load the example run from the log files
+    result = hpres.logged_results_to_HBS_result('results')
+
+    # get all executed runs
+    all_runs = result.get_all_runs()
+
+    # get the 'dict' that translates config ids to the actual configurations
+    id2conf = result.get_id2config_mapping()
+
+
+    # Here is how you get he incumbent (best configuration)
+    inc_id = result.get_incumbent_id()
+
+    # let's grab the run on the highest budget
+    inc_runs = result.get_runs_by_id(inc_id)
+    inc_run = inc_runs[-1]
+
+
+    # We have access to all information: the config, the loss observed during
+    #optimization, and all the additional information
+    inc_loss = inc_run.loss
+    inc_config = id2conf[inc_id]['config']
+    # inc_test_loss = inc_run.info['test accuracy']
+
+    print('Best found configuration:')
+    print(inc_config)
+    print(inc_loss)
+
+
+    # Let's plot the observed losses grouped by budget,
+    hpvis.losses_over_time(all_runs)
+
+    # the number of concurent runs,
+    hpvis.concurrent_runs_over_time(all_runs)
+
+    # and the number of finished runs.
+    hpvis.finished_runs_over_time(all_runs)
+
+    # This one visualizes the spearman rank correlation coefficients of the losses
+    # between different budgets.
+    hpvis.correlation_across_budgets(result)
+
+    # For model based optimizers, one might wonder how much the model actually helped.
+    # The next plot compares the performance of configs picked by the model vs. random ones
+    # hpvis.performance_histogram_model_vs_random(all_runs, id2conf)
+
+    plt.show()

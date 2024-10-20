@@ -27,12 +27,14 @@ NumericalIntegration = "e7bfaba1-d571-5449-8927-abc22e82249b"
 ParameterSchedulers = "d7d3b36b-41b8-4d0d-a2bf-768c6151755e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
+ColorSchemes = "3.26.0"
+Hyperopt = "0.5.6"
+Symbolics = "6.11.0"
 julia = "1"
 
 [extras]

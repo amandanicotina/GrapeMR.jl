@@ -1,1 +1,0 @@
- PYTHON_JULIACALL_HANDLE_SIGNALS=yes PYTHON_JULIAPKG_EXE=$(which julia) python test.py
