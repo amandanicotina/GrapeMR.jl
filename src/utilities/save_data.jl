@@ -18,6 +18,7 @@ function create_folder(path::String)
         error("Unable to create folder: $path.")
         return
     end
+    return path
 end
 
 """
@@ -41,7 +42,7 @@ Returns the full path to the folder where the data was saved.
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-function save_grape_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
+function save_grape_data(go::GrapeOutput; folder_path = pwd())
     # General folder yyyy-mm-dd
     folder_name      = Dates.format(today(), "yyyy-mm-dd")
     full_folder_path = create_folder(joinpath(folder_path, folder_name))  

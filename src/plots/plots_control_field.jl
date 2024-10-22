@@ -184,7 +184,9 @@ Plot the cost function convergence over iterations during the GRAPE optimization
 """
 function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     colors = color_palette(10)
-    p = plot(cost, label = string(gp.cost_function), lw = 2, color = colors[2],
+    cmin = round(cost[end], digits = 3)
+    iter = range(0.0, stop = length(cost), length = length(cost))
+    p = plot(iter, cost, label = string(gp.cost_function), lw = 2, color = colors[2],
            # ylims = (0.0, 1.0),
             xlabel = "Iterations",
             ylabel = "Cost Value",
@@ -195,6 +197,7 @@ function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
             titlefontsize = 12,
             framestyle = :box, 
             grid = false)
+        scatter!([iter[end]], [cost[end]], color = colors[2],  markersize = 5, label = "Final Cost = $cmin")
         
 
     return p

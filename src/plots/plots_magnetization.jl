@@ -44,8 +44,8 @@ function plot_transverse_magnetization(isos::Vector{Isochromat})
             no_label_plotted = true        
         end
     end
-    xlims!(-1.01, 0.05)
-    ylims!(-0.01, 0.03)
+    # xlims!(-1.01, 0.05)
+    # ylims!(-0.01, 0.03)
     display(pTrans)
 
     return pTrans

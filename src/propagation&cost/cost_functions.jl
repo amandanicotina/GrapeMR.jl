@@ -73,8 +73,9 @@ end
 #                                     Cost Functions                                       #
 ############################################################################################
 function euclidean_norm(iso::Isochromat)
+    s = iso.spin
     vars = @variables Mx, My, Mz
-    cost = sqrt(Mx^2 + My^2 + Mz^2 + 1e-15)
+    cost = sqrt(Mx^2 + My^2 + Mz^2 + 1e-15) / s.Nspins
     return get_cost_and_gradient(iso, cost, vars)
 end
 

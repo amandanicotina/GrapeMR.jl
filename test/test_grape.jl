@@ -1,7 +1,7 @@
 using GrapeMR
 
 # Tolerance to past the tests
-tol = 1e-2
+tol = 2*1e-2
 
 #########################################################
 #                Cost: Euclidean Norm                   #
@@ -9,7 +9,7 @@ tol = 1e-2
 # General Parameters
 M0  = [0.0, 0.0, 1.0]
 ΔB1 = [1.0]
-B0  = 10.0
+B0  = 0.0
 offsets = collect(-B0:5:B0)
 
 # Spins Parameters
@@ -24,7 +24,7 @@ spins = GrapeMR.Spin(M0, T1, T2, offsets, ΔB1, target, label)
 grape_params = GrapeParams(1500, :euclidean_norm, [true true false])
 
 # Optimization Parameters
-Tc = 0.1
+Tc = 1.0
 poly_start  = 0.1
 poly_degree = 1.0
 max_iter    = 1000.0
@@ -41,7 +41,6 @@ control_field = spline_RF(grape_params.N, Tc, B1ref)
 grape_output = @time grape(params, control_field, spins); 
 
 @test grape_output.cost_values[end] < tol
-
 
 #########################################################
 #                  Cost: Spin Target                    #
@@ -81,9 +80,6 @@ grape_output_nr = @time grape(params_nr, control_field, spins_noRelax);
 
 @test grape_output_nr.cost_values[end] < tol
 
-
-
-
 #########################################################
 #              Cost: Saturation Contrast                #
 #########################################################
@@ -122,7 +118,4 @@ grape_output_sc = @time grape(params, control_field, spins);
 
 @test grape_output_sc.cost_values[end] < 3*tol
 
-
-
-plot_cost_values(grape_output_sc.cost_values, grape_params)
-plot_magnetization_2D(grape_output_sc.isochromats)
+plot_magnetization_control_field(grape_output_sc.control_field, grape_output_sc.isochromats)

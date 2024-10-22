@@ -48,9 +48,9 @@ function export_bruker(go::GrapeMR.GrapeOutput; folder_path = pwd()) # Add file_
     content = header * join(amplitudes_and_phases_list, "\n")  * "\n ##END"
 
     # File path and name
-    folder_path = "/opt/topspin4.4.0/exp/stan/nmr/lists/wave/user/"
     file_name   = file_name_string(go) * ".exc"
     file_path   = folder_path * file_name
+    println(file_path)
 
 
     # Open file and write content

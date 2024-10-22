@@ -11,7 +11,6 @@ using Dates
 using Distributed
 using Logging
 using ColorSchemes
-using Match
 using Hyperopt
 using Symbolics
 using BlochSim
@@ -37,7 +36,7 @@ include("propagation&cost/bloch_methods.jl")
 include("propagation&cost/cost_functions.jl")
 
 include("optimization/optimize.jl")
-include("optimization/opt_test_func.jl")
+include("optimization/hyperparameter_opt.jl")
 include("optimization/finite_difference.jl")
 
 include("utilities/save_data.jl")
@@ -55,18 +54,19 @@ export ControlField
 export OptimizationParams, GrapeParams, Parameters, GrapeOutput
 export Spins, Spin, SpinRange, Magnetization, Isochromat
 
-# Analysis
-export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
-export run_cost_analysis
-
 # bSSFP
 export SteadyState, SteadyStateData
 export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
-export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz  # check exportinh these functions when the run_rf_analysis is ready
+export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz 
+
+# Analysis
+export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
+export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
+export run_cost_analysis 
 
 # Grape 
-export grape, random_sample, hyperoptimization, dynamics, backward_propagation
+export grape, dynamics, backward_propagation
+export random_sampler, bohb_hyperopt, hyperband_hyperopt
 export finite_difference_cost, finite_difference_field
 
 # Save/load/export files
