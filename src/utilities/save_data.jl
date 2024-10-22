@@ -21,8 +21,14 @@ function create_folder(path::String)
     return path
 end
 
+function create_base_folder(folder_path::String)
+    folder_name = Dates.format(today(), "yyyy-mm-dd")
+    return create_folder(joinpath(folder_path, folder_name))
+end
+
+
 """
-    save_grape_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
+    save_output_data(go::GrapeMR.GrapeOutput; folder_path = pwd())
 
 Save data related to GRAPE optimization into a folder organized by date.
 
@@ -42,33 +48,32 @@ Returns the full path to the folder where the data was saved.
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-function save_grape_data(go::GrapeOutput; folder_path = pwd())
-    # General folder yyyy-mm-dd
-    folder_name      = Dates.format(today(), "yyyy-mm-dd")
-    full_folder_path = create_folder(joinpath(folder_path, folder_name))  
+function save_output_data(go::GrapeOutput; folder_path = pwd())
+    full_folder_path = create_base_folder(folder_path)
 
-    # Optimization especific folder hh-mm
+    # Optimization-specific folder hh-mm
     opt_folder = file_name_string(go)
-    file_path  = create_folder(joinpath(full_folder_path, opt_folder))
-    
+    file_path = create_folder(joinpath(full_folder_path, opt_folder))
+
     try
         go_dicts = grape_output_to_dict(go)
-        # save_gp_dicts(go_dicts, file_path)
         save_grape_output(go, file_path)
+
+        # Save the GRAPE data as CSV files
         (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
         CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
         CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
         CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
-        return file_path
-    catch
-        error("Unable to save GRAPE data.")
-        return
-    end
 
+        return file_path
+    catch 
+        error("Unable to save GRAPE data")
+    end
+    return
 end
 
 """
-    save_bohb_data(bohb::GrapeMR.GrapeOutput; folder_path = pwd())
+    save_output_data(bohb::GrapeMR.GrapeOutput; folder_path = pwd())
 
 Save data related to BOHB optimization into a folder organized by date.
 
@@ -82,18 +87,49 @@ Returns the full path to the folder where the data was saved.
 # Saved Files
 - `bohb.jld2`: Contains BOHB result in JLD2 format.
 """
-function save_bohb_data(bohb; folder_path = pwd())
-    folder_name = Dates.format(today(), "yyyy-mm-dd")
-    full_folder_path = create_folder(joinpath(folder_path, folder_name))
+function save_output_data(hyper_opt; folder_path = pwd())
+    full_folder_path = create_base_folder(folder_path)
 
-    # Save the BOHB data
     try
-        save_bohb(bohb, full_folder_path)
+        save_hyperopt(hyper_opt, full_folder_path)
         return full_folder_path
     catch
-        error("Unable to save BOHB data.")
+        error("Unable to save Hyper-optimization data.")
+    end
+    return
+end
+
+function save_output_data(go::GrapeOutput, hyper_opt; folder_path = pwd())
+    full_folder_path = create_base_folder(folder_path)
+
+    # Save GrapeOutput data
+    opt_folder = file_name_string(go)
+    file_path = create_folder(joinpath(full_folder_path, opt_folder))
+    
+    try
+        go_dicts = grape_output_to_dict(go)
+        save_grape_output(go, file_path)
+
+        # Save the GRAPE data as CSV file
+        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
+        CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
+        CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
+        CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
+        return file_path
+    catch
+        error("Unable to save GRAPE data.")
+        return
+    end
+
+    # Save the HyperOpt data
+    try
+        save_hyperopt(hyper_opt, full_folder_path)
+        return full_folder_path
+    catch
+        error("Unable to save Hyper-optimization data.")
     end
 end
+
 
 
 function file_name_string(go::GrapeMR.GrapeOutput)
@@ -149,8 +185,8 @@ function save_grape_output(grape_output::GrapeMR.GrapeOutput, file_path::String)
     JLD2.@save joinpath(file_path, "grape_output.jld2") grape_output
 end
 
-function save_bohb(bohb, file_path::String)
-    JLD2.@save joinpath(file_path, "bohb.jld2") bohb
+function save_hyperopt(hyper_opt, file_path::String)
+    JLD2.@save joinpath(file_path, "hyper_opt.jld2") hyper_opt
 end
 
 function load_grape_data(folder_path::String)
@@ -158,7 +194,7 @@ function load_grape_data(folder_path::String)
     return grape_output
 end
 
-function load_bohb_data(folder_path::String)
-    JLD2.@load joinpath(folder_path, "bohb.jld2") bohb
-    return bohb
+function load_hyperopt_data(folder_path::String)
+    JLD2.@load joinpath(folder_path, "hyperopt.jld2") hyper_opt
+    return hyper_opt
 end

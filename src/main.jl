@@ -25,7 +25,7 @@ grape_params = GrapeParams(
 
 # Optimization Parameters
 if tm["optimization_parameters"]["hyper_opt"]
-    bohb = @time bohb_hyperopt(spins, grape_params, LinRange(0.01, 0.5, 9), 2187)
+    hyper_opt = @time bohb_hyperopt(spins, grape_params, LinRange(0.01, 0.5, 9), 2187)
     # random_opt = random_sampler(spins, grape_params, round.(LinRange(0.01, 1.0, 15), digits=2), range(500, 2000, step = 100))
     Tc, poly_start, poly_degree, max_iter = bohb.minimizer 
     opt_params   = OptimizationParams(
@@ -54,10 +54,14 @@ grape_output = @time grape(params, control_field, spins);
 
 # Save data
 if tm["save_files"]["enabled"]
-    # Save GrapeOutput
-    experiment_folder = save_grape_data(grape_output; folder_path = tm["save_files"]["folder_path"])
+    # Save output data
+    if tm["optimization_parameters"]["hyper_opt"]
+        experiment_folder = save_output_data(grape_output, hyper_opt; folder_path = tm["save_files"]["folder_path"])
+    else
+        experiment_folder = save_output_data(grape_output; folder_path = tm["save_files"]["folder_path"])
+    end
+    # Export Bruker data
     if tm["save_files"]["export_bruker"]
-        # Export data
         export_bruker(grape_output; folder_path = tm["save_files"]["bruker_folder_path"])
     end
 end

@@ -135,148 +135,110 @@ end
 
 
 
-# function get_budget_loss_pair(hpo)
-#     runs = hpo.history
-#     loss = hpo.results    
-#     c1, c2, c3, c4 = hpo.minimizer
+    # runs = bohb.history 
+    # loss = round.(bohb.results, digits=3)  
+    # c1, c2, c3, c4 = bohb.minimizer
 
-#     # Gets random number from a range on integers
-#     get_random_configuration(min::Int, max::Int) = rand(min:max)
+    # configurations = [runs[i][1:end-1] for i in eachindex(runs)]
+    # unique_configs = unique(configurations) 
 
-#     # Creates tuples
-#     budget_loss_pairs = [(round(runs[i][end], digits=2), loss[i]) for i in eachindex(runs)]
-#     config_loss_pairs = [(runs[i], loss[i]) for i in eachindex(runs)]
-#     configurations = [runs[i][1:end-1] for i in eachindex(runs)]
-    
-#     # Get unique arrays
-#     unique_budgets = unique([pair[1] for pair in budget_loss_pairs])[end-2:end]
-#     unique_configs = unique(configurations) # Target
-#     unique_configs_budgets = [filter(x -> x[1][1:3] == unique_config, config_loss_pairs) for unique_config in unique_configs] 
-
-   
-#     # Chose configuration that minimizes the optimization
-#     minimizer_configs = filter(x -> isapprox(x[1][1:3], [c1, c2, c3], atol=1e-8), vcat(unique_configs_budgets...))
-#     loss_values = [x[2] for x in minimizer_configs]
+    # """
+    #     get_IDconfig_config()
+    # returns a dict where the keys are the config_ids and the values
+    # are the actual configurations
+    # """
+    # function get_IDconfig_config(unique_configs::Vector{Vector{Float64}})
+    #     configID = [string("config", i) for i in eachindex(unique_configs)]
+    #     dict_configs = Dict(configID[i] => unique_configs[i] for i in eachindex(unique_configs))
+    #     return dict_configs
+    # end
 
 
+    # all_pairs = [(runs[i], loss[i]) for i in eachindex(runs)] 
 
-#     # Dict for each unique configuration and a budget
-#     unique_configs = Dict()
-#     for (config, value) in minimizer_configs
-#         key = config[end]  # Use the last element of the config as the key
-#         if !haskey(unique_configs, key) || unique_configs[key][2] < value
-#             unique_configs[key] = (config, value)  # Store the best value for each key
-#         end
-#     end
+    # for (keys, values) in pairs(dict_IDconfig)
+    #     budgets = []
+    #     unique_all_pairs = filter(x -> x[1][1:3] == dict[keys], all_pairs)
+    #     budget_loss_pairs = [(unique_all_pairs[i][1][end], unique_all_pairs[i][2]) for i in 1:15]#eachindex(unique_all_pairs)]
+    #     dict = Dict(keys => budget_loss_pairs)
+    # end
 
 
 
-#     # Creates Dict with all losses related to each budget
-#     dict_budget_loss = Dict(budget => [pair[2] for pair in budget_loss_pairs if pair[1] == budget] for budget in unique_budgets)
-
-#     return dict_budget_loss
-# end
-
-# filtered_dict = sort(filter(kv -> kv[1] > 200, unique_configs))
-
-# spearman_matrix = fill(undef, length(filtered_dict), length(filtered_dict))  # Initialize a matrix with NaN values
 
 
-# # Calculate Spearman correlation for each combination of budgets
-# for i in 1:n_budgets
-#     for j in i:n_budgets
-#         if i != j
-#             values_i = budget_groups[budgets[i]]
-#             values_j = budget_groups[budgets[j]]
-#             n_i = length(values_i)
-#             n_j = length(values_j)
-
-#             if n_i == n_j && n_i > 1  # Ensure the sizes match
-#                 ranked_i = rank(values_i)
-#                 ranked_j = rank(values_j)
-#                 d_squared_sum = sum((ranked_i[k] - ranked_j[k])^2 for k in 1:n_i)
-#                 spearman_corr = 1 - (6 * d_squared_sum) / (n_i * (n_i^2 - 1))
-#                 spearman_matrix[i, j] = spearman_corr
-#                 spearman_matrix[j, i] = spearman_corr  # The matrix is symmetric
-#             end
-#         end
-#     end
-# end
-
-# # Plot the heatmap
-# heatmap(spearman_matrix, title="Spearman Rank Correlation Across Budgets", xlabel="Budgets", ylabel="Budgets", color=:inferno)
 
 
-# using Hyperopt
 
-# function hband_hyperopt(spins::Vector{<:Spins}, 
-#             gp::GrapeParams, 
-#             Tc::LinRange, 
-#             max_iter::Int; 
-#             B1ref::Float64 = 1.0)
 
-#     Δmax_iter = Int(ceil(max_iter / 3))
 
-#     hb = @hyperopt for resources = max_iter, 
-#                        sampler = Hyperband(R = max_iter, η = 3, inner = RandomSampler()), 
-#                        poly_start = [1e-1, 1e-2], 
-#                        poly_degree = [1, 2, 3], 
-#                        Tc = Tc, 
-#                        iter = range(Δmax_iter, step = Δmax_iter, stop = max_iter + Δmax_iter)
 
-#         # Handle state if previously set
-#         if state !== nothing
-#             Tc, poly_start, poly_degree, _ = state
-#         end
 
-#         # Validate parameters
-#         if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-#             println("\n resources: ", resources, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
 
-#             # Generate RF control field
-#             control_field = spline_RF(gp.N, Tc, B1ref)
+function hband_hyperopt(spins::Vector{<:Spins}, 
+            gp::GrapeParams, 
+            Tc::LinRange, 
+            max_iter::Int; 
+            B1ref::Float64 = 1.0)
 
-#             # Set up optimization parameters
-#             opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, resources))
-#             params = Parameters(gp, opt_params)
+    Δmax_iter = Int(ceil(max_iter / 3))
 
-#             # Run GRAPE 
-#             res = grape(params, control_field, spins)
+    hb = @hyperopt for resources = max_iter, 
+                       sampler = Hyperband(R = max_iter, η = 3, inner = RandomSampler()), 
+                       poly_start = [1e-1, 1e-2], 
+                       poly_degree = [1, 2, 3], 
+                       Tc = Tc, 
+                       iter = range(Δmax_iter, step = Δmax_iter, stop = max_iter + Δmax_iter)
 
-#             # Extract cost from result
-#             cost = res.cost_values[end]
-#             @info "metrics" resources = resources cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = resources
-#             return cost, [Tc, poly_start, poly_degree, resources]
-#         else
-#             # Invalid parameters: return Inf for the cost, which is more informative
-#             return Inf, [0.0, 0.0, 0.0, 0.0]
-#         end
-#     end
+        # Handle state if previously set
+        if state !== nothing
+            Tc, poly_start, poly_degree, _ = state
+        end
 
-#     # Filter out invalid results
-#     hb.results = filter(x -> x != Inf, hb.results)
-#     hb.history = filter(x -> x != [0.0, 0.0, 0.0, 0.0], hb.history)
+        # Validate parameters
+        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
+            println("\n resources: ", resources, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
 
-#     return hb
-# end
+            # Generate RF control field
+            control_field = spline_RF(gp.N, Tc, B1ref)
+
+            # Set up optimization parameters
+            opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, resources))
+            params = Parameters(gp, opt_params)
+
+            # Run GRAPE 
+            res = grape(params, control_field, spins)
+
+            # Extract cost from result
+            cost = res.cost_values[end]
+            @info "metrics" resources = resources cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = resources
+            return cost, [Tc, poly_start, poly_degree, resources]
+        else
+            # Invalid parameters: return Inf for the cost, which is more informative
+            return Inf, [0.0, 0.0, 0.0, 0.0]
+        end
+    end
+
+    # Filter out invalid results
+    hb.results = filter(x -> x != Inf, hb.results)
+    hb.history = filter(x -> x != [0.0, 0.0, 0.0, 0.0], hb.history)
+
+    return hb
+end
 
 # # Example call
 # hband = @time hband_hyperopt(spins, grape_params, LinRange(0.01, 0.5, 9), 2187)
 
 
 
-η = 3
-R = 3^7
-smax = floor(Int, log(η,R))
+function get_resources_configurations_hband(η::Int, R::Float32)
+    smax = floor(Int, log(η,R))
+    B = (smax + 1)*(R)
 
-B = (smax + 1)*(R)
-
-ns=[]
-for s in smax:-1:0
-    n = ceil(Int, (B/R)*((η^s)/(s+1)))
-    r = round(R / (η^s), digits=2)
-    push!(ns, n)
-    print("s = $s and r = $r  and n = $n \n")
+    for s in smax:-1:0
+        n = ceil(Int, (B/R)*((η^s)/(s+1)))
+        r = round(R / (η^s), digits=2)
+        push!(ns, n)
+        print("s = $s and r = $r  and n = $n \n")
+    end
 end
-
-sn = sum(ns)

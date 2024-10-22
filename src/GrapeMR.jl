@@ -70,7 +70,7 @@ export random_sampler, bohb_hyperopt, hyperband_hyperopt
 export finite_difference_cost, finite_difference_field
 
 # Save/load/export files
-export save_grape_data, save_bohb_data, load_grape_data, load_bohb_data
+export save_output_data, load_grape_data, load_bohb_data
 export export_bruker
 export spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
