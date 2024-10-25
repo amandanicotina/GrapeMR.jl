@@ -7,7 +7,7 @@ end
 struct GrapeParams 
     N::Int64
     cost_function::String
-    # fields_opt::Array{Bool, 2}
+    fields_opt::Array{Bool, 2}
 end
 
 struct Parameters

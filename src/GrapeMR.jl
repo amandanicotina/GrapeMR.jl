@@ -12,7 +12,7 @@ using Distributed
 using Logging
 # using ColorSchemes
 using Match
-# using Hyperopt
+using Hyperopt
 using Symbolics
 using BlochSim
 using DataFrames
@@ -20,7 +20,6 @@ using CubicSplines
 using LinearAlgebra
 using NumericalIntegration
 using ParameterSchedulers
-# using Wandb
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
@@ -31,8 +30,8 @@ include("bSSFP/steady_state.jl")
 # include("bSSFP/plots.jl")
 
 include("analysis/rf_analysis.jl")
-# include("analysis/cost_analysis.jl")
-# include("analysis/magnetization_analysis.jl")
+include("analysis/cost_analysis.jl")
+include("analysis/magnetization_analysis.jl")
 
 include("propagation&cost/bloch_methods.jl")
 include("propagation&cost/cost_functions.jl")
@@ -57,14 +56,14 @@ export OptimizationParams, GrapeParams, Parameters, GrapeOutput
 export Spins, Spin, SpinRange, Magnetization, Isochromat
 
 # Analysis
-# export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-# export integral_factor, average_pulse_power # check exportinh these functions when the run_rf_analysis is ready
+export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
+export integral_factor, average_pulse_power # check exportinh these functions when the run_rf_analysis is ready
 
-# export run_cost_analysis
+export run_cost_analysis
 
 # 
 export SteadyState, SteadyStateData
-# export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
+export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz  # check exportinh these functions when the run_rf_analysis is ready
 
 # Grape 
@@ -88,10 +87,19 @@ export spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
 function julia_main()::Cint
     println("$ARGS")
+    if length(ARGS) != 4
+        println("Usage: GrapeMR Tc poly_start poly_degree budget")
+        return 1
+    end
+    Tc, poly_start, poly_degree, budget = ARGS
+    Tc = parse(Float64, Tc)
+    poly_start = parse(Float64, poly_start)
+    poly_degree = parse(Float64, poly_degree)
+    max_iter = parse(Float64, budget)
 
     M0 = [0.0, 0.0, 1.0]
     ΔB1 = [1.0]
-    B0 = 5.0
+    B0 = 0.0
     offsets = collect(-B0:1:B0)
 
     # Water
@@ -104,19 +112,9 @@ function julia_main()::Cint
     spins = GrapeMR.Spin(M0, [T1_water], [T2_water], offsets, ΔB1, [target_water], [label_water])
 
     # Grape Parameters 
-    # grape_params = GrapeParams(1500, :spin_target, [true true false])
-    grape_params = GrapeParams(1500, "spin_target")
+    grape_params = GrapeParams(1500, "spin_target", [true true false])
 
     # Optimization Parameters
-    # bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
-    # plot_bohb(bohb)
-    # spline_bohb = @time hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 1500)
-    # Tc, poly_start, poly_degree, max_iter = spline_bohb.minimizer
-    Tc = 0.5
-    poly_start = 0.1
-    poly_degree = 1.0
-    max_iter = 10.0
-    # max_iter = 1000.0
     opt_params   = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 
     # Parameters 
@@ -127,7 +125,7 @@ function julia_main()::Cint
     control_field = spline_RF(grape_params.N, Tc, B1ref) 
 
     # Run Optimization
-    grape_output = grape(params, control_field, spins);
+    grape_output = no_threads_grape(params, control_field, spins);
     return 0 # if things finished successfully
 end
 

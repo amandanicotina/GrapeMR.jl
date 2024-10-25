@@ -53,12 +53,12 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             append!(grape_output.isochromats, iso)
         end
         # Gradient
-        # if gp.fields_opt[1]
-        ∇x = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Ix)))
-        # end 
-        # if gp.fields_opt[2]
-        ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy)))
-        # end 
+        if gp.fields_opt[1]
+            ∇x = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Ix)))
+        end 
+        if gp.fields_opt[2]
+            ∇y = sum(gradient.(adj, getfield.(getfield.(iso, :magnetization), :dynamics), Ref(Iy)))
+        end 
 
         # Control Field
         (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
@@ -151,7 +151,7 @@ function random_sample(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         # Optimize
         opt_params   = OptimizationParams(poly_start, poly_degree, max_iter);
         params       = Parameters(gp, opt_params)
-        grape_output = grape(params, control_field, spins);
+        grape_output = no_threads_grape(params, control_field, spins);
 
         cost = grape_output.cost_values[end];
         @info "metrics" hyperopt_i=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=max_iter
@@ -183,7 +183,7 @@ function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange
             # Optimize
             opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, i))
             params     = Parameters(gp, opt_params)
-            res = grape(params, control_field, spins)
+            res = no_threads_grape(params, control_field, spins)
 
             cost = res.cost_values[end]
             @info "metrics" resources=i cost=cost Tc=Tc poly_start=poly_start poly_degree=poly_degree max_iter=i
@@ -198,4 +198,3 @@ function hyperoptimization(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange
 
     return bohb
 end
-
