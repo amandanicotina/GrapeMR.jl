@@ -17,7 +17,9 @@ bib = CitationBibliography(
 # compile to HTML:
 makedocs(;pages,
     sitename = "GrapeMR",
-    format = Documenter.HTML(),
+    format = Documenter.HTML(
+        assets = ["assets/grape.ico"]
+    ),
     modules = [GrapeMR],
     checkdocs=:exports,
     plugins = [bib]
