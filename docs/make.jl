@@ -26,5 +26,6 @@ makedocs(;pages,
 )
   
 deploydocs(
-    repo = "github.com/amandanicotina/GrapeMR.jl.git"
+    repo = "github.com/amandanicotina/GrapeMR.jl.git",
+    push_preview = true,
 )
