@@ -4,12 +4,12 @@
 
 Function that gets called cost function form the cost function dictionary
 
-### Input
-    - 'iso::Isochromat': IRespective isochromat for the calculation
-    - 'cf::Symbol': Cost Function
+# Arguments
+- 'iso::Isochromat': IRespective isochromat for the calculation
+- 'cf::Symbol': Cost Function
 
-### Output
-    - '(cost_val, cost_gradient)::Tuple{Float64, Vector{Float64}}': Tuple with cost funciton value and 4x1 gradient.
+# Outputs
+- '(cost_val, cost_gradient)::Tuple{Float64, Vector{Float64}}': Tuple with cost funciton value and 4x1 gradient.
 """
 function cost_function(iso::Isochromat, cf::Symbol)
     if haskey(COST_FUNCTIONS, cf)
@@ -30,13 +30,13 @@ Generic function that maps variables into the gradient calculation using the Sym
     dCost_M = expand_derivatives(dM(cost_func))
     P = Symbolics.unwrap(substitute.(dCost_M, (dict,))[1])
 
-### Input
-    - 'cost_func::Num': Cost Function from pre-defined dictionary
-    - 'dict::Dict': Variable dictionary
-    - 'vars::Vector{Num}': Function variables, Mx, My, etc.
+# Arguments
+- 'cost_func::Num': Cost Function from pre-defined dictionary
+- 'dict::Dict': Variable dictionary
+- 'vars::Vector{Num}': Function variables, Mx, My, etc.
 
-### Output
-    - 'cost_gradient::Vector{Float64}': 
+# Outputs
+- 'cost_gradient::Vector{Float64}': 
 """
 function calculate_cost_gradient(cost_func::Num, dict::Dict, vars::Vector{Num})
     gradient = map(var -> Symbolics.unwrap(substitute.(expand_derivatives(Differential(var)(cost_func)), (dict,))[1]), vars)
@@ -52,14 +52,14 @@ Generic function that maps variables into the gradient calculation using the Sym
     dCost_M = expand_derivatives(dM(cost_func))
     P = Symbolics.unwrap(substitute.(dCost_M, (dict,))[1])
 
-### Input
-    - 'iso::Isochromat': Isochromts
-    - 'cost_expr::Num': Cost Function
-    - 'vars::Vector{Num}': Function variables -> Mx, My, etc.
+# Arguments
+- 'iso::Isochromat': Isochromts
+- 'cost_expr::Num': Cost Function
+- 'vars::Vector{Num}': Function variables -> Mx, My, etc.
 
-### Output
-    - 'cost_func_val::Float64': Cost Function Value
-    - 'cost_gradient::Vector{Float64}': 
+# Outputs
+- 'cost_func_val::Float64': Cost Function Value
+- 'cost_gradient::Vector{Float64}': 
 """
 function get_cost_and_gradient(iso::Isochromat, cost_expr::Num, vars::Vector{Num})
     m = iso.magnetization.dynamics

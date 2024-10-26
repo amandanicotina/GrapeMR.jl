@@ -4,12 +4,12 @@
 Calculates the steady-state signal of a bSSFP sequence for a given set of parameters. The function calculates the magnetization evolution 
 using repeated RF excitations and free precession steps until the steady state is reached.
 
-    # Arguments
-    - `s::GrapeMR.SteadyState`: A struct containing TR (Repetition Time), TE (Echo Time), T1 (Spin-lattice relaxation time), 
-                                T2 (Spin-spin relaxation time), α (Flip angle in radians), Δϕ (Phase cycling increment), 
-                                M_init (Initial magnetization vector), and B0inho (B0 inhomogeneity).
-    # Returns
-    - `signal::Vector{ComplexF64}`: The complex steady-state signal of the spin system.
+# Arguments
+- `s::GrapeMR.SteadyState`: A struct containing TR (Repetition Time), TE (Echo Time), T1 (Spin-lattice relaxation time), 
+                            T2 (Spin-spin relaxation time), α (Flip angle in radians), Δϕ (Phase cycling increment), 
+                            M_init (Initial magnetization vector), and B0inho (B0 inhomogeneity).
+# Outputs
+- `signal::Vector{ComplexF64}`: The complex steady-state signal of the spin system.
 """
 function steady_state(s::GrapeMR.SteadyState)
     (TR, TE, T1, T2, M0) = (s.TR*1e3, s.TE*1e3, s.T1*1e3, s.T2*1e3, s.M_init[3])
@@ -109,11 +109,11 @@ end
 Calculates the transverse steady-state magnetization using a geometric solution for a bSSFP sequence. Uses a geometric approach to 
 derive the transverse component of the steady-state magnetization.
 
-    # Arguments
-    - `s::GrapeMR.SteadyState`: Struct containing the sequence parameters and spin system properties.
+# Arguments
+- `s::GrapeMR.SteadyState`: Struct containing the sequence parameters and spin system properties.
 
-    # Returns
-    - `Mxy::Vector{Float64}`: The steady-state transverse magnetization magnitude `Mxy`
+# Outputs
+- `Mxy::Vector{Float64}`: The steady-state transverse magnetization magnitude `Mxy`
 """
 function steady_state_geometric(s::GrapeMR.SteadyState)
     (T1, T2, Δf, M0) = (s.T1, s.T2, s.B0inho, 1.0)
@@ -131,11 +131,11 @@ end
 Calculates the longitudinal steady-state magnetization using a geometric solution for a bSSFP sequence. Uses a geometric approach to 
 derive the longitudinal component of the steady-state magnetization.
 
-    # Arguments
-    - `s::GrapeMR.SteadyState`: Struct containing the sequence parameters and spin system properties.
+# Arguments
+- `s::GrapeMR.SteadyState`: Struct containing the sequence parameters and spin system properties.
 
-    # Returns
-    - `Mz::Vector{Float64}`: The steady-state longitudinal magnetization magnitude `Mz`
+# Outputs
+- `Mz::Vector{Float64}`: The steady-state longitudinal magnetization magnitude `Mz`
 """
 function steady_state_geometric_Mz(s::GrapeMR.SteadyState)
     (T1, T2, Δf, M0) = (s.T1, s.T2, s.B0inho, 1.0)
