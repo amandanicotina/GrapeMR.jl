@@ -1,5 +1,3 @@
-push!(LOAD_PATH,"../src/")
-
 using Documenter, DocumenterCitations, Literate, GrapeMR
 
 Literate.markdown("./src/tutorial.jl", "./src")
