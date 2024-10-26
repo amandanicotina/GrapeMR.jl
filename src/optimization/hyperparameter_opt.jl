@@ -2,7 +2,7 @@
 #                         Hyperparameter Optimization                              #
 ####################################################################################
 """
-    random_sample(spins::Vector{<:Spins}, 
+    random_sampler(spins::Vector{<:Spins}, 
                   gp::GrapeParams, 
                   Tc::LinRange, 
                   max_iter::StepRange; 
