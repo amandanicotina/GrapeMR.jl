@@ -19,4 +19,4 @@ grape_params = GrapeParams(1000, :spin_target, [true true false])
 
 # Optimization Parameters
 random_opt = random_sampler(spins, grape_params, LinRange(0.01, 1.0, 15), range(10, 100, step = 10))
-bohb = hyperoptimization(spins, grape_params, LinRange(0.01, 1.0, 15), 100)
+bohb = bohb_hyperopt(spins, grape_params, LinRange(0.01, 1.0, 15), 100)

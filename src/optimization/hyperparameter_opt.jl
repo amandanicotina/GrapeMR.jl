@@ -58,7 +58,7 @@ end
 
 
 """
-    hyperoptimization(spins::Vector{<:Spins}, 
+    bohb_hyperopt(spins::Vector{<:Spins}, 
                       gp::GrapeParams, 
                       Tc::LinRange, 
                       max_iter::Int; 
