@@ -1,6 +1,6 @@
 using Documenter, DocumenterCitations, Literate, GrapeMR
 
-Literate.markdown("./src/tutorial.jl", "./src")
+Literate.markdown("./docs/src/tutorial.jl", "./docs/src")
 
 pages = [
   "Introduction" => "index.md",
@@ -10,7 +10,7 @@ pages = [
 ]
 
 bib = CitationBibliography(
-    joinpath("..", "CITATIONS.bib");
+    joinpath(".", "CITATIONS.bib");
     style=:numeric
 )
 
