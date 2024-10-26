@@ -32,7 +32,7 @@ spins = Spin(M0, T1, T2, offset, ΔB1, target, label)
 Optimization Parameters:
 
 ````@example tutorial
-Tc, poly_start, poly_degree, max_iter = 0.836, 0.1, 1, 2000 #  bohb.minimizer # 0
+Tc, poly_start, poly_degree, max_iter = 0.836, 0.1, 1, 1#2000 #  bohb.minimizer # 0
 opt_params   = OptimizationParams(poly_start, poly_degree,  Int(ceil(max_iter)))
 ````
 
@@ -45,17 +45,16 @@ grape_params = GrapeParams(1500, :saturation_contrast_Mx, [true true false])
 RF
 
 ````@example tutorial
+N = 1500
 B1ref = 1.0
-B1x = spline_RF(grape_params.N, Tc)'
-B1y = spline_RF(grape_params.N, Tc)'
-Bz  = zeros(1, grape_params.N)
-control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
+control_field = spline_RF(N, Tc, B1ref)
 ````
 
 Run Optimization
 
 ````@example tutorial
-grape_output = @time grape(opt_params, grape_params, control_field, spins);
+params = Parameters(grape_params, opt_params)
+grape_output = grape(params, control_field, spins);
 nothing #hide
 ````
 
