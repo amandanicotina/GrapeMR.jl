@@ -13,18 +13,18 @@
 
 Performs random sampling for hyperparameter optimization.
 
-    ### Input
-    - `spins::Vector{<:Spins}`: A vector containing spin systems for the optimization process.
-    - `gp::GrapeParams`: Grape algorithm parameters, which include time points, cost function, and mask for which fields are being optimized.
-    - `Tc::LinRange`: Range for the time control points for spline interpolation.
-    - `max_iter::StepRange`: Range for the maximum number of iterations for the optimizer.
-    - `i::Int=50`: Number of random samples to evaluate.
-    - `poly_start::Vector{Float64}=[1e-1, 1e-2]`: Starting points for the polynomial learning rate.
-    - `poly_degree::Vector{Int}=[1, 2, 3]`: Degrees for the polynomial learning rate.
-    - `B1ref::Float64=1.0`: Reference B1 field amplitude for the RF pulse.
+# Arguments
+- `spins::Vector{<:Spins}`: A vector containing spin systems for the optimization process.
+- `gp::GrapeParams`: Grape algorithm parameters, which include time points, cost function, and mask for which fields are being optimized.
+- `Tc::LinRange`: Range for the time control points for spline interpolation.
+- `max_iter::StepRange`: Range for the maximum number of iterations for the optimizer.
+- `i::Int=50`: Number of random samples to evaluate.
+- `poly_start::Vector{Float64}=[1e-1, 1e-2]`: Starting points for the polynomial learning rate.
+- `poly_degree::Vector{Int}=[1, 2, 3]`: Degrees for the polynomial learning rate.
+- `B1ref::Float64=1.0`: Reference B1 field amplitude for the RF pulse.
 
-    ### Output
-    - A random hyperparameter optimization object using random sampling.
+# Outputs
+- A random hyperparameter optimization object using random sampling.
 """
 function random_sampler(spins::Vector{<:Spins}, 
             gp::GrapeParams, 
@@ -69,18 +69,18 @@ end
 
 Performs hyperparameter optimization using Bayesian Optimization and Hyperband (BOHB) for selecting hyperparameters.
 
-    ### Input
-    - `spins::Vector{<:Spins}`: A vector containing spin systems for the optimization process.
-    - `gp::GrapeParams`: Grape algorithm parameters, which include time points, cost function, and mask for which fields are being optimized.
-    - `Tc::LinRange`: Range for the time control points for spline interpolation.
-    - `max_iter::Int`: Maximum number of iterations for the optimizer.
-    - `i::Int=5`: Number of optimization evaluations.
-    - `poly_start::Vector{Float64}=[1e-1, 1e-2]`: Starting points for the polynomial learning rate.
-    - `poly_degree::Vector{Int}=[1, 2, 3]`: Degrees for the polynomial learning rate.
-    - `B1ref::Float64=1.0`: Reference B1 field amplitude for the RF pulse.
+# Arguments
+- `spins::Vector{<:Spins}`: A vector containing spin systems for the optimization process.
+- `gp::GrapeParams`: Grape algorithm parameters, which include time points, cost function, and mask for which fields are being optimized.
+- `Tc::LinRange`: Range for the time control points for spline interpolation.
+- `max_iter::Int`: Maximum number of iterations for the optimizer.
+- `i::Int=5`: Number of optimization evaluations.
+- `poly_start::Vector{Float64}=[1e-1, 1e-2]`: Starting points for the polynomial learning rate.
+- `poly_degree::Vector{Int}=[1, 2, 3]`: Degrees for the polynomial learning rate.
+- `B1ref::Float64=1.0`: Reference B1 field amplitude for the RF pulse.
 
-    ### Output
-    - An optimized object from the BOHB optimization process, containing results and optimization history.
+# Outputs
+- An optimized object from the BOHB optimization process, containing results and optimization history.
 """
 function bohb_hyperopt(spins::Vector{<:Spins}, 
             gp::GrapeParams, 

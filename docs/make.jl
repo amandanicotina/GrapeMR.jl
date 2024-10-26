@@ -17,12 +17,15 @@ bib = CitationBibliography(
 # compile to HTML:
 makedocs(;pages,
     sitename = "GrapeMR",
-    format = Documenter.HTML(),
+    format = Documenter.HTML(
+        assets = ["assets/grape.ico"]
+    ),
     modules = [GrapeMR],
     checkdocs=:exports,
     plugins = [bib]
 )
   
 deploydocs(
-    repo = "github.com/amandanicotina/GrapeMR.jl.git"
+    repo = "github.com/amandanicotina/GrapeMR.jl.git",
+    push_preview = true,
 )
