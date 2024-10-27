@@ -21,7 +21,7 @@ offset = collect(-B0/2:5:B0/2)
 spins = Spin(M0, T1, T2, offset, ΔB1, target, label)
 
 # Optimization Parameters:
-max_iter = ENV["DEV"] == "true" ? 1 : 2000  # we set max_iter to 1 if we're in development mode to build the docs faster
+max_iter = get(ENV, "DEV", "false") == "true" ? 1 : 2000  # we set max_iter to 1 if we're in development mode to build the docs faster
 Tc, poly_start, poly_degree = 0.836, 0.1, 1
 opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 
