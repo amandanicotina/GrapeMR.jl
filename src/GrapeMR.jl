@@ -4,6 +4,7 @@ const γ_¹H = 42.5774688e6 #[Hz/T]
 const Ix = [0 0 0 0; 0 0 0 0; 0 0 0 1; 0 0 -1 0];
 const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
+using ArgParse
 using CSV
 using JLD2
 using Plots
@@ -19,6 +20,8 @@ using CubicSplines
 using LinearAlgebra
 using NumericalIntegration
 using ParameterSchedulers
+using PrettyPrint
+using TOML
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
@@ -62,17 +65,17 @@ export steady_state, steady_state_matrix, steady_state_geometric, steady_state_g
 # Analysis
 export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
 export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
-export run_cost_analysis 
+export run_cost_analysis, RF_pulse_analysis
 
 # Grape 
-export grape, dynamics, backward_propagation
-export random_sampler, bohb_hyperopt, hyperband_hyperopt
+export grape, dynamics, backward_propagation, run_grape_optimization
+export random_hyperopt, bohb_hyperopt, hyperband_hyperopt
 export finite_difference_cost, finite_difference_field
 
 # Save/load/export files
-export save_output_data, load_grape_data, load_bohb_data
+export save_grape_data, save_hyperopt_data, load_grape_data, load_hyperopt_data
 export export_bruker
-export spline_RF, sinc_RF, bSSFP_RF, hard_RF
+export gaussian_pulse, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
 # Plots
 export plot_cost_values, plot_magnetization_control_field
@@ -80,7 +83,29 @@ export plot_control_fields, plot_control_fields_phase_shift
 export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
-export plot_transverse_magnetization, plot_transverse_time
+export plot_transverse_magnetization, plot_transverse_time, plot_longitudinal_time
 export plot_evaluations, plot_bohb
 
+
+function julia_main()::Cint
+    s = ArgParseSettings()
+
+    @add_arg_table! s begin
+        "--config"
+        help = "Path to the TOML configuration file."
+        default = "src/default_config.toml"
+    end
+
+    parsed_args = parse_args(ARGS, s)
+
+    run_grape_optimization(parsed_args["config"])
+    
+    return 0
+end
+
+end
+
+# Calling the main function when the script is executed
+if abspath(PROGRAM_FILE) == @__FILE__
+    GrapeMR.julia_main()
 end

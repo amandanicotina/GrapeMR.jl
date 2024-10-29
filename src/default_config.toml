@@ -3,12 +3,12 @@ title = "GrapeMR Configuration"
 plot = true
 
 [spins]
-M0 = [0.0, 0.0, 1.0]
-delta_B1 = [1.0]
-offset = 0.0
+M0         = [0.0, 0.0, 1.0]
+delta_B1   = [1.0]
+offset     = 100.0
 intrinsics = [
-    {T1 = 0.11, T2 = 0.07, label = "Water", target = "max"},
-    {T1 = 0.36, T2 = 0.22, label = "Glycerol", target = "min"}
+    {T1 = 0.0319, T2 = 0.0266, label = "Water", target = "max"},
+    #{T1 = 0.36, T2 = 0.22, label = "Glycerol", target = "min"}
 ]
 
 [grape_parameters]
@@ -17,17 +17,18 @@ cost_function   = "saturation_contrast_Mx"
 fields2optimize = [true, true, false]
 
 [optimization_parameters]
-hyper_opt    = true
+hyper_opt    = false
 poly_start   = 0.1
 poly_degree  = 1.0
 max_iter     = 2187
 
 [control_field]
-control_time = 0.3
+control_time = 0.1
 B1ref = 1.0
 
 [save_files]
 enabled = true
+export_bruker = true
 folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
 bruker_folder_path = "/opt/topspin4.4.0/exp/stan/nmr/lists/wave/user/"
-export_bruker = true
+

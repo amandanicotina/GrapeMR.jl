@@ -26,7 +26,7 @@ Performs random sampling for hyperparameter optimization.
     ### Output
     - A random hyperparameter optimization object using random sampling.
 """
-function random_sampler(spins::Vector{<:Spins}, 
+function random_hyperopt(spins::Vector{<:Spins}, 
             gp::GrapeParams, 
             Tc::LinRange,
             max_iter::StepRange; 
@@ -133,7 +133,7 @@ end
 
 
 
-
+# Spearman's Rank
 
     # runs = bohb.history 
     # loss = round.(bohb.results, digits=3)  

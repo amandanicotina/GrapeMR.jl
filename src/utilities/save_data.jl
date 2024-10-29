@@ -48,7 +48,7 @@ Returns the full path to the folder where the data was saved.
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-function save_output_data(go::GrapeOutput; folder_path = pwd())
+function save_grape_data(go::GrapeOutput; folder_path = pwd())
     full_folder_path = create_base_folder(folder_path)
 
     # Optimization-specific folder hh-mm
@@ -87,7 +87,7 @@ Returns the full path to the folder where the data was saved.
 # Saved Files
 - `bohb.jld2`: Contains BOHB result in JLD2 format.
 """
-function save_output_data(hyper_opt; folder_path = pwd())
+function save_hyperopt_data(hyper_opt; folder_path = pwd())
     full_folder_path = create_base_folder(folder_path)
 
     try
@@ -99,37 +99,36 @@ function save_output_data(hyper_opt; folder_path = pwd())
     return
 end
 
-function save_output_data(go::GrapeOutput, hyper_opt; folder_path = pwd())
-    full_folder_path = create_base_folder(folder_path)
+# function save_output_data(go::GrapeOutput, hyper_opt; folder_path = pwd())
+#     full_folder_path = create_base_folder(folder_path)
 
-    # Save GrapeOutput data
-    opt_folder = file_name_string(go)
-    file_path = create_folder(joinpath(full_folder_path, opt_folder))
+#     # Save GrapeOutput data
+#     opt_folder = file_name_string(go)
+#     file_path = create_folder(joinpath(full_folder_path, opt_folder))
     
-    try
-        go_dicts = grape_output_to_dict(go)
-        save_grape_output(go, file_path)
+#     try
+#         go_dicts = grape_output_to_dict(go)
+#         save_grape_output(go, file_path)
 
-        # Save the GRAPE data as CSV file
-        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
-        CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
-        CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
-        CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
-        return file_path
-    catch
-        error("Unable to save GRAPE data.")
-        return
-    end
+#         # Save the GRAPE data as CSV file
+#         (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
+#         CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
+#         CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
+#         CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
+#         return file_path
+#     catch
+#         error("Unable to save GRAPE data.")
+#         return
+#     end
 
-    # Save the HyperOpt data
-    try
-        save_hyperopt(hyper_opt, full_folder_path)
-        return full_folder_path
-    catch
-        error("Unable to save Hyper-optimization data.")
-    end
-end
-
+#     # Save the HyperOpt data
+#     try
+#         save_hyperopt(hyper_opt, file_path)
+#         return file_path
+#     catch
+#         error("Unable to save Hyper-optimization data.")
+#     end
+# end
 
 
 function file_name_string(go::GrapeMR.GrapeOutput)
@@ -142,11 +141,11 @@ end
 
 function grape_output_to_dict(gp::GrapeMR.GrapeOutput)
     # Dictionaries with data
-    dict_cost_values   = Dict("Cost Values"   => gp.cost_values);
-    dict_control_field = Dict("B1x [Hz]"      => vec(gp.control_field.B1x),
-                                "B1y [Hz]"    => vec(gp.control_field.B1y),  
-                                "Bz[Hz]"      => vec(gp.control_field.Bz),
-                                "RF Time [s]" => gp.control_field.t_control
+    dict_cost_values   = Dict("Cost Values" => gp.cost_values);
+    dict_control_field = Dict("B1x [Hz]"    => vec(gp.control_field.B1x),
+                              "B1y [Hz]"    => vec(gp.control_field.B1y),  
+                              "Bz[Hz]"      => vec(gp.control_field.Bz),
+                              "RF Time [s]" => gp.control_field.t_control
                             );
     dict_iso_spins     = [Dict("Initial State" => [iso_spin.spin.M_init],
                                 "T1 [s]"       => iso_spin.spin.T1,
@@ -174,9 +173,9 @@ end
 function save_gp_dicts(gp_dicts::Tuple{Dict, Dict, Vector}, file_path::String)
     (dict_cost_values, dict_control_field, dict_iso_spins) = gp_dicts
     gp_output_dict = Dict(
-        "cost_values" => dict_cost_values,
+        "cost_values"   => dict_cost_values,
         "control_field" => dict_control_field,
-        "iso_spins" => dict_iso_spins
+        "iso_spins"     => dict_iso_spins
     )
     save(joinpath(file_path, "grape_output_dict.jld2"), "gp_output_dict", gp_output_dict)
 end
@@ -195,6 +194,6 @@ function load_grape_data(folder_path::String)
 end
 
 function load_hyperopt_data(folder_path::String)
-    JLD2.@load joinpath(folder_path, "hyperopt.jld2") hyper_opt
+    JLD2.@load joinpath(folder_path, "hyper_opt.jld2") hyper_opt
     return hyper_opt
 end

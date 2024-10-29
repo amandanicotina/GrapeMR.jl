@@ -67,7 +67,7 @@ function get_cost_and_gradient(iso::Isochromat, cost_expr::Num, vars::Vector{Num
     cost = Symbolics.substitute(cost_expr, dict, fold = true)
     c_grad = calculate_cost_gradient(cost_expr, dict, vars)
     return Symbolics.unwrap(cost), c_grad
-end
+end 
 
 ############################################################################################
 #                                     Cost Functions                                       #
