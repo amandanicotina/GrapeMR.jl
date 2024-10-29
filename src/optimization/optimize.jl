@@ -29,13 +29,16 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
     lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=op.max_iter+1) 
     cost_vals    = zeros(Float64, op.max_iter, 1)[:]
-    u1x, u1y     = [], []
+    u1x, u1y     = zeros(Float64, length(cf.B1x)), zeros(Float64, length(cf.B1x))
     grape_output = GrapeOutput([], deepcopy(cf), cost_vals, p)
-    
+    ∇x  = zeros(Float64, 1, gp.N)
+    ∇y  = zeros(Float64, 1, gp.N)
+    mag, adj = zeros(Float64, 4, gp.N+1), zeros(Float64, 4, gp.N+1)
+
     for (ϵ, i) ∈ zip(lr_scheduler, 1:op.max_iter)
         # ϵ   = max(ϵ, eps)
-        ∇x  = zeros(Float64, 1, gp.N)
-        ∇y  = zeros(Float64, 1, gp.N)
+        fill!(∇x, 0.0)
+        fill!(∇y, 0.0)
         
         for spin ∈ spins
             # Forward Propagation 
