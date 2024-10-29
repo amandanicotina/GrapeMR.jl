@@ -1,27 +1,3 @@
-
-"""
-     cost_function(iso::Isochromat, cf::Symbol)
-
-Function that gets called cost function form the cost function dictionary
-
-# Arguments
-- 'iso::Isochromat': IRespective isochromat for the calculation
-- 'cf::Symbol': Cost Function
-
-# Outputs
-- '(cost_val, cost_gradient)::Tuple{Float64, Vector{Float64}}': Tuple with cost funciton value and 4x1 gradient.
-"""
-function cost_function(iso::Isochromat, cf::Symbol)
-    if haskey(COST_FUNCTIONS, cf)
-        return COST_FUNCTIONS[cf](iso)
-    else
-        error("Cost Function $cf not defined")
-    end
-end
-
-#  cost_function(iso::Isochromat, cf::Function) = cf(iso)
-
-
 """
     calculate_cost_gradient(cost_func::Num, dict::Dict, vars::Vector{Num})
 
@@ -39,8 +15,7 @@ Generic function that maps variables into the gradient calculation using the Sym
 - 'cost_gradient::Vector{Float64}': 
 """
 function calculate_cost_gradient(cost_func::Num, dict::Dict, vars::Vector{Num})
-    gradient = map(var -> Symbolics.unwrap(substitute.(expand_derivatives(Differential(var)(cost_func)), (dict,))[1]), vars)
-    return [0.0; Float64.(gradient)]
+    error("deleted")
 end
 
 
@@ -62,21 +37,23 @@ Generic function that maps variables into the gradient calculation using the Sym
 - 'cost_gradient::Vector{Float64}': 
 """
 function get_cost_and_gradient(iso::Isochromat, cost_expr::Num, vars::Vector{Num})
-    m = iso.magnetization.dynamics
-    dict = Dict(vars .=> m[2:4,end])
-    cost = Symbolics.substitute(cost_expr, dict, fold = true)
-    c_grad = calculate_cost_gradient(cost_expr, dict, vars)
-    return Symbolics.unwrap(cost), c_grad
+    # TODO: replace with ForwardDiff on a StaticArrays.SVector
+    error("to replace with ForwardDiff")
 end 
 
 ############################################################################################
 #                                     Cost Functions                                       #
 ############################################################################################
+
+euclidean_norm_cost(x::AbstractVector, Nspins) = sqrt(sum(abs2, x) + 1e-15) / Nspins
+
 function euclidean_norm(iso::Isochromat)
     s = iso.spin
-    vars = @variables Mx, My, Mz
-    cost = sqrt(Mx^2 + My^2 + Mz^2 + 1e-15) / s.Nspins
-    return get_cost_and_gradient(iso, cost, vars)
+    m = iso.magnetization.dynamics
+    x = SVector(m[2, end], m[3, end], m[4, end])
+    val = euclidean_norm_cost(x, s.Nspins)
+    grad = ForwardDiff.gradient(Base.Fix2(euclidean_norm_cost, s.Nspins), x)
+    return val, vcat(zero(eltype(grad)), grad)
 end
 
 function cost_func_do_dawid(iso::Isochromat)
@@ -88,7 +65,7 @@ end
 function spin_target(iso::Isochromat; M_tar = [0.0, 1.0, 0.0])
     s = iso.spin
     vars  = @variables Mx, My, Mz
-    M_tar = eval(Meta.parse(iso.spin.target))
+    M_tar = eval(Meta.parse(iso.spin.target))  # TODO: remove!!!! danger!!!!
     Mx_tar, My_tar, Mz_tar = M_tar
     cost_expr = sqrt((Mx - Mx_tar)^2 + (My - My_tar)^2 + (Mz - Mz_tar)^2 + 1e-15) / s.Nspins
     return get_cost_and_gradient(iso, cost_expr, vars)

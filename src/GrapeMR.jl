@@ -1,9 +1,5 @@
 module GrapeMR
 
-const γ_¹H = 42.5774688e6 #[Hz/T] 
-const Ix = [0 0 0 0; 0 0 0 0; 0 0 0 1; 0 0 -1 0];
-const Iy = [0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
-
 using ArgParse
 using CSV
 using JLD2
@@ -22,6 +18,12 @@ using NumericalIntegration
 using ParameterSchedulers
 using PrettyPrint
 using TOML
+using StaticArrays
+using ForwardDiff
+
+const γ_¹H = 42.5774688e6 #[Hz/T] 
+const Ix = SA[0 0 0 0; 0 0 0 0; 0 0 0 1; 0 0 -1 0];
+const Iy = SA[0 0 0 0; 0 0 0 -1; 0 0 0 0; 0 1 0 0];
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
