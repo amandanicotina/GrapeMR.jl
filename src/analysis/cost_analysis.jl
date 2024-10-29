@@ -4,13 +4,13 @@
 
 Calculates the cost values for a given control field (`control_field`) and spin system (`spin_system`) over a range of B0 inhomogeneities (`offsets`).
 
-    # Arguments
-    - `control_field::ControlField`: The control field object that contains the RF pulse sequence.
-    - `spin_system::Spin`: The spin system for which the cost function is to be calculated.
-    - `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) representing B0 inhomogeneities.
+# Arguments
+- `control_field::ControlField`: The control field object that contains the RF pulse sequence.
+- `spin_system::Spin`: The spin system for which the cost function is to be calculated.
+- `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) representing B0 inhomogeneities.
 
-    # Returns
-    - `cost_values::Vector{Float64}`: A vector containing the cost values corresponding to each offset in `B0_values`.
+# Outputs
+- `cost_values::Vector{Float64}`: A vector containing the cost values corresponding to each offset in `B0_values`.
 """
 function cost_offsets(control_field::ControlField, spin_system::Spin, offsets::Vector{Float64}, cost::Symbol)
     ΔB1 = [1.0]
@@ -42,14 +42,14 @@ end
 
 Generates a cost matrix representing the cost function values across a range of B0 and B1 inhomogeneities.
 
-    # Arguments
-    - `control_field::ControlField`: The control field object that contains the RF pulse sequence
-    - `spin_system::Spin`: The spin system for which the cost function is to be calculated.
-    - `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) representing B0 inhomogeneities.
-    - `b1_inhomogeneities::Vector{Float64}`: A vector representing B1 inhomogeneity percentages.
+# Arguments
+- `control_field::ControlField`: The control field object that contains the RF pulse sequence
+- `spin_system::Spin`: The spin system for which the cost function is to be calculated.
+- `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) representing B0 inhomogeneities.
+- `b1_inhomogeneities::Vector{Float64}`: A vector representing B1 inhomogeneity percentages.
 
-    # Returns
-    - `cost_matrix::Matrix{Float64}`: A 2D matrix where each element represents the cost value for a particular 
+# Outputs
+- `cost_matrix::Matrix{Float64}`: A 2D matrix where each element represents the cost value for a particular 
                                         combination of B0 and B1 values. The matrix is normalized by its maximum value.
 """
 function create_cost_matrix(control_field::ControlField, spin_system::Spin, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64}, cost::Symbol)
@@ -90,12 +90,12 @@ end
 
 Creates a plot of the cost values as a function of B0 offset frequencies.
 
-    # Arguments
-    - `cost_profile::Vector{Float64}`: A vector containing the cost values to be plotted.
-    - `B0_values::Vector{Float64}`: A vector of offset frequencies (in Hz) corresponding to the cost values.
+# Arguments
+- `cost_profile::Vector{Float64}`: A vector containing the cost values to be plotted.
+- `B0_values::Vector{Float64}`: A vector of offset frequencies (in Hz) corresponding to the cost values.
 
-    # Returns
-    - `p::Plot`: A plot object displaying the cost function offset profile.
+# Outputs
+- `p::Plot`: A plot object displaying the cost function offset profile.
 """
 function plot_cost_offset(cost_profile::Vector{Float64}, offsets::Vector{Float64})
     p = plot(xlabel = "Offset [Hz]",
@@ -118,13 +118,13 @@ end
 
 Generates a heatmap plot of the cost function values over a range of B0 and B1 inhomogeneities.
 
-    # Arguments
-    - `cost_matrix::Matrix{Float64}`: A 2D matrix representing the cost values for combinations of B0 and B1 inhomogeneities.
-    - `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) used to label the x-axis.
-    - `b1_inhomogeneities::Vector{Float64}`: A vector representing B1 inhomogeneity percentages used to label the y-axis.
+# Arguments
+- `cost_matrix::Matrix{Float64}`: A 2D matrix representing the cost values for combinations of B0 and B1 inhomogeneities.
+- `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) used to label the x-axis.
+- `b1_inhomogeneities::Vector{Float64}`: A vector representing B1 inhomogeneity percentages used to label the y-axis.
 
-    # Returns
-    - `h::Plot`: A heatmap plot showing the cost function map with a color bar indicating cost values.
+# Outputs
+- `h::Plot`: A heatmap plot showing the cost function map with a color bar indicating cost values.
 """
 function heatmap_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64})
     heatmap(offsets, b1_inhomogeneities, cost_matrix, color=:viridis, framestyle=:box,
@@ -144,11 +144,11 @@ end
 
 Creates a contour plot of the cost function values over the range of B0 and B1 inhomogeneities.
 
-    # Arguments
-    - `cost_matrix::Matrix{Float64}`: A 2D matrix representing the cost values for combinations of B0 and B1 inhomogeneities.
+# Arguments
+- `cost_matrix::Matrix{Float64}`: A 2D matrix representing the cost values for combinations of B0 and B1 inhomogeneities.
 
-    # Returns
-    - `c::Plot`: A contour plot of the cost function map.
+# Outputs
+- `c::Plot`: A contour plot of the cost function map.
 """
 function countour_cost(cost_matrix::Matrix{Float64})
     contourf(cost_matrix, color=:viridis, framestyle=:box,
@@ -171,21 +171,21 @@ end
 Runs a complete cost analysis for the specified `GrapeOutput` object over a range of B0 and B1 inhomogeneities, 
 and generates plots to visualize the cost function.
 
-    # Arguments
-    - `control_field::ControlField`: The control field object that contains the RF pulse sequence.
-    - `spin_system::Spin`: The spin system for which the cost function is to be calculated.
-    - `offset::Float64`: The range of offset frequencies (in Hz) for the B0 inhomogeneities.
-    - `b1_inhomogeneity_percent::Int`: The percentage of B1 inhomogeneity to consider for the analysis.
+# Arguments
+- `control_field::ControlField`: The control field object that contains the RF pulse sequence.
+- `spin_system::Spin`: The spin system for which the cost function is to be calculated.
+- `offset::Float64`: The range of offset frequencies (in Hz) for the B0 inhomogeneities.
+- `b1_inhomogeneity_percent::Int`: The percentage of B1 inhomogeneity to consider for the analysis.
 
-    # Workflow
-    1. Generates a range of B0 values from `-offset` to `offset`.
-    2. Computes cost values for the specified B0 and B1 inhomogeneities using `cost_offsets` and `create_cost_matrix`.
-    3. Plots the cost function offset profile using `plot_cost_offset`.
-    4. Generates a heatmap of the cost matrix using `heatmap_cost`.
-    5. Creates a contour plot of the cost matrix using `countour_cost`.
+# Workflow
+1. Generates a range of B0 values from `-offset` to `offset`.
+2. Computes cost values for the specified B0 and B1 inhomogeneities using `cost_offsets` and `create_cost_matrix`.
+3. Plots the cost function offset profile using `plot_cost_offset`.
+4. Generates a heatmap of the cost matrix using `heatmap_cost`.
+5. Creates a contour plot of the cost matrix using `countour_cost`.
 
-    # Example
-    run_cost_analysis(grape_output, 50.0, 30)
+# Example
+run_cost_analysis(grape_output, 50.0, 30)
 """
 function run_cost_analysis(control_field::ControlField, spin_system::Spins, offset::Float64, b1_inhomogeneity_percent::Int, cost::Symbol)
 # It has to somehow be grape_output because I need the cost func information

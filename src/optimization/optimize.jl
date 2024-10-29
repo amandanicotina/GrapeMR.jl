@@ -15,15 +15,15 @@ end
 
 Implements the grape algorithm [khaneja2005optimal](@cite) 
 
-    ### Input
-    - `op::OptimizationParams`: Parameters for the optimization itself: max iterations, 
-    - `gp::GrapeParams`: Parameters related to Grape itself: time points, cost function, mask for which fields are being optimized.
-    - `cf::ControlField`: Initial control field - spline function -
-    - `spins::Vector{<:Spins}`: Vector with all spins included in the optimization
+# Arguments
+- `op::OptimizationParams`: Parameters for the optimization itself: max iterations, 
+- `gp::GrapeParams`: Parameters related to Grape itself: time points, cost function, mask for which fields are being optimized.
+- `cf::ControlField`: Initial control field - spline function -
+- `spins::Vector{<:Spins}`: Vector with all spins included in the optimization
 
-    ### Output
-    A scruct cointaing all optimization results:
-    - `grape_output::GrapeOutput': Data type with the optimized control fields, spin information and spin dynamics.
+# Outputs
+A scruct cointaing all optimization results:
+- `grape_output::GrapeOutput': Data type with the optimized control fields, spin information and spin dynamics.
 """
 function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
@@ -104,14 +104,13 @@ end
 """
     gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
 
-gradient
-    # Input  
-    - χ = (::Matrix{Float64}) - Adjoint State
-    - M = (::Matrix{Float64}) - Forward Propagation
-    - H = (::Matrix) - Hamiltonian
+# Arguments  
+- χ = (::Matrix{Float64}) - Adjoint State
+- M = (::Matrix{Float64}) - Forward Propagation
+- H = (::Matrix) - Hamiltonian
 
-    # Output
-    - ΔJ - 1xN matrix
+# Outputs
+- ΔJ - 1xN matrix
 """
 function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix{Int64})
     grad = zeros(Float64, 1, length(M[1,:])-1)
@@ -126,13 +125,13 @@ end
     update(cf::ControlField, ∇xy::Tuple, ϵ::Float64)
 
 update
-    # Input  
-    - cf:  (::ControlField) - Control fields struct
-    - ∇xy: (::Tuple) - Calculated gradients for x and y components
-    - ϵ:   (::Float64) - Weigth of gradient
+# Arguments  
+- cf:  (::ControlField) - Control fields struct
+- ∇xy: (::Tuple) - Calculated gradients for x and y components
+- ϵ:   (::Float64) - Weigth of gradient
 
-    # Output
-    - Control Field - 1xN matrix
+# Outputs
+- Control Field - 1xN matrix
 """
 function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}, ϵ::Float64)
     u1x = cf.B1x .- ϵ*∇xy[1]

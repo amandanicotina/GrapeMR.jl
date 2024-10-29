@@ -41,3 +41,6 @@ wandb/
 
 # Experimentation
 scratchpad/
+
+# Literate.jl generated .md
+docs/src/generated/

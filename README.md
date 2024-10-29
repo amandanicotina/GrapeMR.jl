@@ -1,4 +1,4 @@
-![Grape Logo](./docs/images/grape_logo.png)
+![Grape Logo](./docs/src/assets/logo.png)
 # GrapeMR
  GrapeMR.jl is a Julia package that numerically designes pulse sequences for NMR/MRI applications. By defining a cost funciton, the algorithm calculates step-by-step what is the best pulse sequence for a specific problem.
 
@@ -8,10 +8,19 @@
 ```bash
 $ julia
 julia>] activate .
-pkg>
+(GrapeMR) pkg> instantiate
 julia>exit()
 $ cd docs && julia --project make.jl
 $ open build/index.html
+```
+
+## Documentation
+
+You can either access the latest documentation or preview on [GrapeMR's Github Pages](https://amandanicotina.github.io/GrapeMR.jl/dev/) or build it locally as shown above.
+Additionally, and especially useful for iterating on the documentation itself, you can serve docs live with file watching using:
+
+```bash
+$ julia --project=docs -e 'using GrapeMR, LiveServer; ENV["DEV"]=true; servedocs(skip_dirs=["docs/src/generated"])'
 ```
 
 ## Test Coverage

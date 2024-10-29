@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "tutorial.jl"
+EditURL = "../tutorial.jl"
 ```
 
 # Tutorial
@@ -32,8 +32,9 @@ spins = Spin(M0, T1, T2, offset, ΔB1, target, label)
 Optimization Parameters:
 
 ````@example tutorial
-Tc, poly_start, poly_degree, max_iter = 0.836, 0.1, 1, 2000 #  bohb.minimizer # 0
-opt_params   = OptimizationParams(poly_start, poly_degree,  Int(ceil(max_iter)))
+max_iter = ENV["DEV"] == "true" ? 1 : 2000  # we set max_iter to 1 if we're in development mode to build the docs faster
+Tc, poly_start, poly_degree = 0.836, 0.1, 1
+opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 ````
 
 Grape Parameters
@@ -45,41 +46,32 @@ grape_params = GrapeParams(1500, :saturation_contrast_Mx, [true true false])
 RF
 
 ````@example tutorial
+N = 1500
 B1ref = 1.0
-B1x = spline_RF(grape_params.N, Tc)'
-B1y = spline_RF(grape_params.N, Tc)'
-Bz  = zeros(1, grape_params.N)
-control_field = ControlField(B1x, B1y, B1ref, Bz, Tc)
+control_field = spline_RF(N, Tc, B1ref)
 ````
 
 Run Optimization
 
 ````@example tutorial
-grape_output = @time grape(opt_params, grape_params, control_field, spins);
+params = Parameters(grape_params, opt_params)
+grape_output = grape(params, control_field, spins);
 nothing #hide
 ````
 
-Plots
+# Plots
+```@repl tutorial
+using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.
+default(show = false); #hide
+control_fields = plot_control_fields(grape_output.control_field);
+display(control_fields)
+```
+
+The Spin struct:
 
 ````@example tutorial
-plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats);
-
-# The Spin struct
+[(k, v) for (k, v) in zip(fieldnames(GrapeMR.Spin), fieldtypes(GrapeMR.Spin))]
 ````
-
-''' julia
-struct Spin <: Spins
-  M_init::Vector{Float64}
-  T1::Float64
-  T2::Float64
-  #δ::Vector{Float64}
-  B0inho::Float64
-  B1inho::Float64
-  target::String
-  label::String
-  Nspins::Float64
-end
-'''
 
 ---
 

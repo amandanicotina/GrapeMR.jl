@@ -45,20 +45,20 @@ end
 
 Calculate calibration analysis of shaped pulse
 
-    ### Parameters:
-    - `cf::ControlField`: The control field object containing the RF waveform.
-    - `attenuation_ref::Float64`: Reference attenuation in dB (default is 0.0 dB).
-    - `B1_ref::Float64`: Reference RF field strength in Tesla (default is 1.0 T).
-    - `power_ref::Float64`: Reference RF power in Watts (default is 500.0 W).
-    
-    ### Returns:
-    A tuple of calculated values:
-    - `max_amp`: Maximum RF amplitude in Hertz (Hz).
-    - `max_amp_tesla`: Maximum RF amplitude in microtesla (µT).
-    - `attenuation_B1`: Attenuation in decibels (dB).
-    - `power_max_B1`: Maximum power in Watts (W).
-    - `power_average`: Average power in Watts (W).
-    - `pulse_energy`: Pulse energy in Joules (J).
+# Arguments
+- `cf::ControlField`: The control field object containing the RF waveform.
+- `attenuation_ref::Float64`: Reference attenuation in dB (default is 0.0 dB).
+- `B1_ref::Float64`: Reference RF field strength in Tesla (default is 1.0 T).
+- `power_ref::Float64`: Reference RF power in Watts (default is 500.0 W).
+
+# Outputs:
+A tuple of calculated values:
+- `max_amp`: Maximum RF amplitude in Hertz (Hz).
+- `max_amp_tesla`: Maximum RF amplitude in microtesla (µT).
+- `attenuation_B1`: Attenuation in decibels (dB).
+- `power_max_B1`: Maximum power in Watts (W).
+- `power_average`: Average power in Watts (W).
+- `pulse_energy`: Pulse energy in Joules (J).
 
 """
 function RF_pulse_analysis(cf::ControlField; attenuation_ref = 0.0, B1_ref = 1.0, power_ref = 500.0)
@@ -129,13 +129,13 @@ end
 Calculates amplitudes and phases normalized to 100 and 180 deg for Bruker implementation on TopSpin.
 All negative phase values are added a 360deg phase
     
-    ### Parameters:
-    - `cf::ControlField`: The control field object containing the RF waveform.
-    
-    ### Returns:
-    A tuple of normalized amplitudes and phases:
-    - `norm_amp`: Maximum RF amplitude in Hertz (Hz).
-    - `norm_phase`: Normalize phases in degrees. 
+# Arguments
+- `cf::ControlField`: The control field object containing the RF waveform.
+
+# Outputs:
+A tuple of normalized amplitudes and phases:
+- `norm_amp`: Maximum RF amplitude in Hertz (Hz).
+- `norm_phase`: Normalize phases in degrees. 
 
 """
 function bruker_normalized_amplitudes_and_phases(cf::ControlField)

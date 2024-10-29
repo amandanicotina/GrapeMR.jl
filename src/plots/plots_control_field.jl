@@ -3,15 +3,15 @@
 
 Plot the control fields of an RF pulse in different units.
 
-    ### Parameters:
-    - `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
-    - `unit::String`: The unit for the plot. Supported units are:
-        - `"Hz"`: Plots `B1x` and `B1y` in Hertz.
-        - `"rad/s"`: Converts the control fields to rads/sec and plots the amplitude and phase.
-        - `"Tesla"`: Converts the control fields to Tesla using the gyromagnetic ratio for ¹H and plots in microtesla (µT).
+# Arguments
+- `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
+- `unit::String`: The unit for the plot. Supported units are:
+    - `"Hz"`: Plots `B1x` and `B1y` in Hertz.
+    - `"rad/s"`: Converts the control fields to rads/sec and plots the amplitude and phase.
+    - `"Tesla"`: Converts the control fields to Tesla using the gyromagnetic ratio for ¹H and plots in microtesla (µT).
 
-    ### Returns:
-    - A plot object displaying the control fields in the specified units with amplitude and phase information.
+# Outputs
+- A plot object displaying the control fields in the specified units with amplitude and phase information.
 """
 function plot_control_fields(cf::ControlField; unit::String = "Hz")
     colors = color_palette(10)
@@ -62,12 +62,12 @@ end
 
 Plot the control fields of an RF pulse after applying a phase shift.
 
-    ### Parameters:
-    - `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
-    - `ψ::Float64`: The phase shift to apply to the control fields (default is π radians).
+# Arguments
+- `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
+- `ψ::Float64`: The phase shift to apply to the control fields (default is π radians).
 
-    ### Returns:
-    - A plot object displaying the control fields with the specified phase shift.
+# Outputs
+- A plot object displaying the control fields with the specified phase shift.
 """
 
 function plot_control_fields_phase_shift(cf::ControlField; ψ::Float64 = π)
@@ -103,14 +103,14 @@ end
 
 Plot the magnetization trajectory for a set of isochromats and the corresponding control field.
 
-    ### Parameters:
-    - `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
-    - `isos::Vector{Isochromat}`: A vector of isochromat objects representing different spin systems.
+# Arguments
+- `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
+- `isos::Vector{Isochromat}`: A vector of isochromat objects representing different spin systems.
 
-    ### Returns:
-    - A plot object displaying:
-        1. The magnetization trajectory in the transverse plane.
-        2. The control field amplitude and phase over time.
+# Outputs
+- A plot object displaying:
+    1. The magnetization trajectory in the transverse plane.
+    2. The control field amplitude and phase over time.
 """
 function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochromat})
     colors = color_palette(10)
@@ -175,12 +175,12 @@ end
 
 Plot the cost function convergence over iterations during the GRAPE optimization process.
 
-    ### Parameters:
-    - `cost::Vector{Float64}`: A vector containing the cost values at each iteration.
-    - `gp::GrapeParams`: The parameters of the GRAPE optimization, including the cost function name.
+# Arguments
+- `cost::Vector{Float64}`: A vector containing the cost values at each iteration.
+- `gp::GrapeParams`: The parameters of the GRAPE optimization, including the cost function name.
 
-    ### Returns:
-    - A plot object displaying the convergence of the cost function over the iterations.
+# Outputs
+- A plot object displaying the convergence of the cost function over the iterations.
 """
 function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     colors = color_palette(10)
