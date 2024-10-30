@@ -29,22 +29,24 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
     lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=op.max_iter+1) 
     cost_vals    = zeros(Float64, op.max_iter, 1)[:]
-    u1x, u1y     = [], []
+    u1x, u1y     = zeros(Float64, length(cf.B1x)), zeros(Float64, length(cf.B1x))
     grape_output = GrapeOutput([], deepcopy(cf), cost_vals, p)
-    
+    ∇x  = zeros(Float64, 1, gp.N)
+    ∇y  = zeros(Float64, 1, gp.N)
+    mag, adj = zeros(Float64, 4, gp.N+1), zeros(Float64, 4, gp.N+1)
+
     for (ϵ, i) ∈ zip(lr_scheduler, 1:op.max_iter)
         # ϵ   = max(ϵ, eps)
-        ∇x  = zeros(Float64, 1, gp.N)
-        ∇y  = zeros(Float64, 1, gp.N)
+        fill!(∇x, 0.0)
+        fill!(∇y, 0.0)
         
         for spin ∈ spins
             # Forward Propagation 
             iso = dynamics(cf, spin)
             mag = iso.magnetization.dynamics
-            cost_vars = GrapeMR.cost_function(iso, gp.cost_function)
+            cost_vars = gp.cost_function(iso)
             # Cost Variables
-            cost = getindex(cost_vars, 1)
-            adj_ini = getindex(cost_vars, 2)
+            cost, adj_ini = cost_vars
             grape_output.cost_values[i,1] += cost
             # Adjoint Propagation
             adj = backward_propagation(cf, iso, adj_ini)
@@ -56,26 +58,26 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             
             # Gradient
             if gp.fields_opt[1]
-                ∇x += gradient(adj, mag, Ix)
+                ∇x .+= gradient(adj, mag, Ix)
             end 
             if gp.fields_opt[2]
-                ∇y += gradient(adj, mag, Iy)
+                ∇y .+= gradient(adj, mag, Iy)
             end 
         end
 
         # Control Field
         (u1x, u1y) = update!(cf, (∇x, ∇y), ϵ)
-        cf.B1x = u1x
-        cf.B1y = u1y
+        cf.B1x .= u1x
+        cf.B1y .= u1y
     end
 
-    grape_output.control_field.B1x = u1x
-    grape_output.control_field.B1y = u1y
+    grape_output.control_field.B1x .= u1x
+    grape_output.control_field.B1y .= u1y
 
     # Print Infos
     final_cost = round(grape_output.cost_values[end], digits = 3)
-    println("\n Final Cost Function Value = $final_cost \n")
-    RF_pulse_analysis(grape_output.control_field)
+    # println("\n Final Cost Function Value = $final_cost \n")
+    # RF_pulse_analysis(grape_output.control_field)
 
     return grape_output
 end
@@ -112,10 +114,15 @@ end
 # Outputs
 - ΔJ - 1xN matrix
 """
-function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix{Int64})
-    grad = zeros(Float64, 1, length(M[1,:])-1)
-    for i ∈ 1:(length(M[1,:])-1)
-        grad[1,i] = transpose(χ[:,i+1])*H*M[:,i+1]
+function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::AbstractMatrix{Int64})
+    # TODO: refactor this as gradient!(grad, χ, M, H)
+    grad = zeros(Float64, 1, size(M, 2)-1)
+    for i ∈ 1:(size(M, 2)-1)
+        grad[1,i] = dot(
+            transpose(view(χ, :,i+1)), 
+            H,
+            view(M, :,i+1)
+        )
     end
     return grad
 end
