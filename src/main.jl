@@ -50,7 +50,10 @@ control_field = spline_RF(grape_params.N, tm["control_field"]["control_time"], t
 
 
 # Run Optimization
-grape_output = @time grape(params, control_field, spins); 
+# grape_output = @time grape(params, control_field, spins);
+grape_output = @time metal_grape(params, control_field, spins); 
+# grape_output = @time threads_metal_grape(params, control_field, spins); 
+
 
 # Save data
 if tm["save_files"]["enabled"]

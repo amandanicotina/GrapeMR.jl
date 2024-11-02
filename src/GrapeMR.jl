@@ -19,6 +19,7 @@ using CubicSplines
 using LinearAlgebra
 using NumericalIntegration
 using ParameterSchedulers
+using Metal
 
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
@@ -65,7 +66,7 @@ export integral_factor, fast_fourier_transform, average_pulse_power # check expo
 export run_cost_analysis 
 
 # Grape 
-export grape, dynamics, backward_propagation
+export grape, metal_grape, threads_metal_grape, dynamics, backward_propagation
 export random_sampler, bohb_hyperopt, hyperband_hyperopt
 export finite_difference_cost, finite_difference_field
 
