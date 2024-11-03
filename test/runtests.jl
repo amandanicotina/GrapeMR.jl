@@ -12,4 +12,5 @@ using Test, SafeTestsets
     
     # @time @safetestset "Gradient vs Finite Differences" begin include("test_gradients.jl") end
 
+    @safetestset "Tutorial" begin include("../docs/src/tutorial.jl") end
 end

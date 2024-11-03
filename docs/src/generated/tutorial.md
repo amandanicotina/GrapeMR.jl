@@ -40,7 +40,7 @@ opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 Grape Parameters
 
 ````@example tutorial
-grape_params = GrapeParams(1500, GrapeMR.saturation_contrast_Mx, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.saturation_contrast_Mx, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 ````
 
 RF
