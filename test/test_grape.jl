@@ -1,4 +1,4 @@
-using GrapeMR
+using GrapeMR, Test
 
 # Tolerance to past the tests
 tol = 2*1e-2

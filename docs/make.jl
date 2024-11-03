@@ -1,10 +1,10 @@
 using Documenter, DocumenterCitations, Literate, GrapeMR
 
-Literate.markdown("./docs/src/tutorial.jl", "./docs/src")
+Literate.markdown("./docs/src/tutorial.jl", "./docs/src/generated"; mdstrings=true)
 
 pages = [
   "Introduction" => "index.md",
-  "Tutorial" => "tutorial.md",
+  "Tutorial" => "generated/tutorial.md",
   "API" => "api.md",
   "References" => "references.md",
 ]

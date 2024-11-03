@@ -64,11 +64,11 @@ end
 
 
 
-struct Magnetization
-    dynamics::Array{Float64}
+struct Magnetization{M<:AbstractMatrix{Float64}}
+    dynamics::M
 end
 
-struct Isochromat
+struct Isochromat{S<:Spins}
     magnetization::Magnetization
-    spin::Spins
+    spin::S
 end

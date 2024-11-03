@@ -22,3 +22,6 @@ open(output_file, "w") do file
 end
 
 println("File written successfully to $output_file")
+
+using Plots
+

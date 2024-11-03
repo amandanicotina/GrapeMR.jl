@@ -153,7 +153,7 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
     B1 = vec(Bx + im * By)
 
     p_Bx = plot(time, Bx, color = colors[5], linewidth=2, grid = false, label=false, framestyle=:box, ylabel="Bx [Hz]", title="Control Fields", titlefontsize=12)
-    p_By = plot(time, By, color = colors[5], linewidth=2, grid = false, label=false, framestyle=:box, ylabel="Bx [Hz]", xlabel="t [ms]") #ϕ [rad]
+    p_By = plot(time, By, color = colors[5], linewidth=2, grid = false, label=false, framestyle=:box, ylabel="By [Hz]", xlabel="t [ms]") #ϕ [rad]
 
     l = @layout [[a{0.5h}; b{0.5h}] c]
     

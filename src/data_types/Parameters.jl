@@ -4,14 +4,14 @@ struct OptimizationParams
     max_iter::Int
 end
 
-struct GrapeParams 
+struct GrapeParams{F}
     N::Int64
-    cost_function::Symbol
+    cost_function::F
     fields_opt::Array{Bool, 2}
 end
 
-struct Parameters
-    grape_params::GrapeParams
+struct Parameters{F}
+    grape_params::GrapeParams{F}
     opt_params::OptimizationParams
 end
 

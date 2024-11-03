@@ -1,5 +1,6 @@
 color_palette(var::AbstractArray) = ColorScheme(get(ColorSchemes.rainbow, range(0.0, 1.0, length=length(var))))
 color_palette(var::Int) = ColorScheme(get(ColorSchemes.rainbow, range(0.0, 1.0, length=var)))
+
 """
 
 2D Magnetization Plots
@@ -46,7 +47,6 @@ function plot_transverse_magnetization(isos::Vector{Isochromat})
     end
     # xlims!(-1.01, 0.05)
     # ylims!(-0.01, 0.03)
-    display(pTrans)
 
     return pTrans
 end
@@ -343,4 +343,50 @@ function plot_transverse_time(isos::Vector{Isochromat}, t::Float64)
     end
 
     return pTrans
+end
+
+
+function plot_longitudinal_time(isos::Vector{Isochromat}, t::Float64)
+    colors = color_palette(1:10)
+    pLong = plot(title = "Longitudinal Magnetization",
+                xlabel = "t [sec]",
+                ylabel = "Mz",
+                guidefontsize = 12, 
+                legendfontsize = 10,
+                tickfontsize = 10,
+                titlefontsize = 12,
+                framestyle = :box, 
+                grid = false)
+
+    max_label_plotted = false
+    min_label_plotted = false
+    no_label_plotted  = false
+
+    mag = isos[1].magnetization.dynamics
+    time = range(0.0, t, length = length(mag[1,:]))
+
+    for iso ∈ isos
+        m = iso.magnetization.dynamics
+        s = iso.spin
+        Mz = m[4,:]
+        if s.target == "max" 
+            plot!(pLong, time, Mz, 
+            label = max_label_plotted ? false : "$(s.target) - $(s.label)", color = colors[2], lw = 2)
+            scatter!(pLong, [time[end]], [Mz[end]], label = false, color = colors[2], markersize = 5)
+            max_label_plotted = true
+            
+        elseif s.target == "min" 
+            plot!(pLong, time, Mz, 
+            label = min_label_plotted ? false : "$(s.target) - $(s.label)", color = colors[9], lw = 2)
+            scatter!(pLong, [time[end]], [Mz[end]], label = false, color = colors[9], markersize = 5)
+            min_label_plotted = true
+        else
+            plot!(pLong, time, Mz,
+            label = min_label_plotted ? false : "$(s.label)", color = colors[5], lw = 2)
+            scatter!(pLong, [time[end]], [Mz[end]], label = false, color = colors[5], markersize = 5)
+            no_label_plotted = true        
+        end
+    end
+
+    return pLong
 end
