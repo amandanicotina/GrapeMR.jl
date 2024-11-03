@@ -15,8 +15,10 @@ target_water = "[0.0, 1.0, 0.0]"
 spins = GrapeMR.Spin(M0, [T1_water], [T2_water], offsets, ΔB1, [target_water], [label_water])
 
 # Grape Parameters 
-grape_params = GrapeParams(1000, :spin_target, [true true false])
+grape_params = GrapeParams(1000, GrapeMR.spin_target, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
-random_opt = random_sampler(spins, grape_params, LinRange(0.01, 1.0, 15), range(10, 100, step = 10))
+random_opt = random_hyperopt(spins, grape_params, LinRange(0.01, 1.0, 15), range(10, 100, step = 10))
 bohb = bohb_hyperopt(spins, grape_params, LinRange(0.01, 1.0, 15), 100)
+
+_ = run_grape_optimization(joinpath(@__DIR__, "../../src/default_config.toml"))

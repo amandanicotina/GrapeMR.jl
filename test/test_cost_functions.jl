@@ -4,7 +4,7 @@ using GrapeMR
 function test_cost_one_spin(cost_func::Function; target::AbstractVector = [0.0, 1.0, 0.0])
     # Parameters
     N = 1000;
-    grape_params = GrapeParams(N, cost_func, [true true false])
+    grape_params = GrapeParams(N, cost_func, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
     # RFs
     t_c   = 0.5; #[s]
@@ -40,7 +40,7 @@ end
 function test_cost_steady_state(cost_func::Function)
     # Parameters
     N = 1000;
-    grape_params = GrapeParams(N, cost_func, [true true false])
+    grape_params = GrapeParams(N, cost_func, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
     # RFs
     t_c   = 0.5; #[s]
@@ -76,7 +76,7 @@ end
 function test_cost_two_spins(cost_func::Function)
     # Parameters
     N = 1000;
-    grape_params = GrapeParams(N, cost_func, [true true false])
+    grape_params = GrapeParams(N, cost_func, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
     # RFs
     t_c   = 0.5; #[s]

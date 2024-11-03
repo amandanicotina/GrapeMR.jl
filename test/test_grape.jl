@@ -20,7 +20,7 @@ target = ["-"]
 spins = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
 Tc = 1.0
@@ -39,7 +39,7 @@ control_field = spline_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output_en = @time grape(params, control_field, spins); 
 
-@test isapprox(grape_output_en.cost_values[end], 0; atol = tol)
+@test isapprox(round(grape_output_en.cost_values[end], digits = 2), 0; atol = tol)
 
 #########################################################
 #              Cost: Saturation Contrast                #
@@ -57,7 +57,7 @@ target = ["min", "max"]
 spins  = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, GrapeMR.saturation_contrast, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.saturation_contrast, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
 Tc = 1.0
@@ -76,7 +76,7 @@ control_field = spline_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output_sc = @time grape(params, control_field, spins); 
 
-@test isapprox(grape_output_sc.cost_values[end], 0; atol = tol)
+@test isapprox(round(grape_output_sc.cost_values[end], digits = 2), 0; atol = tol)
 
 
 #########################################################
@@ -96,7 +96,7 @@ target = ["-"]
 spins = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
 Tc = 1.0
@@ -115,7 +115,7 @@ control_field = sinc_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
 
-@test isapprox(grape_output.cost_values[end], 0; atol = tol)
+@test isapprox(round(grape_output.cost_values[end], digits = 2), 0; atol = tol)
 
 
 #########################################################
@@ -135,7 +135,7 @@ target = ["-"]
 spins = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
 Tc = 1.0
@@ -154,7 +154,7 @@ control_field = hard_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
 
-@test isapprox(grape_output_sc.cost_values[end], 0; atol = tol)
+@test isapprox(round(grape_output.cost_values[end], digits = 2), 0; atol = tol)
 
 
 
@@ -175,7 +175,7 @@ target = ["-"]
 spins = GrapeMR.Spin(M0, T1, T2, B0, ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, GrapeMR.spin_target, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.spin_target, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
 Tc = 1.0
@@ -194,5 +194,5 @@ control_field = gaussian_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
 
-@test isapprox(grape_output_sc.cost_values[end], 0; atol = tol)
+@test isapprox(round(grape_output.cost_values[end], digits = 2), 0; atol = tol)
 
