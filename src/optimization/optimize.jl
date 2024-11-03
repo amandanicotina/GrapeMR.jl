@@ -30,10 +30,9 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
     lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=op.max_iter + 1)
     cost_vals = zeros(eltype(cf.B1x), op.max_iter, 1)[:]
-    epsilons          = zeros(Float64, op.max_iter, 1)[:]
+    epsilons = zeros(Float64, op.max_iter, 1)[:]
     u1x = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
     u1y = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
-    println(typeof(cost_vals), typeof(epsilons), typeof(p))
     grape_output = GrapeOutput(Vector{Isochromat}(), deepcopy(cf), cost_vals, epsilons, p)
     ∇x = zeros(eltype(cf.B1x), 1, gp.N)
     ∇y = zeros(eltype(cf.B1x), 1, gp.N)
