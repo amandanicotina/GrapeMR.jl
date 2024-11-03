@@ -3,10 +3,10 @@ Base.broadcastable(cf::ControlField) = Ref(cf)
 
 struct GrapeOutput{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}, F}
     isochromats::Vector{Isochromat}
-    control_field::ControlField
-    cost_values::Array{Float64}
+    control_field::ControlField{T, M1, Mz}
+    cost_values::Vector{Float64}
     epsilons::Vector{Float64}
-    params::Parameters
+    params::Parameters{F}
 end
 
 
@@ -32,7 +32,8 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     cost_vals = zeros(eltype(cf.B1x), op.max_iter, 1)[:]
     epsilons          = zeros(Float64, op.max_iter, 1)[:]
     u1x = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
-    u1y = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))    
+    u1y = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
+    println(typeof(cost_vals), typeof(epsilons), typeof(p))
     grape_output = GrapeOutput(Vector{Isochromat}(), deepcopy(cf), cost_vals, epsilons, p)
     ∇x = zeros(eltype(cf.B1x), 1, gp.N)
     ∇y = zeros(eltype(cf.B1x), 1, gp.N)
