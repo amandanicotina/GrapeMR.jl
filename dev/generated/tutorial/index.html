@@ -23,56 +23,46 @@ spins = Spin(M0, T1, T2, offset, ΔB1, target, label)</code></pre><pre class="do
  Spin([0.0, 0.0, 1.0], 0.73, 0.04, 10.0, 1.0, &quot;max&quot;, &quot;T1=730.0ms&quot;, 14.0)
  Spin([0.0, 0.0, 1.0], 0.73, 0.04, 15.0, 1.0, &quot;max&quot;, &quot;T1=730.0ms&quot;, 14.0)</code></pre><p>Optimization Parameters:</p><pre><code class="language-julia hljs">max_iter = get(ENV, &quot;DEV&quot;, &quot;false&quot;) == &quot;true&quot; ? 1 : 2000  # we set max_iter to 1 if we&#39;re in development mode to build the docs faster
 Tc, poly_start, poly_degree = 0.836, 0.1, 1
-opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">OptimizationParams(0.1, 1, 2000)</code></pre><p>Grape Parameters</p><pre><code class="language-julia hljs">grape_params = GrapeParams(1500, :saturation_contrast_Mx, [true true false])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">GrapeParams(1500, :saturation_contrast_Mx, Bool[1 1 0])</code></pre><p>RF</p><pre><code class="language-julia hljs">N = 1500
+opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">OptimizationParams(0.1, 1, 2000)</code></pre><p>Grape Parameters</p><pre><code class="language-julia hljs">grape_params = GrapeParams(1500, GrapeMR.saturation_contrast_Mx, [true true false])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">GrapeParams{typeof(GrapeMR.saturation_contrast_Mx)}(1500, GrapeMR.saturation_contrast_Mx, Bool[1 1 0])</code></pre><p>RF</p><pre><code class="language-julia hljs">N = 1500
 B1ref = 1.0
-control_field = spline_RF(N, Tc, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField([0.5123229990769715 0.5165577566202575 … 0.2239502256618936 0.22653858595250637], [0.7550580703539665 0.757162119754404 … 0.010092532458461007 0.009690161452276405], 1.0, [0.0 0.0 … 0.0 0.0], 0.836)</code></pre><p>Run Optimization</p><pre><code class="language-julia hljs">params = Parameters(grape_params, opt_params)
-grape_output = grape(params, control_field, spins);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
- Final Cost Function Value = 0.307
-
----------- RF Analysis ----------
-
-Pulse Peak Amplitude = 10.0424 [Hz]
-Pulse Peak Amplitude = 0.2359 [μT]
-Attenuation corresponding to maximum amplitude: 28.8869 [dB]
-Maximum power = 17.9732 [W]
-Average power = 0.5481 [W]
-Pulse energy = 0.4582 [J]</code></pre><h1 id="Plots"><a class="docs-heading-anchor" href="#Plots">Plots</a><a id="Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Plots" title="Permalink"></a></h1><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">             ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  
-             ┌────────────────────────────────────────┐  
-     10.2454 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢱⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
-     Bx [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⢸⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀│  
-             │⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀│  
-             │⠀⡀⠀⡼⢳⣰⠋⠧⠞⢸⠀⠀⢠⡄⠀⣤⡀⢠⢤⠀⠀⠀⠀⠀⣀⠀⢀⣀⠀⠀⠀⠀⠀⠀⠀⣀⡀⡇⢸⠀│  
-             │⠀⡇⢀⠇⠀⠀⠀⠀⠀⠈⡇⠀⡏⠘⠚⠁⠙⠃⠸⡄⠀⡜⠳⠴⠉⠳⠞⠸⡀⠀⡼⢳⡴⠲⣤⠇⢧⠃⢸⠀│  
-             │⠀⢹⣸⠀⠀⠀⠀⠀⠀⠀⢣⢸⠁⠀⠀⠀⠀⠀⠀⣇⢠⠇⠀⠀⠀⠀⠀⠀⣇⢠⠇⠀⠀⠀⠀⠀⠀⠀⢸⠀│  
-             │⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠘⠊⠀⠀⠀⠀⠀⠀⠀⢸⡼⠀⠀⠀⠀⠀⠀⠀⠸⠼⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│  
-    -2.65541 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠀│  
-             └────────────────────────────────────────┘  
-             ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀  
-              ┌────────────────────────────────────────┐ 
-      3.49134 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇⠀│ 
-      By [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠏⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠁⠀⠀⠀│ 
-              │⠀⠀⠀⢀⣤⣀⣀⣀⠀⠀⠀⠀⣰⠉⠓⠋⠙⠒⢦⠀⠀⢠⠶⣤⠤⢤⡀⠀⠀⠀⢠⢤⡀⣠⠖⠁⠀⠀⠀⠀│ 
-              │⠀⠀⠀⡼⠀⠀⠀⠈⠉⢳⡀⠀⡇⠀⠀⠀⠀⠀⠘⡆⢀⡏⠀⠀⠀⠀⠈⢳⠀⠀⡎⠀⠉⠁⠀⠀⠀⠀⠀⠀│ 
-              │⠀⣆⢠⠇⠀⠀⠀⠀⠀⠀⢧⣸⠀⠀⠀⠀⠀⠀⠀⠹⠼⠀⠀⠀⠀⠀⠀⠀⢧⣸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-    -0.500998 │⠀⠸⠞⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              └────────────────────────────────────────┘ 
-              ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀</code></pre><p>The Spin struct:</p><pre><code class="language-julia hljs">[(k, v) for (k, v) in zip(fieldnames(GrapeMR.Spin), fieldtypes(GrapeMR.Spin))]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8-element Vector{Tuple{Symbol, DataType}}:
+control_field = spline_RF(N, Tc, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([0.08997118799725468 0.0896386731595071 … 0.5599431009272118 0.5649504095227623], [0.08997118799725468 0.0896386731595071 … 0.5599431009272118 0.5649504095227623], 1.0, [0.0 0.0 … 0.0 0.0], 0.836)</code></pre><p>Run Optimization</p><pre><code class="language-julia hljs">params = Parameters(grape_params, opt_params)
+grape_output = grape(params, control_field, spins);</code></pre><h1 id="Plots"><a class="docs-heading-anchor" href="#Plots">Plots</a><a id="Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Plots" title="Permalink"></a></h1><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">             ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+             ┌────────────────────────────────────────┐ 
+     8.36931 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⢳⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+     Bx [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│ 
+             │⠀⠀⠀⢀⣀⢀⡤⡀⣸⠹⡄⠀⢠⣄⢀⣤⡀⢰⠻⡀⠀⢠⣄⢀⡤⡀⣰⠻⡄⠀⠀⡀⢀⣀⠀⠀⠀⡎⢸⠀│ 
+             │⠀⡇⠀⡞⠘⠚⠀⠙⠃⠀⡇⠀⡞⠘⠚⠀⠓⠋⠀⡇⠀⡞⠈⠛⠀⠙⠃⠀⡇⠀⡼⠙⠋⠈⠧⢶⠀⡇⢸⠀│ 
+             │⠀⢳⢠⠃⠀⠀⠀⠀⠀⠀⢹⢰⠃⠀⠀⠀⠀⠀⠀⢹⢠⠇⠀⠀⠀⠀⠀⠀⢹⢠⠇⠀⠀⠀⠀⠈⡇⡇⢸⠀│ 
+             │⠀⠸⠼⠀⠀⠀⠀⠀⠀⠀⠈⠛⠀⠀⠀⠀⠀⠀⠀⠘⠞⠀⠀⠀⠀⠀⠀⠀⠈⠛⠀⠀⠀⠀⠀⠀⣇⡇⠀⠀│ 
+    -2.25442 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠃⠀⠀│ 
+             └────────────────────────────────────────┘ 
+             ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀ 
+             ┌────────────────────────────────────────┐ 
+     9.78629 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│ 
+     By [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠁⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡏⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠁⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀│ 
+             │⠀⡀⠀⣰⠛⠲⠚⠉⠉⠹⡄⠀⣸⠙⠢⠒⠒⠚⢳⡀⠀⡼⠉⠓⠚⠓⠚⢳⠀⠀⡼⠙⠦⠤⣄⠀⡇⠀⠀⠀│ 
+             │⠀⢧⢀⡇⠀⠀⠀⠀⠀⠀⢧⢠⠇⠀⠀⠀⠀⠀⠀⢧⢠⠇⠀⠀⠀⠀⠀⠀⣇⢠⠇⠀⠀⠀⠘⠚⠀⠀⠀⠀│ 
+    -1.33561 │⠀⠘⠾⠀⠀⠀⠀⠀⠀⠀⠈⠚⠀⠀⠀⠀⠀⠀⠀⠘⠚⠀⠀⠀⠀⠀⠀⠀⠘⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             └────────────────────────────────────────┘ 
+             ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀</code></pre><p>The Spin struct:</p><pre><code class="language-julia hljs">[(k, v) for (k, v) in zip(fieldnames(GrapeMR.Spin), fieldtypes(GrapeMR.Spin))]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8-element Vector{Tuple{Symbol, DataType}}:
  (:M_init, Vector{Float64})
  (:T1, Float64)
  (:T2, Float64)
@@ -80,4 +70,4 @@ Pulse energy = 0.4582 [J]</code></pre><h1 id="Plots"><a class="docs-heading-anch
  (:B1inho, Float64)
  (:target, String)
  (:label, String)
- (:Nspins, Float64)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Introduction</a><a class="docs-footer-nextpage" href="../../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Monday 28 October 2024 13:59">Monday 28 October 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (:Nspins, Float64)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Introduction</a><a class="docs-footer-nextpage" href="../../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Sunday 3 November 2024 19:04">Sunday 3 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
