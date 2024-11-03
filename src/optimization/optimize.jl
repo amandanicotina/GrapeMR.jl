@@ -58,10 +58,10 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             end
 
             # Gradient
-            if gp.fields_opt[1]
+            if gp.fields_opt["B1x"]
                 ∇x .+= gradient(adj, mag, Ix)
-            end
-            if gp.fields_opt[2]
+            end 
+            if gp.fields_opt["B1y"]
                 ∇y .+= gradient(adj, mag, Iy)
             end
         end
@@ -204,11 +204,11 @@ function run_grape_optimization(config_path::String)
     )
 
     # Grape Parameters
-    mask = tm["grape_parameters"]["fields2optimize"]
+    mask_dict = Dict(k => Bool(v) for (k,v) ∈ tm["grape_parameters"]["fields2optimize"])
     grape_params = GrapeParams(
         tm["grape_parameters"]["time_steps"],
         eval(Symbol(tm["grape_parameters"]["cost_function"])),
-        reshape(mask, 1, length(mask))  # we need a 1x3 Matrix{Bool} instead of a Vector{Bool}
+        mask_dict
     )
 
     # Optimization Parameters

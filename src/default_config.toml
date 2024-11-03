@@ -11,10 +11,15 @@ intrinsics = [
 
 [grape_parameters]
 time_steps      = 1500
+<<<<<<< Updated upstream
 cost_function   = "euclidean_norm"
 # fields2optimize = [true, true, false]
 fields2optimize = {"B1x" = true, "B1y" = true, "Bz" = false}
 
+=======
+cost_function   = "saturation_contrast_Mx"
+fields2optimize = {"B1x" = true, "B1y" = true, "Bz" = false}
+>>>>>>> Stashed changes
 
 [optimization_parameters]
 hyper_opt    = false

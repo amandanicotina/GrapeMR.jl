@@ -1,6 +1,7 @@
 using GrapeMR
 
 # Spin Parameters
+<<<<<<< Updated upstream
 M0      = [0.0, 0.0, 1.0]
 ΔB1     = [1.0]
 offsets = -15:1:15
@@ -19,6 +20,27 @@ opt_params  = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 
 # Grape Parameters 
 grape_params = GrapeParams(2000, GrapeMR.saturation_contrast, [true true false])
+=======
+M0     = [0.0, 0.0, 1.0]
+ΔB1    = [1.0]
+# offset = -1:0.1:1
+offset = 1:1:1
+T1 = [1.35]
+T2 = [0.05]
+label  = ["Blood"]
+target = ["-"]
+spins  = Spin(M0, T1, T2, offset, ΔB1, target, label)
+
+# Optimization Parameters
+Tc = 0.1
+poly_start  = 0.1
+poly_degree = 1.0
+max_iter    = 1
+opt_params  = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
+
+# Grape Parameters 
+grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, Dict("B1x" => true, "B1y" => true, "Bz" => false))
+>>>>>>> Stashed changes
 
 # Parameters 
 params = Parameters(grape_params, opt_params)
