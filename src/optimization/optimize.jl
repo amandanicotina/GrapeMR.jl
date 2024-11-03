@@ -5,6 +5,7 @@ struct GrapeOutput{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}, F}
     isochromats::Vector{Isochromat}
     control_field::ControlField{T, M1, Mz}
     cost_values::Vector{Float64}
+    epsilons::Vector{Float64}
     params::Parameters{F}
 end
 
@@ -29,15 +30,17 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
     lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=op.max_iter + 1)
     cost_vals = zeros(eltype(cf.B1x), op.max_iter, 1)[:]
+    epsilons = zeros(Float64, op.max_iter, 1)[:]
     u1x = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
-    u1y = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))    
-    grape_output = GrapeOutput(Vector{Isochromat}(), deepcopy(cf), cost_vals, p)
+    u1y = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
+    grape_output = GrapeOutput(Vector{Isochromat}(), deepcopy(cf), cost_vals, epsilons, p)
     ∇x = zeros(eltype(cf.B1x), 1, gp.N)
     ∇y = zeros(eltype(cf.B1x), 1, gp.N)
     mag, adj = zeros(Float64, 4, gp.N + 1), zeros(Float64, 4, gp.N + 1)
 
     for (ϵ, i) ∈ zip(lr_scheduler, 1:op.max_iter)
         # ϵ   = max(ϵ, eps)
+        grape_output.epsilons[i] = ϵ
         fill!(∇x, 0.0)
         fill!(∇y, 0.0)
 
