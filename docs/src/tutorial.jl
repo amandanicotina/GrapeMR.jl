@@ -26,7 +26,7 @@ Tc, poly_start, poly_degree = 0.836, 0.1, 1
 opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 
 # Grape Parameters 
-grape_params = GrapeParams(1500, :saturation_contrast_Mx, [true true false])
+grape_params = GrapeParams(1500, GrapeMR.saturation_contrast_Mx, [true true false])
 
 # RF
 N = 1500

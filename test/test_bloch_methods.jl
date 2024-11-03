@@ -27,7 +27,7 @@ end
 function test_relaxation_dynamics()
     # Parameters
     N = 1000;
-    rf_time = 1000; #[ms]
+    rf_time = 1000.0; #[ms]
     Δt = rf_time/N;
     # Spin
     Mx₀, My₀, Mz₀ = 0.0, 1.0, 0.0;
@@ -38,7 +38,7 @@ function test_relaxation_dynamics()
     ΔB1, Bz = 1.0, zeros(1,N), 0.0;
     Bx_off = zeros(1,N); 
     By_off = zeros(1,N); 
-    B_ref  = π
+    B_ref  = 1π
 
     # Control Field and Spins objects
     control_field = ControlField(Bx_off, By_off, B_ref, Bz, rf_time*1e-3)
@@ -108,7 +108,7 @@ function test_shaped_pulse_dynamics()
     # Parameters
     max_iter     = 1000; start=1e-1; degree=2; max_iter=max_iter+1
     opt_params   = OptimizationParams(start, degree, Int(ceil(max_iter)))
-    grape_params = GrapeParams(N, :euclidean_norm, [true true false])
+    grape_params = GrapeParams(N, GrapeMR.euclidean_norm, [true true false])
     params       = Parameters(grape_params, opt_params)
 
     # Initial RF Pulse
@@ -135,7 +135,6 @@ function test_shaped_pulse_dynamics()
     return mag_bs_opt, mag_gp_opt, rf_time
 end
 
-# Plots
 function plot_magnetization_tracking(M_bs::Vector{BlochSim.Magnetization{Float64}}, M_gp::Matrix{Float64}, t_rf::Real)
     Mx_bs, My_bs, Mz_bs    = getproperty.(M_bs, :x), getproperty.(M_bs, :y), getproperty.(M_bs, :z);
     Mx_gp, My_gp, Mz_gp    = M_gp[2,:], M_gp[3,:], M_gp[4,:]
@@ -158,20 +157,40 @@ function plot_magnetization_tracking(M_bs::Vector{BlochSim.Magnetization{Float64
     return pMag, pMz
 end 
 
-@safetestset "Rotation Dynamics" begin
-    (mag_bs_rot, mag_gp_rot, rf_time_rot)  = test_rotation_dynamics()
-    Mx_bs, Mx_bs, Mx_bs    = getproperty.(mag_bs_rot, :x), getproperty.(mag_bs_rot, :y), getproperty.(mag_bs_rot, :z);
-    Mx_gp, My_gp, Mz_gp    = mag_gp_rot[2,:], mag_gp_rot[3,:], mag_gp_rot[4,:]
-
-    @test all(round(Mx_gp, digits = 1) .== round(Mx_bs, digits = 1))
-    @test all(round(My_gp, digits = 1) .== round(Mx_bs, digits = 1))
-    @test all(round(Mz_gp, digits = 1) .== round(Mx_bs, digits = 1))
-end
-
-# (mag_bs_relax, mag_gp_relax, rf_time_relax) = test_relaxation_dynamics()
+# -----------------------------------------------------------------------
+# Test Rotation Dynamics
+# -----------------------------------------------------------------------
 (mag_bs_rot, mag_gp_rot, rf_time_rot)  = test_rotation_dynamics()
-(mag_bs_shape, mag_gp_shape, rf_time_shape) = test_shaped_pulse_dynamics()
+Mx_bs, My_bs, Mz_bs    = getproperty.(mag_bs_rot[1], :x), getproperty.(mag_bs_rot[1], :y), getproperty.(mag_bs_rot[1], :z);
+Mx_gp, My_gp, Mz_gp    = mag_gp_rot[1][2,:], mag_gp_rot[1][3,:], mag_gp_rot[1][4,:]
 
-(pMag, pMz) = plot_magnetization_tracking.(mag_bs_relax, mag_gp_relax, rf_time_relax)
-(pMag, pMz) = plot_magnetization_tracking.(mag_bs_rot, mag_gp_rot, rf_time_rot)
-(pMag, pMz) = plot_magnetization_tracking.(mag_bs_shape, mag_gp_shape, rf_time_shape)
+@test all(round.(Mx_gp, digits = 1) .== round.(My_bs, digits = 1))
+@test all(round.(My_gp, digits = 1) .== round.(Mx_bs, digits = 1))
+@test all(round.(Mz_gp, digits = 1) .== round.(Mz_bs, digits = 1))
+
+# -----------------------------------------------------------------------
+# Test Relaxation Dynamics
+# -----------------------------------------------------------------------
+(mag_bs_relax, mag_gp_relax, rf_time_relax) = test_relaxation_dynamics()
+Mx_bs_relax, My_bs_relax, Mz_bs_relax = getproperty.(mag_bs_relax[1], :x), getproperty.(mag_bs_relax[1], :y), getproperty.(mag_bs_relax[1], :z);
+Mx_gp_relax, My_gp_relax, Mz_gp_relax = mag_gp_relax[1][2,:], mag_gp_relax[1][3,:], mag_gp_relax[1][4,:]
+
+@test all(round.(Mx_gp_relax, digits = 1) .== round.(Mx_bs_relax, digits = 1))
+@test all(round.(My_gp_relax, digits = 1) .== round.(My_bs_relax, digits = 1))
+@test all(round.(Mz_gp_relax, digits = 1) .== round.(Mz_bs_relax, digits = 1))
+
+# -----------------------------------------------------------------------
+# Test Shaped Pulse Dynamics
+# -----------------------------------------------------------------------
+(mag_bs_shape, mag_gp_shape, rf_time_shape) = test_shaped_pulse_dynamics()
+Mx_bs_shape, My_bs_shape, Mz_bs_shape = getproperty.(mag_bs_shape[1], :x), getproperty.(mag_bs_shape[1], :y), getproperty.(mag_bs_shape[1], :z);
+Mx_gp_shape, My_gp_shape, Mz_gp_shape = mag_gp_shape[1][2,:], mag_gp_shape[1][3,:], mag_gp_shape[1][4,:]
+
+# tol = 1e-1  
+# @test all(isapprox.(Mx_gp_shape, Mx_bs_shape, atol = tol))
+# @test all(isapprox.(My_gp_shape, My_bs_shape, atol = tol))
+# @test all(isapprox.(Mz_gp_shape, Mz_bs_shape, atol = tol))  
+
+# @test all(round.(Mx_gp_shape, digits = 3) .== round.(My_bs_shape, digits = 3))
+# @test all(round.(My_gp_shape, digits = 3) .== round.(Mx_bs_shape, digits = 3))
+# @test all(round.(Mz_gp_shape, digits = 3) .== round.(Mz_bs_shape, digits = 3))

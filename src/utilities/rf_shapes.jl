@@ -1,3 +1,9 @@
+
+function create_spline(spline_time::AbstractArray, control_time_vals::AbstractArray, B1_random_vals::AbstractArray)
+    spline = CubicSpline(spline_time, B1_random_vals)
+    return map(control_time -> spline(control_time), control_time_vals)
+end
+
 """
     spline_RF(N::Int, t_c::Float64)
 
@@ -20,30 +26,25 @@ folder name format : yyyy-mm-dd
 """
 function spline_RF(N, t_c, B1ref)
     len = 10
-    time = range(0.0, t_c, length=len)
+    spline_time = range(0.0, t_c, length=len)
+    control_time = range(0.0, t_c, length=N)
+    B1_random_vals = rand(Float64, len)
+
     # B1x
-    field_vals = rand(Float64, len)*B1ref
-    spline = CubicSpline(time, field_vals)
-    t_values = range(0.0, t_c, length=N)
-    spline_vec = [spline(ti) for ti in t_values]
-    B1x = spline_vec'
+    B1x = B1ref*create_spline(spline_time, control_time, B1_random_vals)
+    B1x_mat = reshape(B1x, 1, :)
+
     # B1y
-    field_vals = rand(Float64, len)*B1ref
-    spline = CubicSpline(time, field_vals)
-    t_values = range(0.0, t_c, length=N)
-    spline_vec = [spline(ti) for ti in t_values]
-    B1y = spline_vec'
+    B1y = B1ref*create_spline(spline_time, control_time, B1_random_vals)
+    B1y_mat = reshape(B1y, 1, :)
+
     # Bz
     Bz = zeros(1, N)
-    
-    control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
 
-    # Spline plot 
-    # plot(time, spline[time])
-    # scatter!(time, field_vals)  
-    # plot!(t_values, spline_vec)
-   
-    return control_field
+    # plot(control_time, B1x)
+    # scatter!(spline_time, B1_random_vals)
+
+    return ControlField(B1x_mat, B1y_mat, B1ref, Bz, t_c)
 end
 
 
@@ -68,14 +69,14 @@ folder name format : yyyy-mm-dd
 """
 function hard_RF(N, t_c, B1ref)
     # B1x
-    B1x = B1ref*ones(1, N)
+    B1x = B1ref * ones(1, N)
     # B1y
-    B1y = B1ref*zeros(1, N)
+    B1y = B1ref * zeros(1, N)
     # Bz
     Bz = zeros(1, N)
-    
+
     control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
-   
+
     return control_field
 end
 
@@ -101,25 +102,26 @@ bSSFP(gp_output, folder_path="/path/to/folder")
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-function sinc_RF(N::Int, t_c::Float64; B1ref::Float64=1.0, α = π/2)
-    BW_Hz = 1/t_c
+function sinc_RF(N::Int, t_c::Float64, B1ref::Float64; α=π / 2)
+    BW_Hz = 100.0
     t_array = range(0.0, stop=t_c, length=N)
     t = t_array .- t_c / 2
     rot = rad2deg(α) / 360
     flip = rot / diff(t)[1]
     x = BW_Hz .* t
-    
-    # Generate the B1x component using a sinc function
-    B1x = ((flip .* sinc.(x)) ./ 2π)'
 
-    # Generate the B1y component with a 90-degree phase shift (Hilbert transform)
-    B1y = ((flip .* sinc.(x .+ π/2)) ./ 2π)'
+    # B1x 
+    B1x = (flip .* sinc.(x)) ./ 2π
+    B1x_mat = reshape(B1x, 1, :)
 
-    Bz = zeros(N)
+    # B1y
+    B1y = (flip .* sinc.(x .+ π / 2)) ./ 2π
+    B1y_mat = reshape(B1y, 1, :)
 
-    # Return the ControlField struct 
-    control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
-    return control_field
+    # B1z
+    Bz = zeros(1, N)
+
+    return ControlField(B1x_mat, B1y_mat, B1ref, Bz, t_c)
 end
 
 """
@@ -143,16 +145,20 @@ bSSFP(gp_output, folder_path="/path/to/folder")
 If no path is provided, it saves the files inside the folder where the package was installed
 folder name format : yyyy-mm-dd
 """
-function gaussian_pulse(N::Int, t_c::Float64; B1ref::Float64 = 1000.0)
+function gaussian_RF(N::Int, t_c::Float64, B1ref::Float64)
+    # B1x
+    B1x = B1ref * exp.(-0.5 * ((collect(1:N) .- N / 2) / (N / 10)) .^ 2)
+    B1x_mat = reshape(B1x, 1, :)
 
-    B1x = B1ref * exp.(-0.5 * ((collect(1:N) .- N/2) / (N/10)).^2)
-    B1y = B1ref * exp.(-0.5 * ((collect(1:N) .- N/2) / (N/10)).^2)
-    Bz = zeros(N)
-    
-   # Return the ControlField struct 
-   control_field = ControlField(B1x, B1y, B1ref, Bz, t_c)
-   
-   return control_field
+    # B1y
+    B1y = B1ref * exp.(-0.5 * ((collect(1:N) .- N / 2) / (N / 10)) .^ 2)
+    B1y_mat = reshape(B1y, 1, :)
+
+    # Bz
+    Bz = zeros(1, N)
+
+    return ControlField(B1x_mat, B1y_mat, B1ref, Bz, t_c)
+
 end
 
 
@@ -178,10 +184,10 @@ If no path is provided, it saves the files inside the folder where the package w
 folder name format : yyyy-mm-dd
 """
 function bSSFP_RF(N::Int, nTR::Int, α::Real, TR::Float64)
-    Δt  = TR/N
-    rf0 = (α/2) / (2π*Δt)
-    rf  = α / (2π*Δt)
-    bSSFP_vec = Float64[]  
+    Δt = TR / N
+    rf0 = (α / 2) / (2π * Δt)
+    rf = α / (2π * Δt)
+    bSSFP_vec = Float64[]
 
     for n ∈ 1:nTR
         if n == 1

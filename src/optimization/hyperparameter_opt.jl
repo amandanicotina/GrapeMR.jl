@@ -87,8 +87,8 @@ function bohb_hyperopt(spins::Vector{<:Spins},
             Tc::LinRange, 
             max_iter::Int; 
             i::Int=5, 
-            poly_start::Vector{Float64} = [1e-1, 1e-2], 
-            poly_degree::Vector{Int} = [1, 2, 3], 
+            poly_start::Vector{Float64} = [5e-1, 1e-1, 1e-2], 
+            poly_degree::Vector{Int} = [1, 2], 
             B1ref::Float64 = 1.0) #, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
                     
     Δmax_iter   = Int(ceil(max_iter/3))
@@ -105,8 +105,6 @@ function bohb_hyperopt(spins::Vector{<:Spins},
         end
 
         if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-            print("\n resources: ", i, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
-
             # RFs
             control_field = spline_RF(gp.N, Tc, B1ref);
 
