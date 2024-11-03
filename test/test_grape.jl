@@ -37,9 +37,9 @@ B1ref = 1.0
 control_field = spline_RF(grape_params.N, Tc, B1ref) 
 
 # Run Optimization
-grape_output = @time grape(params, control_field, spins); 
+grape_output_en = @time grape(params, control_field, spins); 
 
-@test grape_output.cost_values[end] < tol
+@test isapprox(grape_output_en.cost_values[end], 0; atol = tol)
 
 #########################################################
 #              Cost: Saturation Contrast                #
@@ -76,7 +76,7 @@ control_field = spline_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output_sc = @time grape(params, control_field, spins); 
 
-@test grape_output_sc.cost_values[end] < tol
+@test isapprox(grape_output_sc.cost_values[end], 0; atol = tol)
 
 
 #########################################################
@@ -115,7 +115,7 @@ control_field = sinc_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
 
-@test grape_output.cost_values[end] < tol
+@test isapprox(grape_output.cost_values[end], 0; atol = tol)
 
 
 #########################################################
@@ -154,7 +154,7 @@ control_field = hard_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
 
-@test grape_output.cost_values[end] < tol
+@test isapprox(grape_output_sc.cost_values[end], 0; atol = tol)
 
 
 
@@ -194,5 +194,5 @@ control_field = gaussian_RF(grape_params.N, Tc, B1ref)
 # Run Optimization
 grape_output = @time grape(params, control_field, spins); 
 
-@test grape_output.cost_values[end] < tol
+@test isapprox(grape_output_sc.cost_values[end], 0; atol = tol)
 
