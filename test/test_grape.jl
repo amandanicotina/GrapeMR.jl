@@ -26,7 +26,7 @@ grape_params = GrapeParams(1500, GrapeMR.euclidean_norm, Dict("B1x" => true, "B1
 Tc = 1.0
 poly_start  = 0.1
 poly_degree = 1.0
-max_iter    = 500
+max_iter    = 1000
 opt_params  = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))
 
 # Parameters 
