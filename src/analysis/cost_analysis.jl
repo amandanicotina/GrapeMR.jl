@@ -12,18 +12,26 @@ Calculates the cost values for a given control field (`control_field`) and spin 
 # Outputs
 - `cost_values::Vector{Float64}`: A vector containing the cost values corresponding to each offset in `B0_values`.
 """
-function cost_offsets(control_field::ControlField, spin_system::Spin, offsets::Vector{Float64}, cost::Symbol)
+function cost_offsets(control_field::ControlField, 
+                    spin_system::Spin, 
+                    offsets::Vector{Float64}, 
+                    cost::Function
+                    )
     ΔB1 = [1.0]
-    spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, ΔB1, [spin_system.target], [spin_system.label])        
+    spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, ΔB1, 
+                            [spin_system.target], [spin_system.label])        
     isochromats = dynamics.(control_field, spins_b0)
+    (cost_profile, _) = cost.(isochromats)  
 
-    cost_terms = cost_function.(isochromats,  cost)  
-    cost_profile = getindex.(cost_terms, 1) 
+    println(cost_profile)
 
     return cost_profile
 end
 
-function cost_offsets(control_field::ControlField, spin_system::SteadyState, offsets::Vector{Float64})
+function cost_offsets(control_field::ControlField, 
+                    spin_system::SteadyState, 
+                    offsets::Vector{Float64}
+                    )
     ΔB1 = [1.0]
     spins_b0 = GrapeMR.SteadyState(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, ΔB1, [spin_system.target], 
                             [spin_system.label], spin_system.α, spin_system.Δϕ, spin_system.TR, spin_system.TE)      
@@ -33,7 +41,7 @@ function cost_offsets(control_field::ControlField, spin_system::SteadyState, off
     cost_terms = cost_function.(isochromats, :spin_target)  
     cost_profile = getindex.(cost_terms, 1) 
 
-    return cost_profile
+    return cost_profile ./ maximum(cost_profile)
 end
 
 
@@ -52,22 +60,35 @@ Generates a cost matrix representing the cost function values across a range of 
 - `cost_matrix::Matrix{Float64}`: A 2D matrix where each element represents the cost value for a particular 
                                         combination of B0 and B1 values. The matrix is normalized by its maximum value.
 """
-function create_cost_matrix(control_field::ControlField, spin_system::Spin, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64}, cost::Symbol)
+function create_cost_matrix(control_field::ControlField, 
+                    spin_system::Spin, 
+                    offsets::Vector{Float64}, 
+                    b1_inhomogeneities::Vector{Float64}, 
+                    cost::Function
+                    )
+
     cost_matrix = Matrix{Float64}(undef, length(b1_inhomogeneities), length(offsets))
 
     for (i, b1) in enumerate(b1_inhomogeneities)
-        spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, b1, [spin_system.target], [spin_system.label])        
+        spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, b1, 
+                                [spin_system.target], [spin_system.label])        
         isochromats = dynamics.(control_field, spins_b0)
 
-        cost_terms = cost_function.(isochromats, cost)  
+        cost_terms = cost.(isochromats)  
         cost_profile = getindex.(cost_terms, 1)  
         cost_matrix[i,:] = cost_profile
     end
 
-    cost_matrix = cost_matrix ./ maximum(cost_matrix)
+    # cost_matrix = cost_matrix ./ maximum(cost_matrix)
     return cost_matrix
 end
-function create_cost_matrix(control_field::ControlField, spin_system::SteadyState, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64}, cost::Symbol)
+function create_cost_matrix(control_field::ControlField, 
+                    spin_system::SteadyState, 
+                    offsets::Vector{Float64}, 
+                    b1_inhomogeneities::Vector{Float64}, 
+                    cost::Function
+                    )
+    
     cost_matrix = Matrix{Float64}(undef, length(b1_inhomogeneities), length(offsets))
 
     for (i, b1) in enumerate(b1_inhomogeneities)
@@ -75,7 +96,7 @@ function create_cost_matrix(control_field::ControlField, spin_system::SteadyStat
                                         [spin_system.label], spin_system.α, spin_system.Δϕ, spin_system.TR, spin_system.TE)     
         isochromats = dynamics.(control_field, spins_b0)
 
-        cost_terms = cost_function.(isochromats, cost)  
+        cost_terms = cost.(isochromats)  
         cost_profile = getindex.(cost_terms, 1)  
         cost_matrix[i,:] = cost_profile
     end
@@ -107,7 +128,7 @@ function plot_cost_offset(cost_profile::Vector{Float64}, offsets::Vector{Float64
              titlefontsize = 12,
              framestyle = :box, 
              grid = false)
-    plot!(p, offsets, cost_profile, label = "min", lw = 2)
+    plot!(p, offsets, cost_profile, label = false, lw = 2)
     return p
 end
 
@@ -150,8 +171,8 @@ Creates a contour plot of the cost function values over the range of B0 and B1 i
 # Outputs
 - `c::Plot`: A contour plot of the cost function map.
 """
-function countour_cost(cost_matrix::Matrix{Float64})
-    contourf(cost_matrix, color=:viridis, framestyle=:box,
+function countour_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64})
+    contourf(cost_matrix, b1_inhomogeneities, cost_matrix, color=:viridis, framestyle=:box,
              guidefontsize = 12, 
              legendfontsize = 10,
              tickfontsize = 10,
@@ -187,22 +208,58 @@ and generates plots to visualize the cost function.
 # Example
 run_cost_analysis(grape_output, 50.0, 30)
 """
-function run_cost_analysis(control_field::ControlField, spin_system::Spins, offset::Float64, b1_inhomogeneity_percent::Int, cost::Symbol)
-# It has to somehow be grape_output because I need the cost func information
-    offsets = collect(-offset:1:offset)
+function run_cost_analysis(control_field::ControlField, 
+                    spin_system::Spins, 
+                    offset::Float64,
+                    b1_inhomogeneity_percent::Int, 
+                    cost::Function
+                    )
+
+    offsets = collect(-offset:0.1:offset)
     b1_variation = b1_inhomogeneity_percent / 100
     b1_range = collect(range(1.0 - b1_variation, 1.0 + b1_variation, length=5))
 
-    cost_profile = cost_offsets(control_field, spin_system, offsets,  cost)
+    cost_profile = cost_offsets(control_field, spin_system, offsets, cost)
     cost_matrix = create_cost_matrix(control_field, spin_system, offsets, b1_range, cost)
 
     p1 = plot_cost_offset(cost_profile, offsets)
     h1 = heatmap_cost(cost_matrix, offsets, b1_range)
-    c1 = countour_cost(cost_matrix)
+    c1 = countour_cost(cost_matrix, offsets, b1_range)
     
     display(p1)
     display(h1)
-    display(c1)
+    # display(c1)
 end
 
-# # run_cost_analysis(grape_output, 50.0, 30)
+
+
+
+
+# using GrapeMR
+# load_folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/2024-11-02/s1_saturation_contrast_min_15Hz"
+# grape_output1 = load_grape_data(load_folder_path);
+
+# M0      = [0.0, 0.0, 1.0]
+# ΔB1     = [1.0]
+# offsets = -500:10:500
+# T1 = [0.6, 0.1]
+# T2 = [0.3, 0.05]
+# label  = ["s1", "s2"]
+# target = ["max", "min"]
+# spins  = Spin(M0, T1, T2, offsets, ΔB1, target, label)
+
+# control_field = spline_RF(1500, 500.0, 1.0) 
+# isos = dynamics.(control_field, spins)
+
+# costs = []
+# for iso in isos
+#     cost_vals = GrapeMR.saturation_contrast(iso)
+#     push!(costs, getindex.(cost_vals, 1))
+# end
+
+# using Plots
+
+# plot(costs)
+# plot_magnetization_control_field(grape_output1.control_field, isos[100:end])
+
+# GrapeMR.saturation_contrast(isos[1])

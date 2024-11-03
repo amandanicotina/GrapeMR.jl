@@ -28,9 +28,8 @@ function Spin(M_ini, T1, T2, B0, B1, targets, labels)
         return _spins
     end
 
-    return vcat(map(vector_spins, zip(T1, T2, targets, labels))...) 
+    return mapreduce(vector_spins, vcat, zip(T1, T2, targets, labels)) 
 end
-
 
 struct SpinRange <: Spins
     M_init::Vector{Float64}
@@ -62,9 +61,7 @@ function SpinRange(M_init, T1, T2, B0inho, B1inho, target, label)
     return spins
 end
 
-
-
-struct Magnetization{M<:AbstractMatrix{Float64}}
+struct Magnetization{T<:Real, M<:Union{AbstractVector{T}, AbstractMatrix{T}}}
     dynamics::M
 end
 
