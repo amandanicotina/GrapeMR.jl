@@ -108,7 +108,7 @@ function test_shaped_pulse_dynamics()
     # Parameters
     max_iter     = 1000; start=1e-1; degree=2; max_iter=max_iter+1
     opt_params   = OptimizationParams(start, degree, Int(ceil(max_iter)))
-    grape_params = GrapeParams(N, GrapeMR.euclidean_norm, [true true false])
+    grape_params = GrapeParams(N, GrapeMR.euclidean_norm, Dict("B1x" => true, "B1y" => true, "Bz" => false))
     params       = Parameters(grape_params, opt_params)
 
     # Initial RF Pulse

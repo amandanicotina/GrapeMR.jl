@@ -8,8 +8,9 @@ using Test, SafeTestsets
 
     @safetestset "Bloch Methods: BlochSim vs GrapeMR" begin include("test_bloch_methods.jl") end
     
-    # @time @safetestset "Hyperparameter Optimization" begin include("optimization/test_optimize.jl") end
+    @safetestset "Hyperparameter Optimization" begin include("optimization/test_optimize.jl") end
     
     # @time @safetestset "Gradient vs Finite Differences" begin include("test_gradients.jl") end
 
+    @safetestset "Tutorial" begin include("../docs/src/tutorial.jl") end
 end

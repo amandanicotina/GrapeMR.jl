@@ -12,7 +12,6 @@ intrinsics = [
 [grape_parameters]
 time_steps      = 1500
 cost_function   = "euclidean_norm"
-# fields2optimize = [true, true, false]
 fields2optimize = {"B1x" = true, "B1y" = true, "Bz" = false}
 
 
@@ -29,6 +28,5 @@ B1ref = 1.0
 [save_files]
 enabled = true
 export_bruker = true
-folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
-bruker_folder_path = "/opt/topspin4.4.0/exp/stan/nmr/lists/wave/user/"
-
+folder_path = "/tmp/"
+bruker_folder_path = "/tmp/"

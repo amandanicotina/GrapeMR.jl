@@ -58,10 +58,10 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             end
 
             # Gradient
-            if gp.fields_opt[1]
+            if gp.fields_opt["B1x"]
                 ∇x .+= gradient(adj, mag, Ix)
-            end
-            if gp.fields_opt[2]
+            end 
+            if gp.fields_opt["B1y"]
                 ∇y .+= gradient(adj, mag, Iy)
             end
         end
@@ -204,11 +204,11 @@ function run_grape_optimization(config_path::String)
     )
 
     # Grape Parameters
-    mask = tm["grape_parameters"]["fields2optimize"]
+    mask_dict = Dict(k => Bool(v) for (k,v) ∈ tm["grape_parameters"]["fields2optimize"])
     grape_params = GrapeParams(
         tm["grape_parameters"]["time_steps"],
         eval(Symbol(tm["grape_parameters"]["cost_function"])),
-        reshape(mask, 1, length(mask))  # we need a 1x3 Matrix{Bool} instead of a Vector{Bool}
+        mask_dict
     )
 
     # Optimization Parameters
@@ -237,7 +237,7 @@ function run_grape_optimization(config_path::String)
     params = Parameters(grape_params, opt_params)
 
     # Run Optimization
-    grape_output = @time grape_const_epsilon(params, control_field, spins)
+    grape_output = grape(params, control_field, spins)
 
     # Save data
     if tm["save_files"]["enabled"]
@@ -261,25 +261,5 @@ function run_grape_optimization(config_path::String)
         display(plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats))
         plot_control_fields(grape_output.control_field; unit="Hz")
         plot_magnetization_time(grape_output.isochromats[1], grape_output.control_field.t_control)
-        # plot_transverse_time(grape_output.isochromats, grape_output.control_field.t_control)
-        # plot_transverse_magnetization(grape_output.isochromats)
     end
-
-
-    # spins = GrapeMR.Spin(
-    #     tm["spins"]["M0"],
-    #     [1e8, 1e8],
-    #     [1e8, 1e8],
-    #     offsets, tm["spins"]["delta_B1"],
-    #     [s["target"] for s in tm["spins"]["intrinsics"]],
-    #     [s["label"] for s in tm["spins"]["intrinsics"]]
-    # )
-
-    # cf = grape_output.control_field
-
-    # iso_noRelax = dynamics.(cf, spins)
-    # plot_magnetization_control_field(grape_output.control_field, iso_noRelax)
-    # plot_transverse_time(iso_noRelax, grape_output.control_field.t_control)
-    # plot_transverse_magnetization(iso_noRelax)
-
 end

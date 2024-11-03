@@ -5,7 +5,7 @@ using GrapeMR
 N   = 2000;
 t_c = 0.5; #[s]
 cost_func = :saturation_contrast
-grape_params = GrapeParams(N, cost_func, [true true false])
+grape_params = GrapeParams(N, cost_func, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Spin
 M0  = [0.0, 0.0, 1.0];
