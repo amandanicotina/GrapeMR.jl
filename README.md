@@ -1,4 +1,4 @@
-![Grape Logo](./docs/src/assets/logo.png)
+![Grape Logo](./docs/src/assets/logo_full.png)
 # GrapeMR
  GrapeMR.jl is a Julia package that numerically designes pulse sequences for NMR/MRI applications. By defining a cost funciton, the algorithm calculates step-by-step what is the best pulse sequence for a specific problem.
 
