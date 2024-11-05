@@ -56,14 +56,14 @@ function save_grape_data(go::GrapeOutput; folder_path = pwd())
     file_path = create_folder(joinpath(full_folder_path, opt_folder))
 
     try
-        go_dicts = grape_output_to_dict(go)
+        # go_dicts = grape_output_to_dict(go)
         save_grape_output(go, file_path)
 
         # Save the GRAPE data as CSV files
-        (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
-        CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
-        CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
-        CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
+        # (df_cost, df_control, df_spins) = gp_dicts_to_data_frame(go_dicts)
+        # CSV.write(joinpath(file_path, "dict_cost_values.csv"), df_cost)
+        # CSV.write(joinpath(file_path, "dict_control_field.csv"), df_control)
+        # CSV.write(joinpath(file_path, "dict_iso_spins.csv"), df_spins)
 
         return file_path
     catch 

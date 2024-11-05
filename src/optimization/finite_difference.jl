@@ -1,25 +1,25 @@
 #### Finite Difference ####
 function finite_difference_cost(cost::Function, iso::Isochromat, ΔM::Float64)
     # Make a copy of the variable values to avoid modifying the original
-    spin        = iso.spin
-    iso_vals    = iso
-    M_perturbed = copy(iso.magnetization.dynamics[:,end])
+    spin = iso.spin
+    iso_vals = iso
+    M_perturbed = copy(iso.magnetization.dynamics[:, end])
 
     # Initialize an array to store finite differences for each variable
     finite_diffs = zeros(Float64, 3, 1)
     for i ∈ 1:3
-        M_perturbed[i+1,end] = M_perturbed[i+1,end] + ΔM
+        M_perturbed[i+1, end] = M_perturbed[i+1, end] + ΔM
         dyn_perturbed = Magnetization(M_perturbed)
         iso_perturbed = Isochromat(dyn_perturbed, spin)
 
         # Calculate the finite difference for the current variable
         (cost_pert, grad) = cost(iso_perturbed)
         (cost_vals, grad) = cost(iso_vals)
-        finite_diffs[i,1] = (cost_pert - cost_vals) / ΔM
-        
+        finite_diffs[i, 1] = (cost_pert - cost_vals) / ΔM
+
         # Reset the perturbed value for the next iteration
-        M_perturbed[i+1,end] = M_perturbed[i+1,end] - ΔM 
-    
+        M_perturbed[i+1, end] = M_perturbed[i+1, end] - ΔM
+
     end
     return finite_diffs
 end
@@ -35,7 +35,7 @@ function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spins, Δ
         if field == "B1x"
             # Perturb B1x field
             perturbed_cf_pos = ControlField(copy(perturbation), cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
-            perturbation[1, index] -= 2 * Δcf  
+            perturbation[1, index] -= 2 * Δcf
             perturbed_cf_neg = ControlField(copy(perturbation), cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
         elseif field == "B1y"
             # Perturb B1y field
@@ -45,13 +45,13 @@ function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spins, Δ
         else
             error("Parameter not defined. Acceptable inputs are \"B1x\" or \"B1y\"")
         end
-        
+
         # Dynamics with positive perturbation
         iso_pos = dynamics(perturbed_cf_pos, spin)
-        
+
         # Dynamics with negative perturbation
         iso_neg = dynamics(perturbed_cf_neg, spin)
-        
+
         # Central difference formula
         return (cost_function(iso_pos, cost)[1] - cost_function(iso_neg, cost)[1]) / (2 * Δcf)
     end

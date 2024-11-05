@@ -45,7 +45,6 @@ include("optimization/finite_difference.jl")
 
 include("utilities/save_data.jl")
 include("utilities/export_bruker.jl")
-include("utilities/rf_shapes.jl")
 
 include("plots/plots_bohb.jl")
 include("plots/plots_control_field.jl")
@@ -58,35 +57,38 @@ export ControlField
 export OptimizationParams, GrapeParams, Parameters, GrapeOutput
 export Spins, Spin, SpinRange, Magnetization, Isochromat
 
-# bSSFP
-export SteadyState, SteadyStateData
-export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
-export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
-
-# Analysis
-export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
-export run_cost_analysis, RF_pulse_analysis
-
 # Grape 
+export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 export grape, dynamics, run_grape_optimization
 export backward_propagation, backward_propagation!, forward_propagation, test_forward_propagation
 export random_hyperopt, bohb_hyperopt, hyperband_hyperopt
 export finite_difference_cost, finite_difference_field
 
-# Save/load/export files
+# Save/load/export Files
 export save_grape_data, save_hyperopt_data, load_grape_data, load_hyperopt_data
 export export_bruker
-export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
 # Plots
 export plot_cost_values, plot_magnetization_control_field
 export plot_control_fields, plot_control_fields_phase_shift
-export plot_magnetization_time, plot_magnetization_2D, plot_magnetization_3D
+
+export plot_transverse_magnetization, plot_magnetization_2D, plot_magnetization_3D
+export plot_magnetization_time, plot_transverse_time, plot_longitudinal_time
+
+export plot_evaluations, plot_bohb
+
+# bSSFP Module #
+export SteadyState, SteadyStateData
+export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
+export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
 export plot_magnetization_target, plot_magnetization_target_3D
 export plot_magnetization_targetB0, plot_Mtrans_offset_ss
-export plot_transverse_magnetization, plot_transverse_time, plot_longitudinal_time
-export plot_evaluations, plot_bohb
+
+# Analysis Module #
+export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
+export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
+export run_cost_analysis, RF_pulse_analysis
+
 
 
 function julia_main()::Cint

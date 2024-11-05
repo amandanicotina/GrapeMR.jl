@@ -155,10 +155,10 @@ function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     p = initialize_plot("Cost Function Convergence", "Iterations", "Cost Value")
     
     # Plot the cost values over iterations
-    plot!(p, iter, cost, label = string(gp.cost_function), lw = 2, color = colors[2])
+    plot!(p, iter, cost, label = string(gp.cost_function), lw = 2.5, color = colors[2])
     
     # Highlight the final cost value with a scatter point
-    scatter!(p, [iter[end]], [cost[end]], color = colors[2], markersize = 4, label = "Final Cost = $cmin")
+    scatter!(p, [iter[end]], [cost[end]], color = colors[2], markersize = 7, label = "Final Cost = $cmin")
 
     return p
 end

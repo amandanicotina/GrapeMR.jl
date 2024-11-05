@@ -1,6 +1,22 @@
 using Printf
 
-function export_bruker(go::GrapeMR.GrapeOutput; folder_path = pwd()) # Add file_path as keyword argument
+"""
+    export_bruker(go::GrapeOutput; folder_path = pwd())
+
+Exports the GRAPE optimization results to a Bruker-compatible `.exc` file format for use in TopSpin software.
+
+# Arguments
+- `go::GrapeOutput`: The output struct from GRAPE optimization containing control field data.
+- `folder_path::String=pwd()`: The directory path where the `.exc` file will be saved. Defaults to the current working directory.
+
+# File Structure
+- The generated file includes metadata such as date, time, amplitude, and phase ranges.
+- Amplitude and phase data points are formatted for compatibility with Bruker TopSpin.
+
+# Outputs
+- Saves a `.exc` file named based on the GRAPE output and current configuration in the specified folder.
+"""
+function export_bruker(go::GrapeMR.GrapeOutput; folder_path=pwd()) # Add file_path as keyword argument
     # Get control field data
     (amplitudes, phases) = bruker_normalized_amplitudes_and_phases(go.control_field)
 
@@ -45,11 +61,11 @@ function export_bruker(go::GrapeMR.GrapeOutput; folder_path = pwd()) # Add file_
     amplitudes_and_phases_list = [(@sprintf "%e" amplitude) * ", " * (@sprintf "%e" phase) for (amplitude, phase) in zip(amplitudes, phases)]
 
     # File content
-    content = header * join(amplitudes_and_phases_list, "\n")  * "\n ##END"
+    content = header * join(amplitudes_and_phases_list, "\n") * "\n ##END"
 
     # File path and name
-    file_name   = file_name_string(go) * ".exc"
-    file_path   = folder_path * file_name
+    file_name = file_name_string(go) * ".exc"
+    file_path = folder_path * file_name
     println(file_path)
 
 
@@ -61,3 +77,5 @@ function export_bruker(go::GrapeMR.GrapeOutput; folder_path = pwd()) # Add file_
 end
 
 
+# TODO export .dat file
+# TODO export .CSV file
