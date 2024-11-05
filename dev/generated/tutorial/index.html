@@ -25,44 +25,54 @@ spins = Spin(M0, T1, T2, offset, ΔB1, target, label)</code></pre><pre class="do
 Tc, poly_start, poly_degree = 0.836, 0.1, 1
 opt_params = OptimizationParams(poly_start, poly_degree, Int(ceil(max_iter)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">OptimizationParams(0.1, 1, 2000)</code></pre><p>Grape Parameters</p><pre><code class="language-julia hljs">grape_params = GrapeParams(1500, GrapeMR.saturation_contrast_Mx, Dict(&quot;B1x&quot; =&gt; true, &quot;B1y&quot; =&gt; true, &quot;Bz&quot; =&gt; false))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">GrapeParams{typeof(GrapeMR.saturation_contrast_Mx)}(1500, GrapeMR.saturation_contrast_Mx, Dict{String, Bool}(&quot;B1y&quot; =&gt; 1, &quot;B1x&quot; =&gt; 1, &quot;Bz&quot; =&gt; 0))</code></pre><p>RF</p><pre><code class="language-julia hljs">N = 1500
 B1ref = 1.0
-control_field = spline_RF(N, Tc, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([0.04551455089534351 0.044376294422077384 … 0.15695247590530167 0.15983157814565654], [0.04551455089534351 0.044376294422077384 … 0.15695247590530167 0.15983157814565654], 1.0, [0.0 0.0 … 0.0 0.0], 0.836)</code></pre><p>Run Optimization</p><pre><code class="language-julia hljs">params = Parameters(grape_params, opt_params)
-grape_output = grape(params, control_field, spins);</code></pre><h1 id="Plots"><a class="docs-heading-anchor" href="#Plots">Plots</a><a id="Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Plots" title="Permalink"></a></h1><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">              ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+control_field = spline_RF(N, Tc, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([0.47037529802378686 0.4660331443380789 … 0.7524673438330628 0.7525251378525826], [0.47037529802378686 0.4660331443380789 … 0.7524673438330628 0.7525251378525826], 1.0, [0.0 0.0 … 0.0 0.0], 0.836)</code></pre><p>Run Optimization</p><pre><code class="language-julia hljs">params = Parameters(grape_params, opt_params)
+grape_output = grape(params, control_field, spins);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+ Final Cost Function Value = 0.303
+
+---------- RF Analysis ----------
+
+Pulse Peak Amplitude = 10.2937 [Hz]
+Pulse Peak Amplitude = 0.2418 [μT]
+Attenuation corresponding to maximum amplitude: 28.3929 [dB]
+Maximum power = 19.025 [W]
+Average power = 0.5697 [W]
+Pulse energy = 0.4763 [J]</code></pre><h1 id="Plots"><a class="docs-heading-anchor" href="#Plots">Plots</a><a id="Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Plots" title="Permalink"></a></h1><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">             ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  
+             ┌────────────────────────────────────────┐  
+     10.4697 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
+     Bx [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢸⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀│  
+             │⠀⠀⠀⠀⠀⠀⠀⠀⢀⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀│  
+             │⠀⠀⠀⣰⢦⢠⠟⠦⠞⠸⡀⠀⡰⢢⣠⠞⣆⡼⢱⠀⠀⢠⢦⢀⡤⡄⢠⢤⠀⠀⢀⡀⠀⣀⠀⡖⡆⡇⢸⠀│  
+             │⠀⡇⠀⡇⠈⠉⠀⠀⠀⠀⡇⢀⡇⠀⠀⠀⠀⠀⠈⡇⠀⡇⠈⠉⠀⠉⠁⠘⡆⠀⡞⠙⠚⠉⠛⠁⠙⠀⢸⠀│  
+             │⠀⢳⢸⠁⠀⠀⠀⠀⠀⠀⢹⢸⠀⠀⠀⠀⠀⠀⠀⢣⢸⠁⠀⠀⠀⠀⠀⠀⢧⢰⠃⠀⠀⠀⠀⠀⠀⠀⢸⠀│  
+    -1.95817 │⠀⠘⠞⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠘⠊⠀⠀⠀⠀⠀⠀⠀⠘⠞⠀⠀⠀⠀⠀⠀⠀⠀⠘⠀│  
+             └────────────────────────────────────────┘  
+             ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀  
               ┌────────────────────────────────────────┐ 
-    0.0551369 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠖⣄⠀⠀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠏⠀⠘⠦⠞⠁⠀⠈⢳⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢤⡀⠀⠀⠀⠀⠀⢠⡄⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⣆⠀⠀⠀⠀⠀⠀⣰⠃⠀⠓⠒⢆⠀⠀⠀⡼⡇⠀│ 
-              │⠀⢠⠟⣆⠀⣠⠴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠦⠖⢦⣀⣠⠴⠃⠀⠀⠀⠀⠈⠛⠉⣆⡇⡇⠀│ 
-              │⠀⢸⠀⠈⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢱⠀│ 
-              │⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-      Bx [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
+      3.75015 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀│ 
               │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
               │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
               │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│ 
-      -0.2518 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡎⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⡇⠀│ 
+      By [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠁⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠞⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⠀⠀⢰⠒⠦⠴⢤⣀⠀⠀⠀⣰⠛⠦⠤⣄⠀⠀⠀⠀⣰⠛⠲⠋⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⣰⠋⠛⠁⠀⠀⠸⡄⢀⡏⠀⠀⠀⠀⠈⠳⡀⢀⠇⠀⠀⠀⠈⠙⢲⡀⢀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⣇⢀⡇⠀⠀⠀⠀⠀⠀⠹⠼⠀⠀⠀⠀⠀⠀⠀⠳⠜⠀⠀⠀⠀⠀⠀⠀⠳⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+    -0.674916 │⠀⠸⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
               └────────────────────────────────────────┘ 
-              ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀ 
-            ┌────────────────────────────────────────┐   
-    24.4877 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀│   
-    By [Hz] │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│   
-            │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀│   
-            │⠀⡀⠀⠀⣀⠀⢀⡀⠀⣀⡀⠀⠀⣀⠀⢀⡀⠀⣀⡀⠀⠀⣀⠀⠀⠀⠀⣀⡀⠀⠀⣀⠀⢀⡀⠀⣤⠀⡇⠀│   
-            │⠀⢳⠀⡼⠉⠓⠋⠙⠚⠁⢳⡀⡼⠉⠓⠋⠙⠚⠁⢹⡀⡼⠉⠓⠋⠙⠒⠃⢹⡀⡼⠉⠓⠋⠙⠚⠈⣦⠃⠀│   
-    -3.3712 │⠀⠈⠷⠃⠀⠀⠀⠀⠀⠀⠀⠓⠃⠀⠀⠀⠀⠀⠀⠀⠛⠁⠀⠀⠀⠀⠀⠀⠀⠉⠁⠀⠀⠀⠀⠀⠀⠛⠀⠀│   
-            └────────────────────────────────────────┘   
-            ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀</code></pre><p>The Spin struct:</p><pre><code class="language-julia hljs">[(k, v) for (k, v) in zip(fieldnames(GrapeMR.Spin), fieldtypes(GrapeMR.Spin))]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8-element Vector{Tuple{Symbol, DataType}}:
+              ⠀-0.02508⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.86108⠀</code></pre><p>The Spin struct:</p><pre><code class="language-julia hljs">[(k, v) for (k, v) in zip(fieldnames(GrapeMR.Spin), fieldtypes(GrapeMR.Spin))]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">8-element Vector{Tuple{Symbol, DataType}}:
  (:M_init, Vector{Float64})
  (:T1, Float64)
  (:T2, Float64)
@@ -70,4 +80,4 @@ grape_output = grape(params, control_field, spins);</code></pre><h1 id="Plots"><
  (:B1inho, Float64)
  (:target, String)
  (:label, String)
- (:Nspins, Float64)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Introduction</a><a class="docs-footer-nextpage" href="../../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 5 November 2024 07:58">Tuesday 5 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (:Nspins, Float64)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Introduction</a><a class="docs-footer-nextpage" href="../../api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 5 November 2024 20:51">Tuesday 5 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
