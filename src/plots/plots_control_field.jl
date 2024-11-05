@@ -13,21 +13,6 @@ Plot the control fields of an RF pulse in different units.
 # Returns
 - A plot object displaying the control fields in the specified units with amplitude and phase information.
 """
-"""
-    plot_control_fields(cf::ControlField; unit::String = "Hz")
-
-Plot the control fields of an RF pulse in different units.
-
-# Arguments
-- `cf::ControlField`: The control field object containing the RF waveform data (`B1x`, `B1y` components).
-- `unit::String`: The unit for the plot. Supported units are:
-    - `"Hz"`: Plots `B1x` and `B1y` in Hertz.
-    - `"rad/s"`: Converts the control fields to radians per second and plots the amplitude and phase.
-    - `"Tesla"`: Converts the control fields to Tesla using the gyromagnetic ratio for ¹H and plots in microtesla (µT).
-
-# Returns
-- A plot object displaying the control fields in the specified units with amplitude and phase information.
-"""
 function plot_control_fields(cf::ControlField; unit::String = "Hz")
     colors = color_palette(10)
     time = range(0.0, cf.t_control, length = length(cf.B1x))
