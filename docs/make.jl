@@ -6,6 +6,7 @@ pages = [
   "Home" => "index.md",
   "Theoretical Background" => "pages/theory.md",
   "Tutorial" => "generated/tutorial.md",
+  "Developing" => "pages/developing.md",
   "API" => "pages/api.md",
   "References" => "pages/references.md",
 ]
