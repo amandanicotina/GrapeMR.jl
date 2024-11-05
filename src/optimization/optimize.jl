@@ -79,15 +79,9 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     grape_output.control_field.B1y .= u1y
 
     # Print Infos
-<<<<<<< Updated upstream
-    final_cost = round(grape_output.cost_values[end], digits=3)
-    # println("\n Final Cost Function Value = $final_cost \n")
-    # RF_pulse_analysis(grape_output.control_field)
-=======
     final_cost = round(grape_output.cost_values[end], digits=4)
     println("\n Final cost value = $final_cost \n")
     RF_pulse_analysis(grape_output.control_field)
->>>>>>> Stashed changes
 
     return grape_output
 end
