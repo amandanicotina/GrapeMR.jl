@@ -40,6 +40,7 @@ function plot_control_fields(cf::ControlField; unit::String="Hz")
         error("Invalid unit. Supported units are 'Hz', 'rad/s', and 'Tesla'.")
     end
 
+<<<<<<< Updated upstream
 
     p_Bx = plot(time, Bx, color=colors[3], lw=2, label=false, ylabel=ylabel_B1, title="Control Fields", titlefontsize=15)
     p_By = plot(time, By, color=colors[3], lw=2, label=false, ylabel=ylabel_phase, xlabel="t [s]")
@@ -52,6 +53,14 @@ function plot_control_fields(cf::ControlField; unit::String="Hz")
         titlefontsize=14,
         framestyle=:box,
         grid=false)
+=======
+    # Use initialize_plot to set up plots for each component
+    p_Bx = initialize_plot("Control Fields", "t [s]", ylabel_B1)
+    plot!(p_Bx, time, Bx, color = colors[1], lw = 2, label = false)
+
+    p_By = initialize_plot("", "t [s]", ylabel_phase)
+    plot!(p_By, time, By, color = colors[1], lw = 2, label = false)
+>>>>>>> Stashed changes
 
     return p
 end
@@ -114,6 +123,7 @@ Plot the magnetization trajectory for a set of isochromats and the corresponding
 """
 function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochromat}) 
     colors = color_palette(10)
+<<<<<<< Updated upstream
     max_label_plotted = false
     min_label_plotted = false
     pMag = plot(title="Magnetization Trajectory",
@@ -123,6 +133,14 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
         xlabel="Transverse",
         ylabel="Longitudinal",
         framestyle=:box)
+=======
+    labels_shown = Set()
+
+    # Initialize magnetization trajectory plot
+    pMag = initialize_plot("Magnetization Trajectory", "Transverse", "Longitudinal")
+    xlims!(-0.01, 1.01)
+    ylims!(-1.015, 1.02)
+>>>>>>> Stashed changes
 
     for iso ∈ isos
         m = iso.magnetization.dynamics
@@ -134,6 +152,7 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
             scatter!(pMag, [Mxy[end]], [m[4, end]], label=false, color=colors[2], markersize=4)
             max_label_plotted = true
 
+<<<<<<< Updated upstream
         elseif s.target == "min"
             plot!(pMag, Mxy, m[4, :],
                 label=min_label_plotted ? false : "$(s.target) - $(s.label)", color=colors[9], lw=2)
@@ -145,6 +164,13 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
             scatter!(pMag, [Mxy[end]], [m[4, end]], label=false, color=colors[10], markersize=5)
             min_label_plotted = true
         end
+=======
+        # Plot trajectory and final point
+        plot!(pMag, Mxy, Mz, label = s.target ∈ labels_shown ? false : label, color = color, lw = 2.5)
+        scatter!(pMag, [Mxy[end]], [Mz[end]], label = false, color = color, markersize = 5)
+        push!(labels_shown, s.target)
+
+>>>>>>> Stashed changes
     end
 
     time = range(0.0, cf.t_control, length=length(cf.B1x)) * 1e3
@@ -184,6 +210,7 @@ Plot the cost function convergence over iterations during the GRAPE optimization
 """
 function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     colors = color_palette(10)
+<<<<<<< Updated upstream
     cmin = round(cost[end], digits=3)
     iter = range(0.0, stop=length(cost), length=length(cost))
     p = plot(iter, cost, label=string(gp.cost_function), lw=2, color=colors[2],
@@ -199,6 +226,19 @@ function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
         grid=false)
     scatter!([iter[end]], [cost[end]], color=colors[2], markersize=5, label="Final Cost = $cmin")
 
+=======
+    cmin = round(cost[end], digits = 4)
+    iter = range(0, stop = length(cost), length = length(cost))
+    
+    # Initialize the plot using the helper function
+    p = initialize_plot("Cost Function Convergence", "Iterations", "Cost Value")
+    
+    # Plot the cost values over iterations
+    plot!(p, iter, cost, label = string(gp.cost_function), lw = 2.5, color = colors[2])
+    
+    # Highlight the final cost value with a scatter point
+    scatter!(p, [iter[end]], [cost[end]], color = colors[2], markersize = 7, label = "Final Cost = $cmin")
+>>>>>>> Stashed changes
 
     return p
 end

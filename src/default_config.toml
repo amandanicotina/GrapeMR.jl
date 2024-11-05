@@ -2,31 +2,29 @@ title = "GrapeMR Configuration"
 plot = true
 
 [spins]
-M0         = [0.0, 0.0, 1.0]
-delta_B1   = [1.0]
-offset     = 0.0
-intrinsics = [
-    {T1 = 0.6, T2 = 0.3, label = "s1", target = "Center of Bloch's Ball"},
-]
+M0 = [0.0, 0.0, 1.0]
+delta_B1 = [1.0]
+offset = 0.0
+intrinsics = [{ T1 = 0.6, T2 = 0.3, label = "s1", target = "" }]
 
 [grape_parameters]
-time_steps      = 1500
-cost_function   = "euclidean_norm"
-fields2optimize = {"B1x" = true, "B1y" = true, "Bz" = false}
+time_steps = 2000
+cost_function = "euclidean_norm"
+fields2optimize = { "B1x" = true, "B1y" = true, "Bz" = false }
 
 
 [optimization_parameters]
-hyper_opt    = false
-poly_start   = 0.1
-poly_degree  = 1.0
-max_iter     = 5000
+hyper_opt = false
+poly_start = 0.1
+poly_degree = 1
+max_iter = 150
 
 [control_field]
 control_time = 0.5
 B1ref = 1.0
 
 [save_files]
-enabled = true
-export_bruker = true
+enabled = false
+export_bruker = false
 folder_path = "/tmp/"
 bruker_folder_path = "/tmp/"
