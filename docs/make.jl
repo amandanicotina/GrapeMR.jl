@@ -3,10 +3,13 @@ using Documenter, DocumenterCitations, Literate, GrapeMR
 Literate.markdown("./docs/src/tutorial.jl", "./docs/src/generated"; mdstrings=true)
 
 pages = [
-  "Introduction" => "index.md",
+  "Home" => "index.md",
+  "Theoretical Background" => "pages/theory.md",
   "Tutorial" => "generated/tutorial.md",
-  "API" => "api.md",
-  "References" => "references.md",
+  "Developing" => "pages/developing.md",
+  "API" => "pages/api.md",
+  # TODO: re-enable after adding references to docstrings and docs
+  #"References" => "pages/references.md",
 ]
 
 bib = CitationBibliography(

@@ -251,9 +251,8 @@ function run_grape_optimization(config_path::String)
     if tm["plot"]
         # Plots
         display(plot_cost_values(grape_output.cost_values, grape_params))
-        plot_magnetization_2D(grape_output.isochromats)
         display(plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats))
-        plot_control_fields(grape_output.control_field; unit="Hz")
-        plot_magnetization_time(grape_output.isochromats[1], grape_output.control_field.t_control)
+        display(plot_magnetization_time(grape_output.isochromats[1], grape_output.control_field.t_control))
+        # TODO add if s[t1] > 2 plot(iso[end]) to get time dynamics of the second spin
     end
 end

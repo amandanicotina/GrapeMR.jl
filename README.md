@@ -2,59 +2,11 @@
 # GrapeMR
  GrapeMR.jl is a Julia package that numerically designes pulse sequences for NMR/MRI applications. By defining a cost funciton, the algorithm calculates step-by-step what is the best pulse sequence for a specific problem.
 
-
-## Getting Started
-
-```bash
-$ julia
-julia>] activate .
-(GrapeMR) pkg> instantiate
-julia>exit()
-$ cd docs && julia --project make.jl
-$ open build/index.html
-```
-
 ## Documentation
 
-You can either access the latest documentation or preview on [GrapeMR's Github Pages](https://amandanicotina.github.io/GrapeMR.jl/dev/) or build it locally as shown above.
-Additionally, and especially useful for iterating on the documentation itself, you can serve docs live with file watching using:
+You can access the latest documentation on [GrapeMR's Github Pages](https://amandanicotina.github.io/GrapeMR.jl/dev/) where you'll find an introduction, a brief tutorial, API documentation, and details on how to develop on the package.
 
-```bash
-$ julia --project=docs -e 'using GrapeMR, LiveServer; ENV["DEV"]=true; servedocs(skip_dirs=["docs/src/generated"])'
-```
+## Compatibility
 
-## Test Coverage
-
-In your global julia installation, ensure you have `TestTools` installed.
-
-```julia
-using Pkg
-Pkg.add("TestTools")
-using TestTools; TestTools.install()
-```
-
-then add `export PATH="$PATH:/Users/daviddodel/.julia/bin"` to your `~/.zshrc` or equivalent shell configuration file.
-
-Note: You might need to restart the julia language server and VSCode to pick up the changes in the shell environment.
-
-### Local Coverage Report
-
-```julia
-using Pkg; Pkg.test("GrapeMR"; coverage=true)
-;jlcoverage
-# Optional: Clean up all .cov files
-using Coverage; Coverage.clean_folder(".");
-```
-
-### VSCode
-
-You might want to consider installing the [Coverage Gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters) extension to enable visual cues inside the code editor.
-
-To this end, you'll need to generate an `lcov.info` in your root directory:
-
-```julia
-using Pkg; Pkg.test("GrapeMR"; coverage=true)
-using Coverage; LCOV.writefile("lcov.info", process_folder())
-```
-
-Go to the Command Palette: `Coverage Gutters: Watch`
+The package is tested on Julia 1.9.4 and 1.11.2 on Linux (amd64), MacOS (amd64, arm64), and Windows (amd64).
+Other julia versions may work, but are not tested. Other platforms are not supported.
