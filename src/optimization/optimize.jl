@@ -1,46 +1,50 @@
 const wandb_project::String = "GrapeMR"
 Base.broadcastable(cf::ControlField) = Ref(cf)
 
-struct GrapeOutput{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}, F}
+"""
+    GrapeOutput{T, M1, Mz, F}
+
+Stores the output of GRAPE optimization.
+
+# Fields
+- `isochromats::Vector{Isochromat}`: Vector of isochromats containing the spin dynamics.
+- `control_field::ControlField{T, M1, Mz}`: Optimized control field after GRAPE optimization.
+- `cost_values::Vector{Float64}`: Sequence of cost function values at each iteration.
+- `params::Parameters{F}`: Struct containing GRAPE parameters and optimization parameters.
+"""
+struct GrapeOutput{T<:Real,M1<:AbstractMatrix{T},Mz<:AbstractMatrix{T},F}
     isochromats::Vector{Isochromat}
-    control_field::ControlField{T, M1, Mz}
+    control_field::ControlField{T,M1,Mz}
     cost_values::Vector{Float64}
-    epsilons::Vector{Float64}
     params::Parameters{F}
 end
-
-
 
 """
     grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
 
-Implements the grape algorithm [khaneja2005optimal](@cite) 
+Executes the GRAPE algorithm to optimize control fields for spin dynamics in an NMR/MRI system.
 
 # Arguments
-- `op::OptimizationParams`: Parameters for the optimization itself: max iterations, 
-- `gp::GrapeParams`: Parameters related to Grape itself: time points, cost function, mask for which fields are being optimized.
-- `cf::ControlField`: Initial control field - spline function -
-- `spins::Vector{<:Spins}`: Vector with all spins included in the optimization
+- `p::Parameters`: Struct containing optimization parameters, including maximum iterations and cost function.
+- `cf::ControlField`: Initial control field, typically as a spline function.
+- `spins::Vector{<:Spins}`: Vector of spins included in the optimization process.
 
-# Outputs
-A scruct cointaing all optimization results:
-- `grape_output::GrapeOutput': Data type with the optimized control fields, spin information and spin dynamics.
+# Returns
+- `grape_output::GrapeOutput`: Struct containing optimization results, including optimized control fields, spin dynamics, and cost function values.
 """
 function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
     op, gp = p.opt_params, p.grape_params
     lr_scheduler = Poly(start=op.poly_start, degree=op.poly_degree, max_iter=op.max_iter + 1)
     cost_vals = zeros(eltype(cf.B1x), op.max_iter, 1)[:]
-    epsilons = zeros(Float64, op.max_iter, 1)[:]
     u1x = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
     u1y = Matrix{eltype(cf.B1x)}(undef, 1, size(cf.B1x, 2))
-    grape_output = GrapeOutput(Vector{Isochromat}(), deepcopy(cf), cost_vals, epsilons, p)
+    grape_output = GrapeOutput(Vector{Isochromat}(), deepcopy(cf), cost_vals, p)
     ∇x = zeros(eltype(cf.B1x), 1, gp.N)
     ∇y = zeros(eltype(cf.B1x), 1, gp.N)
     mag, adj = zeros(Float64, 4, gp.N + 1), zeros(Float64, 4, gp.N + 1)
 
     for (ϵ, i) ∈ zip(lr_scheduler, 1:op.max_iter)
         # ϵ   = max(ϵ, eps)
-        grape_output.epsilons[i] = ϵ
         fill!(∇x, 0.0)
         fill!(∇y, 0.0)
 
@@ -51,7 +55,7 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             cost_vars = gp.cost_function(iso)
             # Cost Variables
             cost, adj_ini = cost_vars
-            grape_output.cost_values[i,1] += cost
+            grape_output.cost_values[i, 1] += cost
             # Adjoint Propagation
             adj = backward_propagation(adj_ini, cf, iso)
 
@@ -63,7 +67,7 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             # Gradient
             if gp.fields_opt["B1x"]
                 ∇x .+= gradient(adj, mag, Ix)
-            end 
+            end
             if gp.fields_opt["B1y"]
                 ∇y .+= gradient(adj, mag, Iy)
             end
@@ -80,24 +84,24 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
 
     # Print Infos
     final_cost = round(grape_output.cost_values[end], digits=3)
-    # println("\n Final Cost Function Value = $final_cost \n")
-    # RF_pulse_analysis(grape_output.control_field)
+    println("\n Final Cost Function Value = $final_cost \n")
+    RF_pulse_analysis(grape_output.control_field)
 
     return grape_output
 end
 
 
 """
-    dynamics(cf::ControlField, spins::Spin)
+    dynamics(cf::ControlField, spin::Spins)
 
-Function that returns the Isochromat object with the already calculated dynamics.
+Calculates and returns the `Isochromat` object representing the spin dynamics under a given control field.
 
-    # Input  
-    - cf::ControlField - Adjoint State
-    - spins::Spin
+# Arguments
+- `cf::ControlField`: Control field affecting the spin dynamics.
+- `spin::Spin`: Spin object for which dynamics are computed.
 
-    # Output
-    - iso::Isochromat
+# Returns
+- `iso::Isochromat`: Isochromat containing the calculated magnetization dynamics.
 """
 function dynamics(cf::ControlField, spin::Spins)
     mag = forward_propagation(cf, spin)
@@ -108,50 +112,43 @@ end
 
 
 """
-    gradient!(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
+    gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
 
-# Arguments  
-- χ = (::Matrix{Float64}) - Adjoint State
-- M = (::Matrix{Float64}) - Forward Propagation
-- H = (::Matrix) - Hamiltonian
+Calculates the gradient of the cost function with respect to the Hamiltonian for each time step.
 
-# Outputs
-- ΔJ - 1xN matrix
+# Arguments
+- `χ::Matrix{Float64}`: Adjoint state matrix.
+- `M::Matrix{Float64}`: Forward propagation matrix.
+- `H::Matrix`: Hamiltonian matrix.
+
+# Returns
+- `grad::Matrix{Float64}`: Gradient of the cost function, as a 1xN matrix.
 """
-# function gradient!(grad::AbstractMatrix, χ::AbstractMatrix, M::AbstractMatrix, H::AbstractMatrix{Int64})
-#     for i ∈ 1:(size(M, 2)-1)
-#         grad[1, i] = dot(
-#             transpose(view(χ, :, i + 1)),
-#             H,
-#             view(M, :, i + 1)
-#         )
-#     end
-#     return grad
-# end
 function gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::AbstractMatrix{Int64})
     # TODO: refactor this as gradient!(grad, χ, M, H)
-    grad = zeros(Float64, 1, size(M, 2)-1)
+    grad = zeros(Float64, 1, size(M, 2) - 1)
     for i ∈ 1:(size(M, 2)-1)
-        grad[1,i] = dot(
-            transpose(view(χ, :,i+1)), 
+        grad[1, i] = dot(
+            transpose(view(χ, :, i + 1)),
             H,
-            view(M, :,i+1)
+            view(M, :, i + 1)
         )
     end
     return grad
 end
 
 """
-    update(cf::ControlField, ∇xy::Tuple, ϵ::Float64)
+    update!(cf::ControlField, ∇xy::Tuple, ϵ::Float64)
 
-update
-# Arguments  
-- cf:  (::ControlField) - Control fields struct
-- ∇xy: (::Tuple) - Calculated gradients for x and y components
-- ϵ:   (::Float64) - Weigth of gradient
+Updates the control fields based on the calculated gradient and a learning rate.
 
-# Outputs
-- Control Field - 1xN matrix
+# Arguments
+- `cf::ControlField`: Control field struct to be updated.
+- `∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}`: Gradients for the x and y components of the field.
+- `ϵ::Float64`: Learning rate for gradient descent.
+
+# Returns
+- `(u1x, u1y)`: Updated x and y control fields.
 """
 function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64},Matrix{Float64}}, ϵ::Float64)
     u1x = cf.B1x .- ϵ .* ∇xy[1]
@@ -162,28 +159,22 @@ end
 """
     run_grape_optimization(config_path::String)
 
-This function runs the GRAPE optimization process for an NMR/MRI system based on a given configuration file. The function initializes spin systems, sets up optimization parameters, and executes the optimization using the GRAPE algorithm. The results are optionally saved and plotted based on the configuration file.
+Runs the GRAPE optimization process based on a TOML configuration file. Initializes spins, sets up parameters, executes optimization, and optionally saves and plots the results.
 
 # Arguments
-- `config_path::String`: 
-    Path to the TOML configuration file. This file should contain all necessary parameters for spins, optimization, and control fields.
+- `config_path::String`: Path to the TOML configuration file containing parameters for spins, optimization, and control fields.
 
 # Configuration File Structure
-    The configuration file should follow the TOML format and include the following sections:
+The TOML configuration file should include sections like:
+    - **spins**: Defines spin properties.
+    - **grape_parameters**: Parameters for the GRAPE optimization.
+    - **optimization_parameters**: Parameters for the hyperparameter optimization.
+    - **control_field**: Control field specifications.
+    - **save_files**: Settings for saving outputs.
+    - **plot**: Plot settings.
 
-    - **spins**:
-    - **grape_parameters**:
-    - **optimization_parameters**:
-    - **control_field**:
-    - **save_files**:
-    - **plot**:
-
-# Outputs
-    The function produces several outputs depending on the configuration:
-    - GRAPE optimization results, including optimized control fields and cost values.
-    - Hyperparameter optimization results, if enabled.
-    - Optional saving of output data and Bruker export.
-    - Plots visualizing the magnetization and control fields over time.
+# Returns
+- Produces and saves results depending on configuration settings, including optimized control fields, cost values, optional Bruker export, and plots.
 
 # Example
 ```julia
@@ -207,7 +198,7 @@ function run_grape_optimization(config_path::String)
     )
 
     # Grape Parameters
-    mask_dict = Dict(k => Bool(v) for (k,v) ∈ tm["grape_parameters"]["fields2optimize"])
+    mask_dict = Dict(k => Bool(v) for (k, v) ∈ tm["grape_parameters"]["fields2optimize"])
     grape_params = GrapeParams(
         tm["grape_parameters"]["time_steps"],
         eval(Symbol(tm["grape_parameters"]["cost_function"])),
