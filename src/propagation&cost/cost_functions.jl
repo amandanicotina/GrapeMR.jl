@@ -10,7 +10,7 @@ max_cost(x::AbstractVector{T}, Nspins) where {T} = (1 - sqrt(sum(abs2, x) + 1e-1
 function euclidean_norm(iso::Isochromat)
     s = iso.spin
     m = iso.magnetization.dynamics
-    x = (1.4)*SVector(
+    x = SVector(
         m[2, end], 
         m[3, end], 
         m[4, end]
@@ -20,7 +20,7 @@ function euclidean_norm(iso::Isochromat)
     return val, vcat(zero(eltype(grad)), grad)
 end
 
-function spin_target(iso::Isochromat; target::AbstractVector = [0.0, 0.5, 0.5])
+function spin_target(iso::Isochromat; target::AbstractVector = [0.0, 1.0, 0.0])
     s = iso.spin
     m = iso.magnetization.dynamics
     x = SVector(
