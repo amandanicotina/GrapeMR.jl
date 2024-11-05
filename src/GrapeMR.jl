@@ -45,7 +45,6 @@ include("optimization/finite_difference.jl")
 
 include("utilities/save_data.jl")
 include("utilities/export_bruker.jl")
-include("utilities/rf_shapes.jl")
 
 include("plots/plots_bohb.jl")
 include("plots/plots_control_field.jl")
@@ -59,6 +58,7 @@ export OptimizationParams, GrapeParams, Parameters, GrapeOutput
 export Spins, Spin, SpinRange, Magnetization, Isochromat
 
 # Grape 
+export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 export grape, dynamics, run_grape_optimization
 export backward_propagation, backward_propagation!, forward_propagation, test_forward_propagation
 export random_hyperopt, bohb_hyperopt, hyperband_hyperopt
@@ -67,7 +67,6 @@ export finite_difference_cost, finite_difference_field
 # Save/load/export Files
 export save_grape_data, save_hyperopt_data, load_grape_data, load_hyperopt_data
 export export_bruker
-export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 
 # Plots
 export plot_cost_values, plot_magnetization_control_field

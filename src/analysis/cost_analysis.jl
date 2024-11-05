@@ -16,16 +16,18 @@ function cost_offsets(control_field::ControlField,
                     spin_system::Spin, 
                     offsets::Vector{Float64}, 
                     cost::Function
-                    )
-    ΔB1 = [1.0]
+        )
+    
+    ΔB1 = [1.0] 
+
     spins_b0 = GrapeMR.Spin(spin_system.M_init, spin_system.T1, spin_system.T2, offsets, ΔB1, 
-                            [spin_system.target], [spin_system.label])        
+                [spin_system.target], [spin_system.label])   
+
     isochromats = dynamics.(control_field, spins_b0)
-    (cost_profile, _) = cost.(isochromats)  
 
-    println(cost_profile)
+    cost_vals = cost.(isochromats)
 
-    return cost_profile
+    return round.((getindex.(cost_vals, 1) .* length(isochromats)), digits = 4)
 end
 
 function cost_offsets(control_field::ControlField, 
@@ -38,10 +40,9 @@ function cost_offsets(control_field::ControlField,
 
     isochromats = dynamics.(control_field, spins_b0)
 
-    cost_terms = cost_function.(isochromats, :spin_target)  
-    cost_profile = getindex.(cost_terms, 1) 
+    cost_vals = cost.(isochromats)
 
-    return cost_profile ./ maximum(cost_profile)
+    return (getindex.(cost_vals, 1) .* length(isochromats))
 end
 
 
@@ -74,14 +75,14 @@ function create_cost_matrix(control_field::ControlField,
                                 [spin_system.target], [spin_system.label])        
         isochromats = dynamics.(control_field, spins_b0)
 
-        cost_terms = cost.(isochromats)  
-        cost_profile = getindex.(cost_terms, 1)  
+        cost_vals = cost.(isochromats)  
+        cost_profile = getindex.(cost_vals, 1) .* length(isochromats)
         cost_matrix[i,:] = cost_profile
     end
 
-    # cost_matrix = cost_matrix ./ maximum(cost_matrix)
     return cost_matrix
 end
+
 function create_cost_matrix(control_field::ControlField, 
                     spin_system::SteadyState, 
                     offsets::Vector{Float64}, 
@@ -96,13 +97,12 @@ function create_cost_matrix(control_field::ControlField,
                                         [spin_system.label], spin_system.α, spin_system.Δϕ, spin_system.TR, spin_system.TE)     
         isochromats = dynamics.(control_field, spins_b0)
 
-        cost_terms = cost.(isochromats)  
-        cost_profile = getindex.(cost_terms, 1)  
+        cost_vals = cost.(isochromats)  
+        cost_profile = getindex.(cost_vals, 1) .* length(isochromats)
         cost_matrix[i,:] = cost_profile
     end
 
-    cost_matrix = cost_matrix ./ maximum(cost_matrix)
-    return cost_matrix
+    return cost_matrix ./ maximum(cost_matrix)
 end
 
 
@@ -128,37 +128,12 @@ function plot_cost_offset(cost_profile::Vector{Float64}, offsets::Vector{Float64
              titlefontsize = 12,
              framestyle = :box, 
              grid = false)
-    plot!(p, offsets, cost_profile, label = false, lw = 2)
+    plot!(p, offsets, cost_profile, label = false, lw = 2.5)
+    annotate!(p, [0.0], [0.6], text("Optimized \n Region", :black, 10))
+    vline!(p, [-15.0, 15.0], label = false, lw = 1.5, linestyle = :dash, color = :black)
+
     return p
 end
-
-
-
-"""
-    heatmap_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64})
-
-Generates a heatmap plot of the cost function values over a range of B0 and B1 inhomogeneities.
-
-# Arguments
-- `cost_matrix::Matrix{Float64}`: A 2D matrix representing the cost values for combinations of B0 and B1 inhomogeneities.
-- `offsets::Vector{Float64}`: A vector of offset frequencies (in Hz) used to label the x-axis.
-- `b1_inhomogeneities::Vector{Float64}`: A vector representing B1 inhomogeneity percentages used to label the y-axis.
-
-# Outputs
-- `h::Plot`: A heatmap plot showing the cost function map with a color bar indicating cost values.
-"""
-function heatmap_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64})
-    heatmap(offsets, b1_inhomogeneities, cost_matrix, color=:viridis, framestyle=:box,
-            guidefontsize = 12, 
-            legendfontsize = 10,
-            tickfontsize = 10,
-            titlefontsize = 12,
-            xlabel="Offset [Hz]", 
-            ylabel="B1 Inhomogeneity [%]", 
-            title="Cost Function Map",
-            colorbar_title="Cost Value")
-end
-
 
 """
     countour_cost(cost_matrix::Matrix{Float64})
@@ -172,9 +147,9 @@ Creates a contour plot of the cost function values over the range of B0 and B1 i
 - `c::Plot`: A contour plot of the cost function map.
 """
 function countour_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64})
-    contourf(cost_matrix, b1_inhomogeneities, cost_matrix, color=:viridis, framestyle=:box,
+    p = plot(framestyle=:box,
              guidefontsize = 12, 
-             legendfontsize = 10,
+             legendfontsize = 8,
              tickfontsize = 10,
              titlefontsize = 12,
              xlabel="Offset [Hz]", 
@@ -182,8 +157,15 @@ function countour_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b
              title="Cost Function Map", 
              colorbar_title="Cost Value",
              levels=20)
+    contourf!(p, offsets, b1_inhomogeneities, cost_matrix, color=:viridis)
+    
+    # Plot rectangle for optimized region
+    x_min, x_max = -15.0, 15.0
+    y_min, y_max = 0.9, 1.1
+    annotate!(p, (x_min + x_max) / 2, y_min + 0.02, text("Optimized Region", :white, 10))
+    hline!([y_min, y_max], color = :white, linestyle = :dash, linewidth = 1.5, label = false)
+    vline!([x_min, x_max], color = :white, linestyle = :dash, linewidth = 1.5, label = false)
 end
-
 
 
 """
@@ -223,43 +205,12 @@ function run_cost_analysis(control_field::ControlField,
     cost_matrix = create_cost_matrix(control_field, spin_system, offsets, b1_range, cost)
 
     p1 = plot_cost_offset(cost_profile, offsets)
-    h1 = heatmap_cost(cost_matrix, offsets, b1_range)
     c1 = countour_cost(cost_matrix, offsets, b1_range)
     
     display(p1)
-    display(h1)
-    # display(c1)
+    # display(h1)
+    display(c1)
 end
 
 
 
-
-
-# using GrapeMR
-# load_folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/2024-11-02/s1_saturation_contrast_min_15Hz"
-# grape_output1 = load_grape_data(load_folder_path);
-
-# M0      = [0.0, 0.0, 1.0]
-# ΔB1     = [1.0]
-# offsets = -500:10:500
-# T1 = [0.6, 0.1]
-# T2 = [0.3, 0.05]
-# label  = ["s1", "s2"]
-# target = ["max", "min"]
-# spins  = Spin(M0, T1, T2, offsets, ΔB1, target, label)
-
-# control_field = spline_RF(1500, 500.0, 1.0) 
-# isos = dynamics.(control_field, spins)
-
-# costs = []
-# for iso in isos
-#     cost_vals = GrapeMR.saturation_contrast(iso)
-#     push!(costs, getindex.(cost_vals, 1))
-# end
-
-# using Plots
-
-# plot(costs)
-# plot_magnetization_control_field(grape_output1.control_field, isos[100:end])
-
-# GrapeMR.saturation_contrast(isos[1])

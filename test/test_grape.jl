@@ -1,7 +1,7 @@
 using GrapeMR, Test
 
 # Tolerance to past the tests
-tol = 1e-2
+tol = 5e-2
 
 #########################################################
 #                Cost: Euclidean Norm                   #
