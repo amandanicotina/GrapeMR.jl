@@ -1,5 +1,6 @@
 # GrapeMR.jl
 ![Grape Logo](./assets/logo.png)
+
 Documentation for GrapeMR.jl
 # Magnetic systems 
 - Given a homogeneus magnetic field $\vec{B}_0 = |B_0|\textbf{z}$ 
