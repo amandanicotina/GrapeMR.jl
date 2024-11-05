@@ -8,7 +8,8 @@ pages = [
   "Tutorial" => "generated/tutorial.md",
   "Developing" => "pages/developing.md",
   "API" => "pages/api.md",
-  "References" => "pages/references.md",
+  # TODO: re-enable after adding references to docstrings and docs
+  #"References" => "pages/references.md",
 ]
 
 bib = CitationBibliography(
