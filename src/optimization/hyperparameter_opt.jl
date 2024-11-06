@@ -24,8 +24,8 @@ Performs random sampling for hyperparameter optimization.
 - A hyperparameter optimization object with randomly sampled configurations and their costs.
 """
 function random_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange;
-    i::Int=50,
-    poly_start::Vector{Float64}=[5e-1, 1e-1, 1e-2],
+    i::Int=25,
+    poly_start::Vector{Float64}=[1e-1, 2.5e-1, 5e-1, 7.5e-1],
     poly_degree::Vector{Int}=[1, 2],
     B1ref::Float64=1.0)
     #, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
@@ -36,14 +36,17 @@ function random_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, 
         poly_degree = poly_degree,
         max_iter = max_iter
 
-        # RFs
+        # Initialize RFs
         control_field = spline_RF(gp.N, Tc, B1ref)
 
-        # Optimize
+        # Parameters
         opt_params = OptimizationParams(poly_start, poly_degree, max_iter)
         params = Parameters(gp, opt_params)
+
+        # Run GRAPE
         grape_output = grape(params, control_field, spins)
 
+        # Results
         cost = grape_output.cost_values[end]
         @info "metrics" hyperopt_i = i cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = max_iter
         cost
@@ -86,11 +89,15 @@ function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
     B1ref::Float64=1.0)
     #, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
 
-    bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, inner=BOHB(dims=[Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous(), Hyperopt.Continuous()])),
-        Tc = Tc,
-        poly_start = poly_start,
-        poly_degree = poly_degree,
-        max_iter = max_iter
+    bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, 
+            inner=BOHB(dims=[Hyperopt.Continuous(), 
+            Hyperopt.Continuous(), 
+            Hyperopt.Continuous(), 
+            Hyperopt.Continuous()])),
+            Tc = Tc,
+            poly_start = poly_start,
+            poly_degree = poly_degree,
+            max_iter = max_iter
 
         # we're cheating here a bit, we're not using the sampled max_iter
         # this is a workaround to have the max_iter/budget in the history
@@ -99,14 +106,17 @@ function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         end
 
         if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-            # RFs
+            # Initialize RFs
             control_field = spline_RF(gp.N, Tc, B1ref)
 
-            # Optimize
+            # Parameters
             opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, i))
             params = Parameters(gp, opt_params)
+
+            # Run GRAPE
             res = grape(params, control_field, spins)
 
+            # Results
             cost = res.cost_values[end]
             @info "metrics" resources = i cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = i
             cost, [Tc, poly_start, poly_degree, i]
@@ -150,7 +160,7 @@ function hband_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, m
     hb = @hyperopt for resources = max_iter,
         sampler = Hyperband(R=max_iter, η=3, inner=RandomSampler()),
         poly_start = [1e-1, 1e-2],
-        poly_degree = [1, 2, 3],
+        poly_degree = [1, 2],
         Tc = Tc,
         iter = range(Δmax_iter, step=Δmax_iter, stop=max_iter + Δmax_iter)
 
@@ -163,17 +173,17 @@ function hband_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, m
         if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
             println("\n resources: ", resources, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
 
-            # Generate RF control field
+            # Initialize RF 
             control_field = spline_RF(gp.N, Tc, B1ref)
 
-            # Set up optimization parameters
+            # Parameters
             opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, resources))
             params = Parameters(gp, opt_params)
 
             # Run GRAPE 
             res = grape(params, control_field, spins)
 
-            # Extract cost from result
+            # Results
             cost = res.cost_values[end]
             @info "metrics" resources = resources cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = resources
             return cost, [Tc, poly_start, poly_degree, resources]
@@ -189,6 +199,10 @@ function hband_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, m
 
     return hb
 end
+
+
+
+
 
 
 """
@@ -246,5 +260,3 @@ end
 #     budget_loss_pairs = [(unique_all_pairs[i][1][end], unique_all_pairs[i][2]) for i in 1:15]#eachindex(unique_all_pairs)]
 #     dict = Dict(keys => budget_loss_pairs)
 # end
-
-

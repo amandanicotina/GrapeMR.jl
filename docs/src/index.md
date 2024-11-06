@@ -7,7 +7,7 @@ GrapeMR.jl is a Julia package designed for optimizing radio-frequency (RF) pulse
 # Getting Started 
 
 ## Installing GrapeMR
-To use GrapeMR.jl, you’ll first need to install Julia, which can be downloaded from (here)[https://julialang.org/downloads/]. Once Julia is installed, open the Julia REPL and add GrapeMR as follows:
+To use GrapeMR.jl, you’ll first need to install Julia, which can be downloaded from [here](https://julialang.org/downloads/). Once Julia is installed, open the Julia REPL and add GrapeMR as follows:
 
 ```julia-repl
 julia> ]
