@@ -67,8 +67,8 @@ function grape_fix_epsilon(p::Parameters, cf::ControlField, spins::Vector{<:Spin
 
     # Print Infos
     final_cost = round(grape_output.cost_values[end], digits=3)
-    # println("\n Final Cost Function Value = $final_cost \n")
-    # RF_pulse_analysis(grape_output.control_field)
+    println("\n Final Cost Function Value = $final_cost \n")
+    RF_pulse_analysis(grape_output.control_field)
 
     return grape_output
 end
