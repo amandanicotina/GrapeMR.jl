@@ -46,7 +46,7 @@ include("optimization/finite_difference.jl")
 include("utilities/save_data.jl")
 include("utilities/export_bruker.jl")
 
-include("plots/plots_bohb.jl")
+include("plots/plots_hyperparameters.jl")
 include("plots/plots_control_field.jl")
 include("plots/plots_magnetization.jl")
 
@@ -61,7 +61,6 @@ export Spins, Spin, SpinRange, Magnetization, Isochromat
 export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 export grape, dynamics, run_grape_optimization
 export backward_propagation, backward_propagation!, forward_propagation, test_forward_propagation
-export random_hyperopt, bohb_hyperopt, hyperband_hyperopt
 export finite_difference_cost, finite_difference_field
 
 # Save/load/export Files
@@ -71,10 +70,12 @@ export export_bruker
 # Plots
 export plot_cost_values, plot_magnetization_control_field
 export plot_control_fields, plot_control_fields_phase_shift
-
 export plot_transverse_magnetization, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_time, plot_transverse_time, plot_longitudinal_time
 
+# Hyperopt
+export random_hyperopt, bohb_hyperopt, hband_hyperopt
+export plot_hyperopt_history, plot_cost_grape_runs, plot_hyperopt_contour, plot_cost_hyperparam
 export plot_evaluations, plot_bohb
 
 # bSSFP Module #

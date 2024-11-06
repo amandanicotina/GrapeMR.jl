@@ -119,20 +119,13 @@ Creates a plot of the cost values as a function of B0 offset frequencies.
 - `p::Plot`: A plot object displaying the cost function offset profile.
 """
 function plot_cost_offset(cost_profile::Vector{Float64}, offsets::Vector{Float64})
-    p = plot(xlabel = "Offset [Hz]",
-             ylabel = "Cost Value",
-             title  = "Cost Function Offset Profile",
-             guidefontsize = 12, 
-             legendfontsize = 10,
-             tickfontsize = 10,
-             titlefontsize = 12,
-             framestyle = :box, 
-             grid = false)
-    plot!(p, offsets, cost_profile, label = false, lw = 2.5)
-    annotate!(p, [0.0], [0.6], text("Optimized \n Region", :black, 10))
-    vline!(p, [-15.0, 15.0], label = false, lw = 1.5, linestyle = :dash, color = :black)
+    pProf  = initialize_plot("Cost Function Offset Profile", "Offset [Hz]", "Cost Value")
 
-    return p
+    plot!(pProf, offsets, cost_profile, label = false, lw = 3, color = cgrad(:viridis)[128])
+    annotate!(pProf, [0.0], [0.6], text("Optimized \n Region", :black, 15))
+    vline!(pProf, [-15.0, 15.0], label = false, lw = 1.5, linestyle = :dash, color = :black)
+
+    return pProf
 end
 
 """
@@ -147,24 +140,17 @@ Creates a contour plot of the cost function values over the range of B0 and B1 i
 - `c::Plot`: A contour plot of the cost function map.
 """
 function countour_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b1_inhomogeneities::Vector{Float64})
-    p = plot(framestyle=:box,
-             guidefontsize = 12, 
-             legendfontsize = 8,
-             tickfontsize = 10,
-             titlefontsize = 12,
-             xlabel="Offset [Hz]", 
-             ylabel="B1 Inhomogeneity [%]", 
-             title="Cost Function Map", 
-             colorbar_title="Cost Value",
-             levels=20)
-    contourf!(p, offsets, b1_inhomogeneities, cost_matrix, color=:viridis)
+    pMap = initialize_plot("Cost Function Map", "Offset [Hz]", "B1 Inhomogeneity [%]")
+    contourf!(pMap, offsets, b1_inhomogeneities, cost_matrix, color=:viridis)
     
     # Plot rectangle for optimized region
     x_min, x_max = -15.0, 15.0
     y_min, y_max = 0.9, 1.1
-    annotate!(p, (x_min + x_max) / 2, y_min + 0.02, text("Optimized Region", :white, 10))
+    annotate!(pMap, (x_min + x_max) / 2, y_max + 0.02, text("Optimized Region", :white, 15))
     hline!([y_min, y_max], color = :white, linestyle = :dash, linewidth = 1.5, label = false)
     vline!([x_min, x_max], color = :white, linestyle = :dash, linewidth = 1.5, label = false)
+
+    return pMap
 end
 
 

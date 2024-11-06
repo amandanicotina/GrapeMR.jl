@@ -103,6 +103,8 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
 
     # Initialize magnetization trajectory plot
     pMag = initialize_plot("Magnetization Trajectory", "Transverse", "Longitudinal")
+    xlims!(-0.02, 1.01)
+    ylims!(-1.01, 1.01)
 
     for iso ∈ isos
         m = iso.magnetization.dynamics
