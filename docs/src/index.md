@@ -9,10 +9,15 @@ GrapeMR.jl is a Julia package designed for optimizing radio-frequency (RF) pulse
 ## Installing GrapeMR
 To use GrapeMR.jl, you’ll first need to install Julia, which can be downloaded from [here](https://julialang.org/downloads/). Once Julia is installed, open the Julia REPL and add GrapeMR as follows:
 
-```julia-repl
-julia> ]
-(@v.1.11) pkg> add GrapeMR
+```julia
+using Pkg
+Pkg.add(url="https://github.com/amandanicotina/GrapeMR.jl")
 ```
+
+## Compatibility
+
+The package is tested on Julia 1.9.4 and 1.11.1 on Linux (amd64), 1.11.1 on MacOS (arm64).
+Other julia versions may work, but are not tested. Other platforms are not supported, but Windows (amd64) should work too.
 
 ## Implementation example
 A straightforward implementation involves creating a TOML file to define the system’s initial state, inhomogeneities, and relaxation values. The user will specify a cost function, the control field duration, and a path to save the output. A folder will be created in the GrapeMR installation directory if no path is provided. The package includes a default configuration file that you can modify or replace with your own.

@@ -8,5 +8,5 @@ You can access the latest documentation on [GrapeMR's Github Pages](https://aman
 
 ## Compatibility
 
-The package is tested on Julia 1.9.4 and 1.11.2 on Linux (amd64), MacOS (amd64, arm64), and Windows (amd64).
-Other julia versions may work, but are not tested. Other platforms are not supported.
+The package is tested on Julia 1.9.4 and 1.11.1 on Linux (amd64), 1.11.1 on MacOS (arm64).
+Other julia versions may work, but are not tested. Other platforms are not supported, but Windows (amd64) should work too.
