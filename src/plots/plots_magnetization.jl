@@ -70,11 +70,11 @@ Determines the color and label for a given spin target ("max", "min", or default
 """
 function get_target_properties(s, colors)
     if s.target == "max"
-        return (colors[2], "$(s.target) - $(s.label)")
+        return (colors[2], " $(s.target) - $(s.label)", 0.5)
     elseif s.target == "min"
-        return (colors[9], "$(s.target) - $(s.label)")
+        return (colors[9], " $(s.target) - $(s.label)", 1.0)
     else
-        return (colors[5], "$(s.label)")
+        return (colors[5], " $(s.label)", 1.0)
     end
 end
 
@@ -214,7 +214,7 @@ Plots the transverse magnetization (Mxy) as a function of time for a set of isoc
 # Returns
 - `pTransTime`: A plot object displaying Mxy as a function of time for each isochromat.
 """
-function plot_transverse_time(isos::Vector{Isochromat}, t::Float64)
+function plot_transverse_time(isos::Vector{<:Isochromat}, t::Float64)
     colors = color_palette(1:10)
     pTransTime = initialize_plot("Transverse Magnetization", "t [sec]", "Mxy")
 

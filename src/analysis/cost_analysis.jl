@@ -122,7 +122,7 @@ function plot_cost_offset(cost_profile::Vector{Float64}, offsets::Vector{Float64
     pProf  = initialize_plot("Cost Function Offset Profile", "Offset [Hz]", "Cost Value")
 
     plot!(pProf, offsets, cost_profile, label = false, lw = 3, color = cgrad(:viridis)[128])
-    annotate!(pProf, [0.0], [0.6], text("Optimized \n Region", :black, 15))
+    annotate!(pProf, [0.0], [0.6], text("Optimized \n Region", :black, 12))
     vline!(pProf, [-15.0, 15.0], label = false, lw = 1.5, linestyle = :dash, color = :black)
 
     return pProf
@@ -146,7 +146,7 @@ function countour_cost(cost_matrix::Matrix{Float64}, offsets::Vector{Float64}, b
     # Plot rectangle for optimized region
     x_min, x_max = -15.0, 15.0
     y_min, y_max = 0.9, 1.1
-    annotate!(pMap, (x_min + x_max) / 2, y_max + 0.02, text("Optimized Region", :white, 15))
+    annotate!(pMap, (x_min + x_max) / 2, y_max + 0.04, text("Optimized \n Region", :white, 15))
     hline!([y_min, y_max], color = :white, linestyle = :dash, linewidth = 1.5, label = false)
     vline!([x_min, x_max], color = :white, linestyle = :dash, linewidth = 1.5, label = false)
 

@@ -7,41 +7,120 @@ function get_hyperopt_parameters(ho::Hyperoptimizer)
 end
 
 
-function plot_hyperopt_history(ho::Hyperoptimizer)
-    n_trials = length(ho.results)
-    trials = range(1.0, stop=n_trials, length=n_trials)
+function plot_hyperopt_history(ho::Hyperoptimizer; title::String = "")
+    trials = 1:Int(length(ho.results))
     cost = ho.results
+    cost_min = round(ho.minimum, digits=3)
     colors = color_palette(10)
-
-    pHistory = initialize_plot("Optimization History", "Trials", "Cost Value")
-    plot!(pHistory, trials, cost, label = false, lw = 3, color = colors[2])
-    ylims!(-0.01, 1.0)
+    
+    pHistory = initialize_plot("Optimization History - $title", "Trials", "Cost Value")
+    
+    plot!(pHistory, trials, cost, label = false, lw = 3.5, color = colors[2], alpha = 0.7)
+    scatter!(pHistory, trials, cost, label = false, color = colors[2], marker = :dot, markersize = 5, alpha = 1.0)
+    
+    ylims!(pHistory, -0.01, 1.0)
+    annotate!(pHistory, ((length(ho.results)/2), (1-2*cost_min), text("Cost min = $cost_min", :black, 15)))
 
     return pHistory
 end
 
 
-function plot_cost_grape_runs(ho::Hyperoptimizer; plotlog::Bool=false)
-    n_trials = length(ho.results)
-    trials = range(1.0, stop=n_trials, length=n_trials)
+function plot_cost_grape_runs(ho::Hyperoptimizer; plotlog::Bool=false, title::String = "")
+    trials = collect(1:Int(length(ho.results)))
+    t = Int.(round.(trials./100))
     # Hyperparameters
     _, _, _, it = get_hyperopt_parameters(ho)
     cost = ho.results
     cost_min = round(ho.minimum, digits = 3)
     it_min = ho.minimizer[4]
     if plotlog
-        pHistory = initialize_plot("Optimization History", "log(Grape Runs)", "Cost Value")
-        scatter!(pHistory, log.(it), cost, label = false, color = :viridis, zcolor=trials, colorbar_title = "Order")
+        pHistory = initialize_plot(title, "log(Grape Runs)", "Cost Value")
+        scatter!(pHistory, log.(it), cost, label = false, markersize = 6, color = :viridis, zcolor=t, colorbar_title = "Trials 10²") #")#
         scatter!(pHistory, [log(it_min)], [cost_min], label = "Min = $cost_min", 
-                    marker = :star5, markersize = 8, color = :red)
+                    marker = :star5, markersize = 10, color = :red)
+        ylims!(-0.02, 1.0)
     else
-        pHistory = initialize_plot("Optimization History", "Grape Runs", "Cost Value")
-        scatter!(pHistory, it, cost, label = false, color = :viridis, zcolor=trials, colorbar_title = "Order")
+        pHistory = initialize_plot(title, "Grape Runs", "Cost Value")
+        scatter!(pHistory, it, cost, label = false, markersize = 6, color = :viridis, zcolor=t,colorbar_title = "Trials 10²")
         scatter!(pHistory, [it_min], [cost_min], label = "Min = $cost_min", 
-                    marker = :star5, markersize = 8, color = :red)
+                    marker = :star5, markersize = 10, color = :red)
+        ylims!(-0.02, 1.0)
     end
     return pHistory
 end
+
+function plot_cost_hyperparam(ho::Hyperoptimizer; grid_plot::Bool=true, title::String="")
+    ct, ps, pd, it = get_hyperopt_parameters(ho)
+
+    trials = 1:Int(length(ho.results))
+    cost = ho.results
+    cost_min = round(ho.minimum, digits = 3)
+    ct_min = ho.minimizer[1]
+    ps_min = ho.minimizer[2]
+    pd_min = ho.minimizer[3]
+    it_min = ho.minimizer[4]
+
+    if grid_plot
+        p1 = initialize_plot("", "Control Time", "Cost Value")
+        p2 = initialize_plot("", "Poly Start", "Cost Value")
+        p3 = initialize_plot("", "Poly Degree", "Cost Value")
+        p4 = initialize_plot("", "Grape Runs (10²)", "Cost Value")
+    
+        scatter!(p1, ct, cost, color=:viridis, label = false, zcolor=trials)
+        scatter!(p1, [ct_min], [cost_min], label = false, 
+            marker = :star5, markersize = 7, color = :red)
+        ylims!(-0.02, 1.0)
+
+        scatter!(p2, round.(ps, digits=1), cost, color=:viridis, label = false, zcolor=trials, colorbar_title = "Trials")
+        scatter!(p2, [ps_min], [cost_min], label = false, 
+            marker = :star5, markersize = 7, color = :red)
+        ylims!(-0.02, 1.0)
+
+        scatter!(p3, pd, cost, color=:viridis, label = false, zcolor=trials)
+        scatter!(p3, [pd_min], [cost_min], label = false, 
+            marker = :star5, markersize = 7, color = :red)
+        ylims!(-0.02, 1.0)
+
+        scatter!(p4, it*1e-2, cost, color=:viridis, label = false, zcolor=trials, colorbar_title = "Trials")
+        scatter!(p4, [it_min*1e-2], [cost_min], label = false, 
+            marker = :star5, markersize = 7, color = :red)
+        ylims!(-0.02, 1.0)
+
+        pScatter1 = plot(p1, p2, p3, p4, layout = (2,2))
+        return pScatter1
+
+    else
+        p1 = initialize_plot("", "Control Time", "Cost Value")
+        p2 = initialize_plot("", "Poly Start", "")
+        p3 = initialize_plot("", "Poly Degree", "Cost Value")
+        p4 = initialize_plot("", "Grape Runs (10²)", "")
+    
+        scatter!(p1, ct, cost, color=:viridis, label = false, zcolor=trials, colorbar=false)
+        scatter!(p1, [ct_min], [cost_min], label = false, marker = :star5, markersize = 8, color = :red)
+        annotate!(p1, (ct_min, (1-cost_min), text("Cost min = $cost_min", :black, 15)))
+        ylims!(-0.02, 1.0)
+
+        scatter!(p2, round.(ps, digits=1), cost, color=:viridis, label = false, zcolor=trials)
+        scatter!(p2, [ps_min], [cost_min], label = false, marker = :star5, markersize = 8, color = :red)
+        ylims!(-0.02, 1.0)
+
+        scatter!(p3, pd, cost, color=:viridis, label = false, zcolor=trials, colorbar=false)
+        scatter!(p3, [pd_min], [cost_min], label = false, marker = :star5, markersize = 8, color = :red)
+        annotate!(p3, ((1.5), (1-cost_min), text("Cost min = $cost_min", :black, 15)))
+        ylims!(-0.02, 1.0)
+
+        scatter!(p4, it*1e-2, cost, color=:viridis, label = false, zcolor=trials)
+        scatter!(p4, [it_min*1e-2], [cost_min], label = false, 
+            marker = :star5, markersize = 8, color = :red)
+        ylims!(-0.02, 1.0)
+
+        pScatter2 = plot(p1, p2, title = title, layout = (1,2))
+        pScatter3 = plot(p3, p4, title = title, layout = (1,2))
+        display(pScatter2), display(pScatter3)
+        return pScatter2, pScatter3
+    end
+end
+
 
 
 function plot_hyperopt_contour(ho::Hyperoptimizer)
@@ -64,40 +143,6 @@ function plot_hyperopt_contour(ho::Hyperoptimizer)
     pCountour = plot(p1, p2, p3, p4, layout = (2,2))
     
     return pCountour
-end
-
-function plot_cost_hyperparam(ho::Hyperoptimizer; single_plot::Bool=false)
-    ct, ps, pd, it = get_hyperopt_parameters(ho)
-
-    cost = ho.results
-    cost_min, cost_max = minimum(cost), maximum(cost)
-    n_trials = length(ho.results)
-    trials = range(1.0, stop=n_trials, length=n_trials)
-    
-    p1 = initialize_plot("", "Control Time", "Cost Value")
-    p2 = initialize_plot("", "Poly Start", "Cost Value")
-    p3 = initialize_plot("", "Poly Degree", "Cost Value")
-    p4 = initialize_plot("", "Grape Runs", "Cost Value")
-
-    scatter!(p1, ct, cost, color=:viridis, label = false, zcolor=trials)
-    ylims!(-0.02, 1.0)
-    scatter!(p2, ps, cost, color=:viridis, label = false, zcolor=trials)
-    ylims!(-0.02, 1.0)
-    scatter!(p3, pd, cost, color=:viridis, label = false, zcolor=trials)
-    ylims!(-0.02, 1.0)
-    scatter!(p4, it, cost, color=:viridis, label = false, zcolor=trials)
-    ylims!(-0.02, 1.0)
-
-    if single_plot
-        display(p1)
-        display(p2)
-        display(p3)
-        display(p4)
-        return p1, p2, p3, p4
-    else
-        pScatter = plot(p1, p2, p3, p4, layout = (2,2))
-        return pScatter
-    end
 end
 
 function plot_bohb(bohb::Hyperoptimizer)

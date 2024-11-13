@@ -72,6 +72,7 @@ export plot_cost_values, plot_magnetization_control_field
 export plot_control_fields, plot_control_fields_phase_shift
 export plot_transverse_magnetization, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_time, plot_transverse_time, plot_longitudinal_time
+export initialize_plot
 
 # Hyperopt
 export random_hyperopt, bohb_hyperopt, hband_hyperopt

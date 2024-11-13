@@ -97,7 +97,7 @@ Plot the magnetization trajectory for a set of isochromats and the corresponding
     1. The magnetization trajectory in the transverse plane.
     2. The control field amplitude and phase over time.
 """
-function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochromat})
+function plot_magnetization_control_field(cf::ControlField, isos::Vector{<:Isochromat})
     colors = color_palette(10)
     labels_shown = Set()
 
@@ -110,11 +110,11 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
         m = iso.magnetization.dynamics
         s = iso.spin
         Mxy, Mz = sqrt.(m[2, :] .^ 2 + m[3, :] .^ 2), m[4, :]
-        color, label = get_target_properties(s, colors)
+        color, label, α = get_target_properties(s, colors)
 
         # Plot trajectory and final point
-        plot!(pMag, Mxy, Mz, label = s.target ∈ labels_shown ? false : label, color = color, lw = 2.5)
-        scatter!(pMag, [Mxy[end]], [Mz[end]], label = false, color = color, markersize = 5)
+        plot!(pMag, Mxy, Mz, label = s.target ∈ labels_shown ? false : label, color = color, lw = 4, alpha = α)
+        scatter!(pMag, [Mxy[end]], [Mz[end]], label = false, color = color, markersize = 8)
         push!(labels_shown, s.target)
     end
 
@@ -123,10 +123,10 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{Isochro
 
     # Initialize control field plots using helper function
     p_Bx = initialize_plot("Control Fields", "t [ms]", "Bx [Hz]")
-    plot!(p_Bx, time, vec(cf.B1x), label = false, color = colors[5], lw = 2.5)
+    plot!(p_Bx, time, vec(cf.B1x), label = false, color = colors[5], lw = 4)
 
     p_By = initialize_plot("", "t [ms]", "By [Hz]")
-    plot!(p_By, time, vec(cf.B1y), label = false, color = colors[5], lw = 2.5)
+    plot!(p_By, time, vec(cf.B1y), label = false, color = colors[5], lw = 4)
 
     # Arrange plots into the final layout
     l = @layout [[a{0.5h}; b{0.5h}] c]
@@ -157,7 +157,7 @@ function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     p = initialize_plot("Cost Function Convergence", "Iterations", "Cost Value")
     
     # Plot the cost values over iterations
-    plot!(p, iter, cost, label = string(gp.cost_function), lw = 2.5, color = colors[2])
+    plot!(p, iter, cost, label = " " * string(gp.cost_function), lw = 3, color = colors[2])
     
     # Highlight the final cost value with a scatter point
     scatter!(p, [iter[end]], [cost[end]], color = colors[2], markersize = 7, label = "Final Cost = $cmin")
