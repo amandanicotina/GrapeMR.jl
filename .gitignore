@@ -45,3 +45,4 @@ scratchpad/
 # Literate.jl generated .md
 docs/src/generated/
 epsilon_analysis.jl
+main.jl
