@@ -24,7 +24,7 @@ Performs random sampling for hyperparameter optimization.
 - A hyperparameter optimization object with randomly sampled configurations and their costs.
 """
 function random_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::StepRange;
-    i::Int=25,
+    i::Int=30,
     poly_start::Vector{Float64}=[1e-1, 2.5e-1, 5e-1, 7.5e-1],
     poly_degree::Vector{Int}=[1, 2],
     B1ref::Float64=1.0)
@@ -87,20 +87,28 @@ function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
     poly_start::Vector{Float64}=[5e-1, 1e-1, 1e-2],
     poly_degree::Vector{Int}=[1, 2],
     B1ref::Float64=1.0)
-    #, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
 
-    bohb = @hyperopt for i = i, sampler = Hyperband(R=max_iter, η=3, 
+    # BOHB Sampler
+    bohb = Hyperband(R=max_iter, η=3, 
             inner=BOHB(dims=[Hyperopt.Continuous(), 
-            Hyperopt.Continuous(), 
-            Hyperopt.Continuous(), 
-            Hyperopt.Continuous()])),
-            Tc = Tc,
-            poly_start = poly_start,
-            poly_degree = poly_degree,
-            max_iter = max_iter
+                             Hyperopt.Continuous(), 
+                             Hyperopt.Continuous(), 
+                             Hyperopt.Continuous()]))
+    # bohb_sampler = bohb.inner  
 
-        # we're cheating here a bit, we're not using the sampled max_iter
-        # this is a workaround to have the max_iter/budget in the history
+    bohb_hyperopt = @hyperopt for i = i, sampler = bohb,
+        Tc = Tc,
+        poly_start = poly_start,
+        poly_degree = poly_degree,
+        max_iter = max_iter
+
+        # # Use bohb_sampler for the random sampling check
+        # if rand() < bohb_sampler.ρ || bohb_sampler.max_valid_budget === nothing
+        #     println("Random sampling used")
+        #     # return bohb_sampler.random_sampler(bohb, max_iter)  
+        # end
+
+        # Logic for using a passed-in state
         if state !== nothing
             Tc, poly_start, poly_degree, _ = state
         end
@@ -125,13 +133,14 @@ function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         end
     end
 
-    # cleanup results and history
-    bohb.results = filter((x -> x != 1000.0), bohb.results)
-    bohb.history = filter((x -> x != [0.0, 0.0, 0.0, 0.0]), bohb.history)
+    # Cleanup results and history
+    bohb_hyperopt.results = filter((x -> x != 1000.0), bohb_hyperopt.results)
+    bohb_hyperopt.history = filter((x -> x != [0.0, 0.0, 0.0, 0.0]), bohb_hyperopt.history)
 
-    # close(logger)
-    return bohb
+    return bohb_hyperopt
 end
+
+
 
 
 """
@@ -156,13 +165,12 @@ Executes Hyperband optimization for selecting hyperparameters.
 function hband_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int;
     B1ref::Float64=1.0)
 
-    Δmax_iter = Int(ceil(max_iter / 3))
-    hb = @hyperopt for resources = max_iter,
-        sampler = Hyperband(R=max_iter, η=3, inner=RandomSampler()),
+    hband_sampler = Hyperband(R=max_iter, η=3, inner=RandomSampler())
+
+    hband_hyperopt = @hyperopt for resources = max_iter, sampler = hband_sampler,
         poly_start = [1e-1, 1e-2],
         poly_degree = [1, 2],
-        Tc = Tc,
-        iter = range(Δmax_iter, step=Δmax_iter, stop=max_iter + Δmax_iter)
+        Tc = Tc
 
         # Handle state if previously set
         if state !== nothing
@@ -194,10 +202,11 @@ function hband_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, m
     end
 
     # Filter out invalid results
-    hb.results = filter(x -> x != Inf, hb.results)
-    hb.history = filter(x -> x != [0.0, 0.0, 0.0, 0.0], hb.history)
+    hband_hyperopt.results = filter(x -> x != Inf, hband_hyperopt.results)
+    hband_hyperopt.history = filter(x -> x != [0.0, 0.0, 0.0, 0.0], hband_hyperopt.history)
+    # hb_hyperopt.sampler = "Hyperband"
 
-    return hb
+    return hb_hyperopt
 end
 
 
@@ -206,21 +215,21 @@ end
 
 
 """
-    get_resources_configurations_hband(η::Int, R::Float32)
+    get_resources_configurations_hband(η::Int, R::Float64)
 
 Calculates the resources and configurations for each stage of the Hyperband algorithm.
 
 # Arguments
 - `η::Int`: Downsampling factor, typically used in Hyperband.
-- `R::Float32`: Maximum resource budget (e.g., number of iterations).
+- `R::Float64`: Maximum resource budget (e.g., number of iterations).
 
 # Returns
-- Prints the calculated resources (`n`) and budgets (`r`) for each Hyperband stage.
+- Prints the configurations `n` and resources `r` for each Hyperband outer loop.
 """
-function get_resources_configurations_hband(η::Int, R::Float32)
+function get_resources_configurations_hband(η::Int, R::Real)
     smax = floor(Int, log(η, R))
     B = (smax + 1) * (R)
-
+    ns = []
     for s in smax:-1:0
         n = ceil(Int, (B / R) * ((η^s) / (s + 1)))
         r = round(R / (η^s), digits=2)
@@ -229,7 +238,8 @@ function get_resources_configurations_hband(η::Int, R::Float32)
     end
 end
 
-
+R = 1500
+get_resources_configurations_hband(3, R)
 
 # Spearman's Rank
 
