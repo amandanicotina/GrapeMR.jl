@@ -70,7 +70,6 @@ plot_cost_values(grape_output_bohb.cost_values, grape_output_bohb.params.grape_p
 GrapeMR.run_cost_analysis(grape_output_bohb.control_field, spins[end], 80.0, 20, grape_output_bohb.params.grape_params.cost_function)
 
 # Save Optimization Data
-folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
 save_grape_data(grape_output_ran; folder_path)
 save_hyperopt_data(random_opt_exp; folder_path)
 
