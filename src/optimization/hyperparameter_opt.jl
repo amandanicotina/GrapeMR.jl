@@ -40,7 +40,7 @@ function random_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, 
         control_field = spline_RF(gp.N, Tc, B1ref)
 
         # Parameters
-        opt_params = OptimizationParams(poly_start, poly_degree, max_iter)
+        opt_params = OptimizationParams(poly_start, round(Int, poly_degree), trunc(Int, max_iter))
         params = Parameters(gp, opt_params)
 
         # Run GRAPE
@@ -94,7 +94,6 @@ function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
                              Hyperopt.Continuous(), 
                              Hyperopt.Continuous(), 
                              Hyperopt.Continuous()]))
-    # bohb_sampler = bohb.inner  
 
     bohb_hyperopt = @hyperopt for i = i, sampler = bohb,
         Tc = Tc,
@@ -102,40 +101,26 @@ function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, ma
         poly_degree = poly_degree,
         max_iter = max_iter
 
-        # # Use bohb_sampler for the random sampling check
-        # if rand() < bohb_sampler.ρ || bohb_sampler.max_valid_budget === nothing
-        #     println("Random sampling used")
-        #     # return bohb_sampler.random_sampler(bohb, max_iter)  
-        # end
-
         # Logic for using a passed-in state
         if state !== nothing
             Tc, poly_start, poly_degree, _ = state
         end
 
-        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-            # Initialize RFs
-            control_field = spline_RF(gp.N, Tc, B1ref)
+        # Initialize RFs
+        control_field = spline_RF(gp.N, Tc, B1ref)
 
-            # Parameters
-            opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, i))
-            params = Parameters(gp, opt_params)
+        # Parameters
+        opt_params = OptimizationParams(poly_start, round(Int, poly_degree), trunc(Int, i))
+        params = Parameters(gp, opt_params)
 
-            # Run GRAPE
-            res = grape(params, control_field, spins)
+        # Run GRAPE
+        res = grape(params, control_field, spins)
 
-            # Results
-            cost = res.cost_values[end]
-            @info "metrics" resources = i cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = i
-            cost, [Tc, poly_start, poly_degree, i]
-        else
-            1000.0, [0.0, 0.0, 0.0, 0.0]
-        end
+        # Results
+        cost = res.cost_values[end]
+        @info "metrics" resources = i cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = i
+        cost, [Tc, poly_start, poly_degree, i]
     end
-
-    # Cleanup results and history
-    bohb_hyperopt.results = filter((x -> x != 1000.0), bohb_hyperopt.results)
-    bohb_hyperopt.history = filter((x -> x != [0.0, 0.0, 0.0, 0.0]), bohb_hyperopt.history)
 
     return bohb_hyperopt
 end
@@ -174,39 +159,26 @@ function hband_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, m
 
         # Handle state if previously set
         if state !== nothing
-            Tc, poly_start, poly_degree, _ = state
+            Tc, poly_start, poly_degree = state
         end
 
-        # Validate parameters
-        if Tc >= 0.0 && poly_start >= 0.0 && poly_degree >= 1.0
-            println("\n resources: ", resources, "\t", Tc, "\t", poly_start, "\t", poly_degree, "\t")
+        # Initialize RF 
+        control_field = spline_RF(gp.N, Tc, B1ref)
 
-            # Initialize RF 
-            control_field = spline_RF(gp.N, Tc, B1ref)
+        # Parameters
+        opt_params = OptimizationParams(poly_start, round(Int, poly_degree), trunc(Int, resources))
+        params = Parameters(gp, opt_params)
 
-            # Parameters
-            opt_params = OptimizationParams(poly_start, poly_degree, trunc(Int, resources))
-            params = Parameters(gp, opt_params)
+        # Run GRAPE 
+        res = grape(params, control_field, spins)
 
-            # Run GRAPE 
-            res = grape(params, control_field, spins)
-
-            # Results
-            cost = res.cost_values[end]
-            @info "metrics" resources = resources cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = resources
-            return cost, [Tc, poly_start, poly_degree, resources]
-        else
-            # Invalid parameters: return Inf for the cost, which is more informative
-            return Inf, [0.0, 0.0, 0.0, 0.0]
-        end
+        # Results
+        cost = res.cost_values[end]
+        @info "metrics" resources = resources cost = cost Tc = Tc poly_start = poly_start poly_degree = poly_degree max_iter = resources
+        return cost, [Tc, poly_start, poly_degree]
     end
 
-    # Filter out invalid results
-    hband_hyperopt.results = filter(x -> x != Inf, hband_hyperopt.results)
-    hband_hyperopt.history = filter(x -> x != [0.0, 0.0, 0.0, 0.0], hband_hyperopt.history)
-    # hb_hyperopt.sampler = "Hyperband"
-
-    return hb_hyperopt
+    return hband_hyperopt
 end
 
 
