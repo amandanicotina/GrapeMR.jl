@@ -210,8 +210,8 @@ function get_resources_configurations_hband(η::Int, R::Real)
     end
 end
 
-R = 1500
-get_resources_configurations_hband(3, R)
+# R = 1500
+# get_resources_configurations_hband(3, R)
 
 # Spearman's Rank
 

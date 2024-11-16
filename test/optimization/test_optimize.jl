@@ -3,7 +3,7 @@ using GrapeMR
 # Spin System
 M0 = [0.0, 0.0, 1.0]
 ΔB1 = [1.0]
-B0 = 0.0
+B0 = 1.0
 offsets = collect(-B0:1:B0)
 
 # Water
