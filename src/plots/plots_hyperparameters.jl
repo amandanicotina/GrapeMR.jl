@@ -35,13 +35,13 @@ function plot_cost_grape_runs(ho::Hyperoptimizer; plotlog::Bool=false, title::St
     it_min = ho.minimizer[4]
     if plotlog
         pHistory = initialize_plot(title, "log(Grape Runs)", "Cost Value")
-        scatter!(pHistory, log.(it), cost, label = false, markersize = 6, color = :viridis, zcolor=t, colorbar_title = "Trials 10²") #")#
+        scatter!(pHistory, log.(it), cost, label = false, markersize = 6, color = :viridis, zcolor=trials, colorbar_title = "Trials")
         scatter!(pHistory, [log(it_min)], [cost_min], label = "Min = $cost_min", 
                     marker = :star5, markersize = 10, color = :red)
         ylims!(-0.02, 1.0)
     else
         pHistory = initialize_plot(title, "Grape Runs", "Cost Value")
-        scatter!(pHistory, it, cost, label = false, markersize = 6, color = :viridis, zcolor=t,colorbar_title = "Trials 10²")
+        scatter!(pHistory, it, cost, label = false, markersize = 6, color = :viridis, zcolor=trials, colorbar_title = "Trials")
         scatter!(pHistory, [it_min], [cost_min], label = "Min = $cost_min", 
                     marker = :star5, markersize = 10, color = :red)
         ylims!(-0.02, 1.0)
@@ -97,7 +97,7 @@ function plot_cost_hyperparam(ho::Hyperoptimizer; grid_plot::Bool=true, title::S
     
         scatter!(p1, ct, cost, color=:viridis, label = false, zcolor=trials, colorbar=false)
         scatter!(p1, [ct_min], [cost_min], label = false, marker = :star5, markersize = 8, color = :red)
-        annotate!(p1, (ct_min, (1-cost_min), text("Cost min = $cost_min", :black, 15)))
+        annotate!(p1, (ct_min-0.15, (1-cost_min), text("Cost min = $cost_min", :black, 15)))
         ylims!(-0.02, 1.0)
 
         scatter!(p2, round.(ps, digits=1), cost, color=:viridis, label = false, zcolor=trials)

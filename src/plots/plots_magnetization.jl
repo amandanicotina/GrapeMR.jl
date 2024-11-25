@@ -70,7 +70,7 @@ Determines the color and label for a given spin target ("max", "min", or default
 """
 function get_target_properties(s, colors)
     if s.target == "max"
-        return (colors[2], " $(s.target) - $(s.label)", 0.5)
+        return (colors[2], " $(s.target) - $(s.label)", 1.0)
     elseif s.target == "min"
         return (colors[9], " $(s.target) - $(s.label)", 1.0)
     else

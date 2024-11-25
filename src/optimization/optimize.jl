@@ -56,6 +56,7 @@ function grape(p::Parameters, cf::ControlField, spins::Vector{<:Spins})
             # Cost Variables
             cost, adj_ini = cost_vars
             grape_output.cost_values[i, 1] += cost
+
             # Adjoint Propagation
             adj = backward_propagation(adj_ini, cf, iso)
 

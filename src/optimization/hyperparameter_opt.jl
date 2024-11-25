@@ -84,7 +84,7 @@ Performs hyperparameter optimization using Bayesian Optimization and Hyperband (
 """
 function bohb_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, max_iter::Int;
     i::Int=5,
-    poly_start::Vector{Float64}=[5e-1, 1e-1, 1e-2],
+    poly_start::Vector{Float64}=[1e-1, 2.5e-1, 5e-1, 7.5e-1], #[5e-1, 1e-1, 1e-2],
     poly_degree::Vector{Int}=[1, 2],
     B1ref::Float64=1.0)
 
@@ -238,7 +238,7 @@ function get_resources_configurations_hband(η::Int, R::Real)
     end
 end
 
-R = 1500
+R = 3^7
 get_resources_configurations_hband(3, R)
 
 # Spearman's Rank
