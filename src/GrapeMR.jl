@@ -72,7 +72,7 @@ export plot_cost_values, plot_magnetization_control_field
 export plot_control_fields, plot_control_fields_phase_shift
 export plot_transverse_magnetization, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_time, plot_transverse_time, plot_longitudinal_time
-export initialize_plot
+export initialize_plot, color_palette, get_target_properties
 
 # Hyperopt
 export random_hyperopt, bohb_hyperopt, hband_hyperopt
@@ -84,7 +84,7 @@ export SteadyState, SteadyStateData
 export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
 export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
 export plot_magnetization_target, plot_magnetization_target_3D
-export plot_magnetization_targetB0, plot_Mtrans_offset_ss
+export plot_magnetization_targetB0, plot_ss_offset_profile, plot_bssfp_magnetization, plot_transverse_evolution, plot_magnetization_trajectory
 
 # Analysis Module #
 export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
