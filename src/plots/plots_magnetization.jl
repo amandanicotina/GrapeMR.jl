@@ -70,11 +70,11 @@ Determines the color and label for a given spin target ("max", "min", or default
 """
 function get_target_properties(s, colors)
     if s.target == "max"
-        return (colors[2], " $(s.target) - $(s.label)", 0.5)
+        return (colors[2], " $(s.target) - $(s.label)", 1.0)
     elseif s.target == "min"
         return (colors[9], " $(s.target) - $(s.label)", 1.0)
     else
-        return (colors[5], " $(s.label)", 1.0)
+        return (colors[10], " $(s.label)", 1.0)
     end
 end
 
@@ -158,6 +158,8 @@ Plots the 3D magnetization (Mx, My, Mz) for a set of isochromats.
 function plot_magnetization_3D(isos::Vector{Isochromat})
     colors = color_palette(1:10)
     pMag3D = initialize_plot("Magnetization", "Mx", "My", zlabel = "Mz")
+    xlims!(-1.0, 1.0)
+    ylims!(-1.0, 1.0)
 
     labels_shown = Set()
     for iso ∈ isos
@@ -169,7 +171,6 @@ function plot_magnetization_3D(isos::Vector{Isochromat})
         scatter!(pMag3D, [m[2, end]], [m[3, end]], [m[4, end]], label = false, color = color, markersize = 4)
         push!(labels_shown, s.target)
     end
-
     return pMag3D
 end
 
@@ -274,10 +275,17 @@ end
 ###
 # bSSFP stuff
 ###
+
+"""
+    plot_magnetization_target_3D(iso::Isochromat)
+
+Plots the 3D magnetization (Mx, My, Mz) for a single isochromat, showing the target and steady state.
+"""
+# trajectory_colors = [colors[1], colors[2], colors[4], colors[5]]
+# ss_colors        = [colors[6], colors[8], colors[9], colors[10]]
 function plot_magnetization_target_3D(iso::Isochromat)
     s = iso.spin
     m = iso.magnetization.dynamics
-    colors = color_palette(1:4)
 
     # Steady State
     ss = steady_state_matrix(iso)
@@ -289,36 +297,28 @@ function plot_magnetization_target_3D(iso::Isochromat)
     Mz = m[4, :]
 
     # Plot
-    p = plot3d(title="Magnetization Dynamics - ",
-        guidefontsize=12,
-        legendfontsize=10,
-        tickfontsize=10,
-        titlefontsize=12,
-        framestyle=:box,
-        grid=true)
+    colors = color_palette(10)
+    pTar3D = initialize_plot("Magnetization Dynamics", "Mx", "My"; zlabel = "Mz")
+    plot!(pTar3D, grid=true)
 
-    plot!(p, Mx, My, Mz, label="$(s.target) - $(s.label)", color=colors[1], lw=2)
-    scatter!([Mx[end]], [My[end]], [Mz[end]], label=false, color=colors[1], markersize=5)
-    scatter!([Mx_ss], [My_ss], [Mz_ss], label="Steady-state target", color=colors[3], markersize=5)
-    xlabel!("Mx")
-    ylabel!("My")
-    zlabel!("Mz")
+    plot!(pTar3D, Mx, My, Mz, label=" $(s.label)", color=colors[1], lw=2.5)
+    scatter!(pTar3D, [Mx[end]], [My[end]], [Mz[end]], label=false, color=colors[1], markersize=6)
+    scatter!(pTar3D, [Mx_ss], [My_ss], [Mz_ss], label="Steady State", color=colors[8], markersize=6)
+    
+    plot!(pTar3D, legend=:topleft)
+    xlims!(-1.0, 1.0)
+    ylims!(-1.0, 1.0)
 
-    return p
+    return pTar3D
 end
 
-function plot_Mtrans_offset_ss(isos::Vector{Isochromat})
-    colors = color_palette(1:4)
+
+
+function plot_ss_offset_profile(isos::Vector{Isochromat})
+    colors = color_palette(10)
+    pTarg = initialize_plot("Offset Profile", "Offset [Hz]", "Transverse Magnetization")
+
     label_plotted = false
-
-    p = plot(title="Offset Profile",
-        guidefontsize=12,
-        legendfontsize=10,
-        tickfontsize=10,
-        titlefontsize=12,
-        framestyle=:box,
-        grid=false)
-
     for iso ∈ isos
         m = iso.magnetization.dynamics
         s = iso.spin
@@ -328,24 +328,20 @@ function plot_Mtrans_offset_ss(isos::Vector{Isochromat})
         ss = steady_state_matrix(iso)
         Mxy_ss = sqrt((ss.x)^2 + (ss.y)^2)
 
-        scatter!(p, [b0], [Mxy[end]], label=label_plotted ? false : "GrapeMR", color=colors[2], markersize=8)
-        scatter!([b0], [Mxy_ss], color=colors[4], label=label_plotted ? false : "Steady State")
+        scatter!(pTarg, [b0], [Mxy[end]], label=label_plotted ? false : "GrapeMR", color=colors[4], markersize=8)
+        scatter!(pTarg, [b0], [Mxy_ss], color=colors[9], label=label_plotted ? false : "Steady State")
         label_plotted = true
     end
 
-    return p
+    return pTarg
 end
 
 
 
 # Revisit this target plot functions
 function plot_magnetization_target(isos::Vector{Isochromat})
-    colors = color_palette(1:10)
-    p = plot_config()
-    pMagTar = plot!(p,
-        title="Magnetization",
-        xlabel="Mxy",
-        ylabel="Mz")
+    colors = color_palette(10)
+    pMagTar = initialize_plot("Magnetization Profile", "Longitudinal Magnetization", "Transverse Magnetization")
 
     max_label_plotted = false
     min_label_plotted = false
@@ -376,9 +372,37 @@ function plot_magnetization_target(isos::Vector{Isochromat})
             scatter!([Mxy_ss], [Mz_ss], color=colors[6], label=min_label_plotted ? false : "Steady State $(s.target)")
             min_label_plotted = true
         else
-            error(" $(s.target) is not a matching target. Valid targets are max or min")
+            freq = s.B0inho
+            if freq > 0
+                freq_max = maximum(getfield.(isos, :spin) .|> x -> x.B0inho)
+                color_idx = freq / freq_max
+                
+                ss = steady_state_matrix(iso)
+                Mxy_ss, Mz_ss = sqrt((ss.x)^2 + (ss.y)^2), ss.z
+                
+                plot!(pMagTar, Mxy, m[4, :], 
+                    label=false, 
+                    line_z=freq * ones(length(Mxy)),
+                    color=:viridis,  # Scientific colormap for spectral/frequency data
+                    lw=2.5,
+                    xlims=[-0.01, 1.0],
+                    ylims=[-0.5, 1.1],
+                    clims=(0, freq_max),
+                    colorbar_title="Frequency (Hz)")
+                scatter!(pMagTar, [Mxy[end]], [m[4, end]], 
+                    label=false, 
+                    zcolor=freq,
+                    color=:viridis,
+                    markersize=6)
+                scatter!([Mxy_ss], [Mz_ss], 
+                    zcolor=freq,
+                    color=:viridis,
+                    label=false,
+                    markersize=6)
+            end
         end
     end
 
     return pMagTar
 end
+

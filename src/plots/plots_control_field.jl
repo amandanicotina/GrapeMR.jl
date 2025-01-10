@@ -39,10 +39,10 @@ function plot_control_fields(cf::ControlField; unit::String = "Hz")
 
     # Use initialize_plot to set up plots for each component
     p_Bx = initialize_plot("Control Fields", "t [s]", ylabel_B1)
-    plot!(p_Bx, time, Bx, color = colors[3], lw = 2, label = false)
+    plot!(p_Bx, time, Bx, color = colors[3], lw = 3, label = false)
 
     p_By = initialize_plot("", "t [s]", ylabel_phase)
-    plot!(p_By, time, By, color = colors[3], lw = 2, label = false)
+    plot!(p_By, time, By, color = colors[3], lw = 3, label = false)
 
     # Combine plots into a single layout
     p = plot(p_Bx, p_By, layout = (2, 1))
@@ -109,12 +109,17 @@ function plot_magnetization_control_field(cf::ControlField, isos::Vector{<:Isoch
     for iso ∈ isos
         m = iso.magnetization.dynamics
         s = iso.spin
+        #ss = steady_state_matrix(iso)
+
         Mxy, Mz = sqrt.(m[2, :] .^ 2 + m[3, :] .^ 2), m[4, :]
+        #Mxy_ss, Mz_ss = sqrt((ss.x)^2 + (ss.y)^2), ss.z
+
         color, label, α = get_target_properties(s, colors)
 
         # Plot trajectory and final point
         plot!(pMag, Mxy, Mz, label = s.target ∈ labels_shown ? false : label, color = color, lw = 4, alpha = α)
         scatter!(pMag, [Mxy[end]], [Mz[end]], label = false, color = color, markersize = 8)
+        #scatter!(pMag, [Mxy_ss], [Mz_ss], label = false, color = colors[10], markersize = 8)
         push!(labels_shown, s.target)
     end
 
@@ -150,7 +155,7 @@ Plot the cost function convergence over iterations during the GRAPE optimization
 """
 function plot_cost_values(cost::Vector{Float64}, gp::GrapeParams)
     colors = color_palette(10)
-    cmin = round(cost[end], digits = 3)
+    cmin = round(cost[end], digits = 4)
     iter = range(0, stop = length(cost), length = length(cost))
     
     # Initialize the plot using the helper function
