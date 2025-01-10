@@ -180,25 +180,60 @@ Generates an RF pulse sequence for bSSFP with specified flip angle and repetitio
 # Returns
 - A 1D array containing the bSSFP RF pulse sequence.
 """
+# function bSSFP_RF(N::Int, nTR::Int, α::Real, TR::Float64)
+#     Δt = TR / N
+#     rf0 = (α / 2) / (2π * Δt)
+#     rf = α / (2π * Δt)
+#     bSSFP_vec = Float64[]
+
+#     t_c = nTR * TR
+
+#     for n ∈ 1:nTR
+#         if n == 1
+#             append!(bSSFP_vec, rf0)
+#             append!(bSSFP_vec, zeros(N))
+#         elseif n > 1
+#             append!(bSSFP_vec, rf)
+#             append!(bSSFP_vec, zeros(N))
+#         else
+#             continue
+#         end
+#     end
+#     b1 = [0.0; bSSFP_vec]
+#     B1x = reshape(b1, 1, :)
+#     B1y, Bz = zeros(1, N), zeros(1, N)
+
+#     return ControlField(B1x, B1y, 1.0, Bz, t_c)
+# end
+
+
 function bSSFP_RF(N::Int, nTR::Int, α::Real, TR::Float64)
-    Δt = TR / N
+    # Calculate points per TR period
+    points_per_TR = N ÷ nTR  # Integer division to ensure even distribution
+    Δt = TR / points_per_TR
+    
+    # Calculate RF amplitudes
     rf0 = (α / 2) / (2π * Δt)
     rf = α / (2π * Δt)
-    bSSFP_vec = Float64[]
-
-    for n ∈ 1:nTR
+    
+    # Initialize vector with zeros
+    bSSFP_vec = zeros(N)
+    
+    # Fill in RF pulses at the start of each TR
+    for n in 1:nTR
+        idx = (n-1) * points_per_TR + 1  # Index for start of each TR
         if n == 1
-            append!(bSSFP_vec, rf0)
-            append!(bSSFP_vec, zeros(N))
-        elseif n > 1
-            append!(bSSFP_vec, rf)
-            append!(bSSFP_vec, zeros(N))
+            bSSFP_vec[idx] = rf0
         else
-            continue
+            bSSFP_vec[idx] = rf
         end
     end
-
-    return [0.0; bSSFP_vec]
+    
+    # Create control field
+    t_c = nTR * TR
+    B1x = reshape(bSSFP_vec, 1, :)
+    B1y = zeros(1, N)
+    Bz = zeros(1, N)
+    
+    return ControlField(B1x, B1y, 1.0, Bz, t_c)
 end
-
-
