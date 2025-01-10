@@ -112,7 +112,7 @@ function saturation_contrast_Mtrans(iso::Isochromat)
     return val, vcat(zero(eltype(grad)), grad)
 end
 
-function steady_state_offset_targets(iso::Isochromat) 
+function target_steady_state(iso::Isochromat) 
     s = iso.spin
     m = iso.magnetization.dynamics
     ss = steady_state_matrix(iso)
@@ -148,7 +148,7 @@ function saturation_contrast_steady_state(iso::Isochromat)
         x = SVector(
             m[2, end], 
             m[3, end], 
-            zero(eltype(m[2, end]))
+            m[4, end]
         )
         val = norm_cost(x, s.Nspins)
         grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
@@ -179,35 +179,4 @@ end
 #     return c
 # end
 
-# function target_steady_state(iso::Isochromat) 
-#     c = 0
-#     s = iso.spin
-#     if s.target == "min"
-#         # Steady State
-#         ss = steady_state_matrix(s)
-#         Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
-#         # Magnetization
-#         mag = iso.magnetization.dynamics
-#         Mx  = mag[2,end]
-#         My  = mag[3,end]
-#         Mz  = mag[4,end]
-#         c = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
-
-#     elseif s.target == "max"
-#         # Steady State
-#         ss = steady_state_matrix(s)
-#         Mx_ss, My_ss, Mz_ss = getproperty(ss, :x), getproperty(ss, :y), getproperty(ss, :z)
-#         # Magnetization
-#         mag = iso.magnetization.dynamics
-#         Mx  = mag[2,end]
-#         My  = mag[3,end]
-#         Mz  = mag[4,end]
-#         c = sqrt((Mx - Mx_ss)^2 + (My - My_ss)^2 + (Mz - Mz_ss)^2 + 1e-15)
-
-#     else
-#         error(" $(s.target) is not a matching target. Valid targets are max or min")
-#     end
-
-#     return c/s.Nspins
-# end
 
