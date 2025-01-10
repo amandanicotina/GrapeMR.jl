@@ -32,5 +32,5 @@ B1ref = 1.0
 [save_files]
 enabled = true
 export_bruker = true
-folder_path = "/Users/amandanicotina/Documents/PhD/Thesis/SimulationResults/"
-bruker_folder_path = "/opt/topspin4.4.0/exp/stan/nmr/lists/wave/user/"
+folder_path = "/path/to/save/files/"
+bruker_folder_path = "/path/to/bruker/folder/"
