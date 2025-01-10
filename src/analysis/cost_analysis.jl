@@ -99,7 +99,7 @@ function create_cost_matrix(control_field::ControlField,
 
         cost_vals = cost.(isochromats)  
         cost_profile = getindex.(cost_vals, 1) .* length(isochromats)
-        cost_matrix[i,:] = cost_profile
+        cost_matrix[end - i + 1, :] = cost_profile
     end
 
     return cost_matrix ./ maximum(cost_matrix)
