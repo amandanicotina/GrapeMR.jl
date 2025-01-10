@@ -17,51 +17,51 @@ cost = GrapeMR.saturation_contrast
 fields2opt = Dict(&quot;B1x&quot; =&gt; true, &quot;B1y&quot; =&gt; true, &quot;Bz&quot; =&gt; false)
 grape_params = GrapeParams(N, cost, fields2opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">GrapeParams{typeof(GrapeMR.saturation_contrast)}(2000, GrapeMR.saturation_contrast, Dict{String, Bool}(&quot;B1y&quot; =&gt; 1, &quot;B1x&quot; =&gt; 1, &quot;Bz&quot; =&gt; 0))</code></pre><p><code>Parameter</code> struct</p><pre><code class="language-julia hljs">params = Parameters(grape_params, opt_params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Parameters{typeof(GrapeMR.saturation_contrast)}(GrapeParams{typeof(GrapeMR.saturation_contrast)}(2000, GrapeMR.saturation_contrast, Dict{String, Bool}(&quot;B1y&quot; =&gt; 1, &quot;B1x&quot; =&gt; 1, &quot;Bz&quot; =&gt; 0)), OptimizationParams(0.5, 2, 2000))</code></pre><h3 id="Initial-control-field"><a class="docs-heading-anchor" href="#Initial-control-field">Initial control field</a><a id="Initial-control-field-1"></a><a class="docs-heading-anchor-permalink" href="#Initial-control-field" title="Permalink"></a></h3><p>Generate an initial control field using the spline function. Set the control time <code>control_time</code> and reference amplitude <code>B1ref</code>.</p><pre><code class="language-julia hljs">B1ref = 1.0
 control_time = 0.5
-control_field = spline_RF(N, control_time, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([0.5838124014836209 0.5816646236444145 … 0.723383619489489 0.7278822258346515], [0.5838124014836209 0.5816646236444145 … 0.723383619489489 0.7278822258346515], 1.0, [0.0 0.0 … 0.0 0.0], 0.5)</code></pre><h3 id="Run-Optimization"><a class="docs-heading-anchor" href="#Run-Optimization">Run Optimization</a><a id="Run-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Run-Optimization" title="Permalink"></a></h3><p>Run the optimization with the contructed <code>Spins</code>, configured <code>Parameters</code> and <code>ControlField</code>.</p><pre><code class="language-julia hljs">grape_output = grape(params, control_field, spins);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
- Final Cost Function Value = 0.018
+control_field = spline_RF(N, control_time, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([0.06550365174386419 0.06720270792404623 … 0.7188147968088154 0.7185366573764175], [0.06550365174386419 0.06720270792404623 … 0.7188147968088154 0.7185366573764175], 1.0, [0.0 0.0 … 0.0 0.0], 0.5)</code></pre><h3 id="Run-Optimization"><a class="docs-heading-anchor" href="#Run-Optimization">Run Optimization</a><a id="Run-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Run-Optimization" title="Permalink"></a></h3><p>Run the optimization with the contructed <code>Spins</code>, configured <code>Parameters</code> and <code>ControlField</code>.</p><pre><code class="language-julia hljs">grape_output = grape(params, control_field, spins);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+ Final Cost Function Value = 0.019
 
 ---------- RF Analysis ----------
 
-Pulse Peak Amplitude = 3.681 [Hz]
-Pulse Peak Amplitude = 0.0865 [μT]
-Attenuation corresponding to maximum amplitude: 48.9522 [dB]
-Maximum power = 1.7839 [W]
-Average power = 0.3675 [W]
-Pulse energy = 0.1838 [J]</code></pre><h3 id="Plot"><a class="docs-heading-anchor" href="#Plot">Plot</a><a id="Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Plot" title="Permalink"></a></h3><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">              ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+Pulse Peak Amplitude = 3.4998 [Hz]
+Pulse Peak Amplitude = 0.0822 [μT]
+Attenuation corresponding to maximum amplitude: 49.972 [dB]
+Maximum power = 1.5862 [W]
+Average power = 0.3505 [W]
+Pulse energy = 0.1752 [J]</code></pre><h3 id="Plot"><a class="docs-heading-anchor" href="#Plot">Plot</a><a id="Plot-1"></a><a class="docs-heading-anchor-permalink" href="#Plot" title="Permalink"></a></h3><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">              ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
               ┌────────────────────────────────────────┐ 
-      2.68199 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠲⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⡸⠁⠀⠘⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⢠⠇⠀⠀⠀⢹⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⢰⠃⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⢸⠁⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-      Bx [Hz] │⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⢀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠦⠤⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠦⣄⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-    -0.113644 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠁⠀⠉⠙⠒⠒⠒⠒⠒⠒⠒⠒⠒⠲⠤⠀│ 
+      2.55202 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⡼⠁⠀⠈⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⣸⠁⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⢰⠃⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⢀⡏⠀⠀⠀⠀⠀⠀⠈⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+      Bx [Hz] │⠀⠀⠀⢀⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⡼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠦⣄⣀⡤⠤⢤⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀│ 
+    -0.177996 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠳⠀│ 
               └────────────────────────────────────────┘ 
               ⠀-0.015⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.515⠀ 
               ┌────────────────────────────────────────┐ 
-      2.68199 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠲⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⡸⠁⠀⠘⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⢠⠇⠀⠀⠀⢹⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⡞⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⢰⠃⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⢸⠁⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-      By [Hz] │⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⢀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠦⠤⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠳⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠦⣄⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-    -0.113644 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠁⠀⠉⠙⠒⠒⠒⠒⠒⠒⠒⠒⠒⠲⠤⠀│ 
+      2.55202 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⡼⠁⠀⠈⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⣸⠁⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⢰⠃⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⢀⡏⠀⠀⠀⠀⠀⠀⠈⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+      By [Hz] │⠀⠀⠀⢀⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⡼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+              │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠦⣄⣀⡤⠤⢤⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀│ 
+    -0.177996 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠉⠳⠀│ 
               └────────────────────────────────────────┘ 
               ⠀-0.015⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.515⠀</code></pre><h2 id="Magnetization-saturation-with-B_0-inhomogeneity"><a class="docs-heading-anchor" href="#Magnetization-saturation-with-B_0-inhomogeneity">Magnetization saturation with <span>$B_0$</span> inhomogeneity</a><a id="Magnetization-saturation-with-B_0-inhomogeneity-1"></a><a class="docs-heading-anchor-permalink" href="#Magnetization-saturation-with-B_0-inhomogeneity" title="Permalink"></a></h2><h3 id="Physical-system-2"><a class="docs-heading-anchor" href="#Physical-system-2">Physical system</a><a class="docs-heading-anchor-permalink" href="#Physical-system-2" title="Permalink"></a></h3><p>Optimizing pulses robust against field inhomogeneities. Here <span>$B_0$</span> is the field inhomogeneity in Hertz and <span>$ΔB1$</span> corresponds to the RF field inhomogeneity in percentage.</p><pre><code class="language-julia hljs">M0 = [0.0, 0.0, 1.0]
 T1 = [0.6]
@@ -99,50 +99,50 @@ cost = GrapeMR.euclidean_norm
 fields2opt = Dict(&quot;B1x&quot; =&gt; true, &quot;B1y&quot; =&gt; true, &quot;Bz&quot; =&gt; false)
 grape_params = GrapeParams(N, cost, fields2opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">GrapeParams{typeof(GrapeMR.euclidean_norm)}(2000, GrapeMR.euclidean_norm, Dict{String, Bool}(&quot;B1y&quot; =&gt; 1, &quot;B1x&quot; =&gt; 1, &quot;Bz&quot; =&gt; 0))</code></pre><p><code>Parameter</code> struct</p><pre><code class="language-julia hljs">params = Parameters(grape_params, opt_params)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Parameters{typeof(GrapeMR.euclidean_norm)}(GrapeParams{typeof(GrapeMR.euclidean_norm)}(2000, GrapeMR.euclidean_norm, Dict{String, Bool}(&quot;B1y&quot; =&gt; 1, &quot;B1x&quot; =&gt; 1, &quot;Bz&quot; =&gt; 0)), OptimizationParams(0.5, 2, 2000))</code></pre><h3 id="Initial-control-fields"><a class="docs-heading-anchor" href="#Initial-control-fields">Initial control fields</a><a id="Initial-control-fields-1"></a><a class="docs-heading-anchor-permalink" href="#Initial-control-fields" title="Permalink"></a></h3><pre><code class="language-julia hljs">B1ref = 5.0
 control_time = 0.5
-control_field = spline_RF(N, control_time, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([0.9754012904749554 0.9944438631168045 … 0.2905259136431807 0.2817166194679015], [0.9754012904749554 0.9944438631168045 … 0.2905259136431807 0.2817166194679015], 5.0, [0.0 0.0 … 0.0 0.0], 0.5)</code></pre><h3 id="Run-optimization"><a class="docs-heading-anchor" href="#Run-optimization">Run optimization</a><a id="Run-optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Run-optimization" title="Permalink"></a></h3><pre><code class="language-julia hljs">grape_output = grape(params, control_field, spins);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
- Final Cost Function Value = 0.225
+control_field = spline_RF(N, control_time, B1ref)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ControlField{Float64, Matrix{Float64}, Matrix{Float64}}([2.215268248222019 2.2292534915236875 … 4.975400496973081 4.992254319006693], [2.215268248222019 2.2292534915236875 … 4.975400496973081 4.992254319006693], 5.0, [0.0 0.0 … 0.0 0.0], 0.5)</code></pre><h3 id="Run-optimization"><a class="docs-heading-anchor" href="#Run-optimization">Run optimization</a><a id="Run-optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Run-optimization" title="Permalink"></a></h3><pre><code class="language-julia hljs">grape_output = grape(params, control_field, spins);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+ Final Cost Function Value = 0.15
 
 ---------- RF Analysis ----------
 
-Pulse Peak Amplitude = 14.1568 [Hz]
-Pulse Peak Amplitude = 0.3325 [μT]
-Attenuation corresponding to maximum amplitude: 22.0223 [dB]
-Maximum power = 39.6146 [W]
-Average power = 9.8074 [W]
-Pulse energy = 4.9037 [J]</code></pre><h3 id="Plots"><a class="docs-heading-anchor" href="#Plots">Plots</a><a id="Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Plots" title="Permalink"></a></h3><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">             ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
+Pulse Peak Amplitude = 15.3248 [Hz]
+Pulse Peak Amplitude = 0.3599 [μT]
+Attenuation corresponding to maximum amplitude: 20.4386 [dB]
+Maximum power = 47.5379 [W]
+Average power = 11.9136 [W]
+Pulse energy = 5.9568 [J]</code></pre><h3 id="Plots"><a class="docs-heading-anchor" href="#Plots">Plots</a><a id="Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Plots" title="Permalink"></a></h3><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GrapeMR, Plots; unicodeplots(); # change the backend so that plots go to stdout and can be rendered in CI/headless mode.</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; control_fields = plot_control_fields(grape_output.control_field);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; display(control_fields)</code><code class="nohighlight hljs ansi" style="display:block;">             ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Control Fields⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀ 
              ┌────────────────────────────────────────┐ 
-      10.497 │⠀⠀⠀⢠⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⡞⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⢰⠃⠸⡀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⡇⠸⡀⠀⠀⡶⡄⠀⠀⠀⠀⢸⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⢸⠀⠀⡇⠀⠀⣰⣆⠀⢀⡇⣇⠀⠀⢸⠀⠀⡇⠀⢰⠃⡇⠀⠀⠀⠀⡞⠀⠀⠈⠓⣆⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⣸⠀⠀⡇⠀⠀⡇⠸⡄⣸⠀⢸⠀⠀⢸⠀⠀⡇⠀⢸⠀⢹⠀⠀⠀⠀⡇⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⠀│ 
-             │⠀⠀⡇⠀⠀⢳⠀⢸⠁⠀⠳⠇⠀⠸⡄⠀⡜⠀⠀⢹⠀⡏⠀⢸⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀│ 
-     Bx [Hz] │⠀⠀⡇⠀⠀⢸⠀⡸⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠸⣤⠇⠀⠸⡄⠀⠀⢸⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀│ 
-             │⠀⢠⠃⠀⠀⠘⡆⡇⠀⠀⠀⠀⠀⠀⢣⢀⠇⠀⠀⠀⠉⠀⠀⠀⡇⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⢳⢀⡤⢤⠀│ 
-             │⠀⢸⠀⠀⠀⠀⠛⠁⠀⠀⠀⠀⠀⠀⠸⣸⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠈⠉⠀⠀⠀│ 
-             │⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⢰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-    -6.69781 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+     11.3811 │⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⣸⢳⠀⠀⠀⠀⠀⠀⠀⠀⡇⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⢠⠃⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⢠⠇⠈⡇⠀⢀⣿⡀⠀⠀⢸⠀⢸⠀⠀⠀⡤⡄⠀⠀⠀⠀⠀⢠⠇⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⢸⠀⠀⡇⠀⢸⠀⡇⠀⠀⢸⠀⢸⡀⠀⢰⠃⢹⠀⠀⠀⠀⠀⢸⠀⠈⠧⠖⢦⠀⠀⠀⡴⢦⠀⠀⠀⠀⠀│ 
+             │⠀⣸⠀⠀⢹⠀⡞⠀⡇⠀⠀⡼⠀⠀⡇⠀⡞⠀⠈⡇⠀⠀⠀⠀⣸⠀⠀⠀⠀⠈⣇⠀⣸⠁⠈⢧⠀⠀⡼⠀│ 
+             │⠀⡇⠀⠀⢸⣀⡇⠀⢹⠀⠀⡇⠀⠀⢧⢰⠃⠀⠀⢳⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠘⠶⠃⠀⠀⠈⠓⠚⠁⠀│ 
+     Bx [Hz] │⠀⠃⠀⠀⠀⠿⠀⠀⢸⠀⠀⡇⠀⠀⠘⠞⠀⠀⠀⠸⡀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⢸⡀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠁⠀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡆⠀⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+    -7.86787 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
              └────────────────────────────────────────┘ 
              ⠀-0.015⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.515⠀ 
              ┌────────────────────────────────────────┐ 
-      10.497 │⠀⠀⠀⢠⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⡞⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⢰⠃⠸⡀⠀⠀⠀⠀⠀⠀⣀⡀⠀⠀⠀⡇⠸⡀⠀⠀⡶⡄⠀⠀⠀⠀⢸⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⢸⠀⠀⡇⠀⠀⣰⣆⠀⢀⡇⣇⠀⠀⢸⠀⠀⡇⠀⢰⠃⡇⠀⠀⠀⠀⡞⠀⠀⠈⠓⣆⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⣸⠀⠀⡇⠀⠀⡇⠸⡄⣸⠀⢸⠀⠀⢸⠀⠀⡇⠀⢸⠀⢹⠀⠀⠀⠀⡇⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⠀│ 
-             │⠀⠀⡇⠀⠀⢳⠀⢸⠁⠀⠳⠇⠀⠸⡄⠀⡜⠀⠀⢹⠀⡏⠀⢸⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⢳⠀⠀⠀⠀⠀│ 
-     By [Hz] │⠀⠀⡇⠀⠀⢸⠀⡸⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠸⣤⠇⠀⠸⡄⠀⠀⢸⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀⠀⠀│ 
-             │⠀⢠⠃⠀⠀⠘⡆⡇⠀⠀⠀⠀⠀⠀⢣⢀⠇⠀⠀⠀⠉⠀⠀⠀⡇⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⢳⢀⡤⢤⠀│ 
-             │⠀⢸⠀⠀⠀⠀⠛⠁⠀⠀⠀⠀⠀⠀⠸⣸⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⣸⠀⠀⠀⠀⠀⠀⠀⠈⠉⠀⠀⠀│ 
-             │⠀⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⢳⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⢰⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⣸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
-    -6.69781 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+     11.3811 │⠀⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⣸⢳⠀⠀⠀⠀⠀⠀⠀⠀⡇⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⢠⠃⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⢠⠇⠈⡇⠀⢀⣿⡀⠀⠀⢸⠀⢸⠀⠀⠀⡤⡄⠀⠀⠀⠀⠀⢠⠇⢳⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⢸⠀⠀⡇⠀⢸⠀⡇⠀⠀⢸⠀⢸⡀⠀⢰⠃⢹⠀⠀⠀⠀⠀⢸⠀⠈⠧⠖⢦⠀⠀⠀⡴⢦⠀⠀⠀⠀⠀│ 
+             │⠀⣸⠀⠀⢹⠀⡞⠀⡇⠀⠀⡼⠀⠀⡇⠀⡞⠀⠈⡇⠀⠀⠀⠀⣸⠀⠀⠀⠀⠈⣇⠀⣸⠁⠈⢧⠀⠀⡼⠀│ 
+             │⠀⡇⠀⠀⢸⣀⡇⠀⢹⠀⠀⡇⠀⠀⢧⢰⠃⠀⠀⢳⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠘⠶⠃⠀⠀⠈⠓⠚⠁⠀│ 
+     By [Hz] │⠀⠃⠀⠀⠀⠿⠀⠀⢸⠀⠀⡇⠀⠀⠘⠞⠀⠀⠀⠸⡀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⢸⡀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠁⠀⠀⠀⠀⠀⠀⠀⠀⢣⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⢳⡼⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡆⠀⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+             │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⢰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
+    -7.86787 │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│ 
              └────────────────────────────────────────┘ 
-             ⠀-0.015⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.515⠀</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../pages/theory/">« Theoretical Background</a><a class="docs-footer-nextpage" href="../../pages/developing/">Developing »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Sunday 17 November 2024 10:49">Sunday 17 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+             ⠀-0.015⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀t [s]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀0.515⠀</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../pages/theory/">« Theoretical Background</a><a class="docs-footer-nextpage" href="../../pages/developing/">Developing »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 10 January 2025 12:45">Friday 10 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
