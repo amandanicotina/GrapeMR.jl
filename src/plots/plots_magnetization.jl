@@ -167,7 +167,7 @@ function plot_magnetization_3D(isos::Vector{Isochromat})
         s = iso.spin
         color, label = get_target_properties(s, colors)
         
-        plot3d!(pMag3D, m[2, :], m[3, :], m[4, :], label = s.target ∈ labels_shown ? false : label, color = color, lw = 1.5)
+        plot3d!(pMag3D, m[2, :], m[3, :], m[4, :], label = s.target ∈ labels_shown ? false : label, color = color, lw = 1.5, grid=true)
         scatter!(pMag3D, [m[2, end]], [m[3, end]], [m[4, end]], label = false, color = color, markersize = 4)
         push!(labels_shown, s.target)
     end
