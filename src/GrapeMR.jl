@@ -61,7 +61,7 @@ export Spins, Spin, SpinRange, Magnetization, Isochromat
 export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 export grape, dynamics, run_grape_optimization
 export backward_propagation, backward_propagation!, forward_propagation, test_forward_propagation
-export finite_difference_cost, finite_difference_field
+export finite_difference_cost, finite_difference_field, gradient
 
 # Save/load/export Files
 export save_grape_data, save_hyperopt_data, load_grape_data, load_hyperopt_data

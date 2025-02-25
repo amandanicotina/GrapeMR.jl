@@ -24,56 +24,35 @@ function finite_difference_cost(cost::Function, iso::Isochromat, ΔM::Float64)
     return finite_diffs
 end
 
-function finite_difference_field(cost::Symbol, cf::ControlField, spin::Spins, Δcf::Float64, field::String)
-    finite_diffs = zeros(Float64, 1, length(cf.B1x))
 
-    # Get the original isochromat values (no perturbation)
-    iso_vals = dynamics(cf, spin)
-
-    # Helper function for applying perturbations and calculating finite differences
-    function calculate_finite_difference(cf::ControlField, spin::Spins, perturbation, index::Int, Δcf::Float64, field::String)
+function finite_difference_field(s::Spin, cf::ControlField, gp::GrapeParams, field::String, Δcf::Float64)
+    finite_difference = zeros(eltype(cf.B1x), 1, length(cf.B1x))
+    for i ∈ 1:length(cf.B1x)
+        perturbation_pos = copy(cf.B1x)
+        perturbation_neg = copy(cf.B1x)
+        perturbation_pos[1, i] += Δcf
+        perturbation_neg[1, i] -= Δcf
         if field == "B1x"
-            # Perturb B1x field
-            perturbed_cf_pos = ControlField(copy(perturbation), cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
-            perturbation[1, index] -= 2 * Δcf
-            perturbed_cf_neg = ControlField(copy(perturbation), cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
-        elseif field == "B1y"
-            # Perturb B1y field
-            perturbed_cf_pos = ControlField(cf.B1x, copy(perturbation), cf.B1_ref, cf.Bz, cf.t_control)
-            perturbation[1, index] -= 2 * Δcf  # Perturb in the negative direction
-            perturbed_cf_neg = ControlField(cf.B1x, copy(perturbation), cf.B1_ref, cf.Bz, cf.t_control)
+            perturbed_cf_pos = ControlField(copy(perturbation_pos), cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
+            perturbed_cf_neg = ControlField(copy(perturbation_neg), cf.B1y, cf.B1_ref, cf.Bz, cf.t_control)
+        elseif field == "B1y"   
+            perturbed_cf_pos = ControlField(cf.B1x, copy(perturbation_pos), cf.B1_ref, cf.Bz, cf.t_control)
+            perturbed_cf_neg = ControlField(cf.B1x, copy(perturbation_neg), cf.B1_ref, cf.Bz, cf.t_control)
         else
             error("Parameter not defined. Acceptable inputs are \"B1x\" or \"B1y\"")
         end
+        iso_pos = dynamics(perturbed_cf_pos, s) 
+        iso_neg = dynamics(perturbed_cf_neg, s)
+        cost_vars_pos = gp.cost_function(iso_pos)
+        cost_pos, _ = cost_vars_pos
+        cost_vars_neg = gp.cost_function(iso_neg)
+        cost_neg, _ = cost_vars_neg   
+        finite_difference[1, i] = (cost_pos - cost_neg) / (2 * Δcf)
 
-        # Dynamics with positive perturbation
-        iso_pos = dynamics(perturbed_cf_pos, spin)
-
-        # Dynamics with negative perturbation
-        iso_neg = dynamics(perturbed_cf_neg, spin)
-
-        # Central difference formula
-        return (cost_function(iso_pos, cost)[1] - cost_function(iso_neg, cost)[1]) / (2 * Δcf)
+        # Reset perturbation
+        perturbation_pos[1, i] -= Δcf
+        perturbation_neg[1, i] += Δcf
     end
-
-    # Select the appropriate field to perturb
-    if field == "B1x"
-        perturbation = copy(cf.B1x)
-        for i ∈ 1:length(cf.B1x)
-            perturbation[1, i] += Δcf  # Perturb in the positive direction
-            finite_diffs[1, i] = calculate_finite_difference(cf, spin, perturbation, i, Δcf, "B1x")
-            perturbation[1, i] -= Δcf  # Reset perturbation
-        end
-    elseif field == "B1y"
-        perturbation = copy(cf.B1y)
-        for i ∈ 1:length(cf.B1y)
-            perturbation[1, i] += Δcf  # Perturb in the positive direction
-            finite_diffs[1, i] = calculate_finite_difference(cf, spin, perturbation, i, Δcf, "B1y")
-            perturbation[1, i] -= Δcf  # Reset perturbation
-        end
-    else
-        error("Parameter not defined. Acceptable inputs are \"B1x\" or \"B1y\"")
-    end
-
-    return finite_diffs
+    return finite_difference
 end
+    
