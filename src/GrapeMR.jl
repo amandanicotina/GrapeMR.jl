@@ -55,12 +55,12 @@ export γ_¹H, Ix, Iy
 # Data types
 export ControlField
 export OptimizationParams, GrapeParams, Parameters, GrapeOutput
-export Spins, Spin, SpinRange, Magnetization, Isochromat, generate_spins, build_spins
+export Spins, Spin, Magnetization, Isochromat, generate_spins
 
 # Grape 
 export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
 export grape, dynamics, run_grape_optimization
-export backward_propagation, backward_propagation!, forward_propagation, test_forward_propagation
+export backward_propagation, backward_propagation!, forward_propagation
 export finite_difference_cost, finite_difference_field, gradient
 
 # Save/load/export Files
@@ -78,18 +78,6 @@ export initialize_plot, color_palette, get_target_properties
 export random_hyperopt, bohb_hyperopt, hband_hyperopt
 export plot_hyperopt_history, plot_cost_grape_runs, plot_hyperopt_contour, plot_cost_hyperparam
 export plot_evaluations, plot_bohb
-
-# bSSFP Module #
-export SteadyState, SteadyStateData
-export calculate_steady_state, plot_ss_offset_profile, plot_ss_flip_angle_profile
-export steady_state, steady_state_matrix, steady_state_geometric, steady_state_geometric_Mz
-export plot_magnetization_target, plot_magnetization_target_3D
-export plot_magnetization_targetB0, plot_ss_offset_profile, plot_bssfp_magnetization, plot_transverse_evolution, plot_magnetization_trajectory
-
-# Analysis Module #
-export complex_signal, amplitudes_and_phases, bruker_normalized_amplitudes_and_phases
-export integral_factor, fast_fourier_transform, average_pulse_power # check export in these functions when the run_rf_analysis is ready
-export run_cost_analysis, RF_pulse_analysis
 
 
 
