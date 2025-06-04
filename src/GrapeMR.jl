@@ -1,6 +1,7 @@
 module GrapeMR
 
 using ArgParse
+using Plots
 using CSV
 using TOML
 using JLD2
@@ -54,7 +55,7 @@ export γ_¹H, Ix, Iy
 # Data types
 export ControlField
 export OptimizationParams, GrapeParams, Parameters, GrapeOutput
-export Spins, Spin, SpinRange, Magnetization, Isochromat
+export Spins, Spin, SpinRange, Magnetization, Isochromat, generate_spins, build_spins
 
 # Grape 
 export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF

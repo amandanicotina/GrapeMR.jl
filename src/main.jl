@@ -2,13 +2,13 @@ using GrapeMR
 
 # Spin Parameters
 M0 = [0.0, 0.0, 1.0]
-ΔB1 = [1.0]
-offsets = 0.0 # -15:5:15
+ΔB1 = [0.9, 1.0, 1.1]
+offsets =  -15:5:15
 T1 = [1.0, 0.25] #[1/31.3436]
 T2 = [0.08, 0.04] #[1/37.6471]
 label = ["C1", "C2"]
-target = ["max", "min"]
-spins = Spin(M0, T1, T2, offsets, ΔB1, target, label)
+target = [:max, :min]
+spins = generate_spins(M0, T1, T2, offsets, ΔB1, target, label)
 
 # Grape Parameters 
 grape_params = GrapeParams(2000, GrapeMR.saturation_contrast, Dict("B1x" => true, "B1y" => true, "Bz" => false))

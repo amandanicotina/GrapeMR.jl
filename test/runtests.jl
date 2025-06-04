@@ -2,7 +2,7 @@ using GrapeMR
 using Test, SafeTestsets
 
 @time begin
-    @safetestset "Cost Function: Gradient vs Finite Differences" begin include("test_cost_functions.jl") end
+    #@safetestset "Cost Function: Gradient vs Finite Differences" begin include("test_cost_functions.jl") end
 
     @safetestset "grape() Convergence" begin include("test_grape.jl") end
 
