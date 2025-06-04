@@ -12,7 +12,7 @@ target = ["min"]
 spins = Spin(M0, T1, T2, offsets, ΔB1, target, label)
 
 # Grape Parameters 
-grape_params = GrapeParams(5, GrapeMR.spin_target, Dict("B1x" => true, "B1y" => true, "Bz" => false))
+grape_params = GrapeParams(100, GrapeMR.spin_target, Dict("B1x" => true, "B1y" => true, "Bz" => false))
 
 # Optimization Parameters
 Tc, poly_start, poly_degree, max_iter = 0.5, 0.1, 1, 5;
@@ -44,7 +44,10 @@ fd_cf_By = finite_difference_field(spins[1], control_field, grape_params, "B1y",
 
 using Plots
 plot(fd_cf_Bx')
-scatter!(true_grad_Bx')
+scatter!(fd_cf_Bx')
+
+plot!(true_grad_By')
+scatter!(true_grad_By')
 
 
 # Test highest difference

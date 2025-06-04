@@ -16,10 +16,10 @@ Calculates the Bloch matrix for spin dynamics.
 function bloch_matrix(B1x::Float64, B1y::Float64, Bz::Float64, Γ1::Float64, Γ2::Float64)
 
     bloch_matrix =
-        SA[0.0 0.0 0.0 0.0;
-            0.0 -Γ2 Bz -B1y;
-            0.0 -Bz -Γ2 B1x;
-            Γ1 B1y -B1x -Γ1]
+    SA[0.0 0.0 0.0 0.0;
+        0.0 -Γ2  -Bz   B1y;
+        0.0  Bz  -Γ2  -B1x;
+        Γ1  -B1y  B1x -Γ1]
 
     return bloch_matrix
 end

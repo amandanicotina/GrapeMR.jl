@@ -119,8 +119,8 @@ function test_shaped_pulse_dynamics()
     grape_output = @time grape(params, control_field, spins); 
 
     # BlochSim Simulation 
-    waveform_Hz = grape_output.control_field.B1x .- im*grape_output.control_field.B1y;
-    waveform_T = grape_output.control_field.B1x./γ_¹H .- im*grape_output.control_field.B1y./γ_¹H;
+    waveform_Hz = grape_output.control_field.B1x .+ im*grape_output.control_field.B1y;
+    waveform_T = grape_output.control_field.B1x./γ_¹H .+ im*grape_output.control_field.B1y./γ_¹H;
     waveform_G = vec(waveform_T).*1e4;
     rf_full = BlochSim.RF(waveform_G, Δt)
     rf_disc = [BlochSim.RF([Δrf], Δt) for Δrf ∈ waveform_G]
@@ -164,8 +164,8 @@ end
 Mx_bs, My_bs, Mz_bs    = getproperty.(mag_bs_rot[1], :x), getproperty.(mag_bs_rot[1], :y), getproperty.(mag_bs_rot[1], :z);
 Mx_gp, My_gp, Mz_gp    = mag_gp_rot[1][2,:], mag_gp_rot[1][3,:], mag_gp_rot[1][4,:]
 
-@test all(round.(Mx_gp, digits = 1) .== round.(My_bs, digits = 1))
-@test all(round.(My_gp, digits = 1) .== round.(Mx_bs, digits = 1))
+@test all(round.(Mx_gp, digits = 1) .== round.(Mx_bs, digits = 1))
+@test all(round.(My_gp, digits = 1) .== round.(My_bs, digits = 1))
 @test all(round.(Mz_gp, digits = 1) .== round.(Mz_bs, digits = 1))
 
 # -----------------------------------------------------------------------
@@ -186,10 +186,10 @@ Mx_gp_relax, My_gp_relax, Mz_gp_relax = mag_gp_relax[1][2,:], mag_gp_relax[1][3,
 Mx_bs_shape, My_bs_shape, Mz_bs_shape = getproperty.(mag_bs_shape[1], :x), getproperty.(mag_bs_shape[1], :y), getproperty.(mag_bs_shape[1], :z);
 Mx_gp_shape, My_gp_shape, Mz_gp_shape = mag_gp_shape[1][2,:], mag_gp_shape[1][3,:], mag_gp_shape[1][4,:]
 
-# tol = 1e-1  
-# @test all(isapprox.(Mx_gp_shape, Mx_bs_shape, atol = tol))
-# @test all(isapprox.(My_gp_shape, My_bs_shape, atol = tol))
-# @test all(isapprox.(Mz_gp_shape, Mz_bs_shape, atol = tol))  
+tol = 1e-1  
+@test all(isapprox.(Mx_gp_shape, Mx_bs_shape, atol = tol))
+@test all(isapprox.(My_gp_shape, My_bs_shape, atol = tol))
+@test all(isapprox.(Mz_gp_shape, Mz_bs_shape, atol = tol))
 
 # @test all(round.(Mx_gp_shape, digits = 3) .== round.(My_bs_shape, digits = 3))
 # @test all(round.(My_gp_shape, digits = 3) .== round.(Mx_bs_shape, digits = 3))

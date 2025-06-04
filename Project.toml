@@ -9,7 +9,6 @@ BlochSim = "5c0f8cbe-99a4-11e9-108b-216da9629524"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
-Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
 CubicSplines = "9c784101-8907-5a6d-9be6-98f00873c89b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -33,12 +32,13 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
+[sources]
+Hyperopt = {rev = "master", url = "https://github.com/ddavid/Hyperopt.jl"}
+
 [compat]
 Hyperopt = "0.5.6"
+Plots = "1.40.13"
 julia = "1"
-
-[sources]
-Hyperopt = {url = "https://github.com/ddavid/Hyperopt.jl", rev = "master"}
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

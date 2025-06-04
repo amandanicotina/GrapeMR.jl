@@ -27,7 +27,7 @@ function random_hyperopt(spins::Vector{<:Spins}, gp::GrapeParams, Tc::LinRange, 
     i::Int=30,
     poly_start::Vector{Float64}=[1e-1, 2.5e-1, 5e-1, 7.5e-1],
     poly_degree::Vector{Int}=[1, 2],
-    B1ref::Float64=1.0)
+    B1ref::Float64=5.0)
     #, logger::WandbLogger = Wandb.WandbLogger(; project = wandb_project, name = nothing))
 
     random_hyperopt = @hyperopt for i = i,
