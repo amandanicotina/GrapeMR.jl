@@ -109,13 +109,18 @@ Convert a `ControlField` into a `NormalizedControlField` using reference units.
 - `NormalizedControlField`
 """
 function normalize_control_field(cf::ControlField; t_unit=1e-3, B1_unit=1.0)
-    B1x_norm = vec(cf.B1x) ./ B1_unit
-    B1y_norm = vec(cf.B1y) ./ B1_unit
-    Bz_norm  = vec(cf.Bz)  ./ B1_unit
+    B1x_norm = reshape(cf.B1x ./ B1_unit, 1, :)
+    B1y_norm = reshape(cf.B1y ./ B1_unit, 1, :)
+    Bz_norm  = reshape(cf.Bz  ./ B1_unit, 1, :)
     t_c_norm = cf.t_control / t_unit
     B1_ref_norm = cf.B1_ref / B1_unit
+
+    # 👇 DEBUG
+    @info "normalize_control_field" B1_unit cf.B1_ref maximum_B1x=maximum(abs, cf.B1x) maximum_B1x_norm=maximum(abs, B1x_norm)
+
     return NormalizedControlField(B1x_norm, B1y_norm, B1_ref_norm, Bz_norm, t_c_norm)
 end
+
 
 """
     denormalize_control_field(cf::NormalizedControlField; t_unit=1e-3, B1_unit=1.0)

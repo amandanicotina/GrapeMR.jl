@@ -66,7 +66,6 @@ include("optimization/finite_difference.jl")
 # Utilities
 include("utilities/save_data.jl")
 include("utilities/export_bruker.jl")
-include("utilities/normalize.jl")
 
 # Plots
 include("plots/plots_hyperparameters.jl")
@@ -82,14 +81,14 @@ include("plots/plots_magnetization.jl")
 export γ_¹H, Ix, Iy
 
 # Data types
-export ControlField
+export ControlField, NormalizedControlField
 export OptimizationParams, GrapeParams, Parameters
 export Spins, Spin, Magnetization, Isochromat, generate_spins
 export GrapeOutput
 export PulseShape, Spline, Hard, Sinc, Gaussian, BSSFP, pulse_shape
 
 # RF pulse generation
-export generate_control_field
+export generate_control_field, normalize_control_field, denormalize_control_field
 
 # GRAPE
 export grape, grape!, dynamics
@@ -111,10 +110,6 @@ export initialize_plot, color_palette, get_target_properties
 export random_hyperopt, bohb_hyperopt, hband_hyperopt
 export plot_hyperopt_history, plot_cost_grape_runs, plot_hyperopt_contour, plot_cost_hyperparam
 export plot_evaluations, plot_bohb
-
-# Normalization
-export normalize_control_field, denormalize_control_field
-
 
 # ------------------ #
  # CLI Entrypoint #

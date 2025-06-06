@@ -23,6 +23,7 @@ ParameterSchedulers = "d7d3b36b-41b8-4d0d-a2bf-768c6151755e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PrettyPrint = "8162dcfd-2161-5ef2-ae6c-7681170c5f98"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
@@ -30,14 +31,11 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Hyperopt = {rev = "master", url = "https://github.com/ddavid/Hyperopt.jl"}
 
 [compat]
-# Core Julia compatibility
-julia = "1"
-
-# Regular dependencies
 ArgParse = "1"
 BlochSim = "0.7"
 CSV = "0.10"
 ColorSchemes = "3"
+Coverage = "1"
 CubicSplines = "0.2"
 DataFrames = "1"
 Dates = "1"
@@ -50,18 +48,15 @@ LinearAlgebra = "1"
 Logging = "1"
 NumericalIntegration = "0.3"
 ParameterSchedulers = "0.4"
+Plots = "1.40.13"
 PrettyPrint = "0.2"
 Printf = "1"
-Plots = "1.40.13"
+Random = "1.11.0"
+SafeTestsets = "0.0.1"
 StaticArrays = "1"
 TOML = "1"
-
-# Extras (used for testing and docs)
-Coverage = "1"
-SafeTestsets = "0.0.1"
 Test = "1"
-
-
+julia = "1"
 
 [extras]
 Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
