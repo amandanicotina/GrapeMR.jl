@@ -22,11 +22,11 @@ Represents a spin system with relaxation parameters and inhomogeneities.
 """
 struct Spin <: Spins
     m_init::AbstractVector{<:Real}
-    t1::Float64
-    t2::Float64
+    T1::Float64
+    T2::Float64
     b0_inho::Float64
     b1_inho::Float64
-    target::Symbol
+    target::String
     label::String
     n_spins::Int
 end

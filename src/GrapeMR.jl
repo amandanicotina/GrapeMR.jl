@@ -1,86 +1,124 @@
 module GrapeMR
 
 using ArgParse
-using Plots
+using BlochSim
+using ColorSchemes
 using CSV
-using TOML
-using JLD2
+using CubicSplines
+using DataFrames
 using Dates
 using Distributed
-using Logging
-using ColorSchemes
+using ForwardDiff
 using Hyperopt
-using BlochSim
-using DataFrames
-using CubicSplines
+using JLD2
 using LinearAlgebra
+using Logging
 using NumericalIntegration
 using ParameterSchedulers
+using Plots
 using PrettyPrint
+using Random
 using StaticArrays
-using ForwardDiff
+using TOML
 
 const γ_¹H = 42.5774688e6 #[Hz/T] 
 const Ix = SA[0 0 0 0; 0 0 0 0; 0 0 0 -1; 0 0 1 0]
 const Iy = SA[0 0 0 0; 0 0 0 1; 0 0 0 0; 0 -1 0 0]
 
+const t_unit = 1e-3          # 1 ms (i.e. express time in ms internally)
+const B1_unit = 5.0          # RF reference amplitude in a.u.
+const γ_unit = 2π * γ_¹H     # [rad/s/T] — needed for internal Bloch matrices
+
+# ----------- #
+  # Includes #
+# ----------- #
+
+# Data types
 include("data_types/ControlField.jl")
 include("data_types/Parameters.jl")
 include("data_types/Spins.jl")
+include("data_types/GrapeOutput.jl")
+include("data_types/PulseShape.jl")
 
+# Pulse generators
+include("rf_pulses/generators.jl")
+
+# bSSFP module
 include("bSSFP/data_types.jl")
 include("bSSFP/steady_state.jl")
 include("bSSFP/plots.jl")
 
+# Analysis
 include("analysis/rf_analysis.jl")
 include("analysis/cost_analysis.jl")
 include("analysis/magnetization_analysis.jl")
 
+# Propagation and cost
 include("propagation&cost/bloch_methods.jl")
 include("propagation&cost/cost_functions.jl")
 
+# Optimization
 include("optimization/optimize.jl")
+include("optimization/gradients.jl")
 include("optimization/hyperparameter_opt.jl")
 include("optimization/finite_difference.jl")
 
+# Utilities
 include("utilities/save_data.jl")
 include("utilities/export_bruker.jl")
+include("utilities/normalize.jl")
 
+# Plots
 include("plots/plots_hyperparameters.jl")
 include("plots/plots_control_field.jl")
 include("plots/plots_magnetization.jl")
 
+
+# ----------- #
+  # Exports #
+# ----------- #
+
+# Constants
 export γ_¹H, Ix, Iy
 
 # Data types
 export ControlField
-export OptimizationParams, GrapeParams, Parameters, GrapeOutput
+export OptimizationParams, GrapeParams, Parameters
 export Spins, Spin, Magnetization, Isochromat, generate_spins
+export GrapeOutput
+export PulseShape, Spline, Hard, Sinc, Gaussian, BSSFP, pulse_shape
 
-# Grape 
-export gaussian_RF, spline_RF, sinc_RF, bSSFP_RF, hard_RF
-export grape, dynamics, run_grape_optimization
-export backward_propagation, backward_propagation!, forward_propagation
-export finite_difference_cost, finite_difference_field, gradient
+# RF pulse generation
+export generate_control_field
 
-# Save/load/export Files
+# GRAPE
+export grape, grape!, dynamics
+export backward_propagation!, forward_propagation!
+export finite_difference_cost, finite_difference_field, gradient!
+
+# File I/O
 export save_grape_data, save_hyperopt_data, load_grape_data, load_hyperopt_data
 export export_bruker
 
-# Plots
+# Plotting
 export plot_cost_values, plot_magnetization_control_field
 export plot_control_fields, plot_control_fields_phase_shift
 export plot_transverse_magnetization, plot_magnetization_2D, plot_magnetization_3D
 export plot_magnetization_time, plot_transverse_time, plot_longitudinal_time
 export initialize_plot, color_palette, get_target_properties
 
-# Hyperopt
+# Hyperparameter optimization
 export random_hyperopt, bohb_hyperopt, hband_hyperopt
 export plot_hyperopt_history, plot_cost_grape_runs, plot_hyperopt_contour, plot_cost_hyperparam
 export plot_evaluations, plot_bohb
 
+# Normalization
+export normalize_control_field, denormalize_control_field
 
 
+# ------------------ #
+ # CLI Entrypoint #
+# ------------------ #
 function julia_main()::Cint
     s = ArgParseSettings()
 
@@ -91,15 +129,12 @@ function julia_main()::Cint
     end
 
     parsed_args = parse_args(ARGS, s)
-
     run_grape_optimization(parsed_args["config"])
-
     return 0
 end
 
-end
+end # module
 
-# Calling the main function when the script is executed
 if abspath(PROGRAM_FILE) == @__FILE__
     GrapeMR.julia_main()
 end
