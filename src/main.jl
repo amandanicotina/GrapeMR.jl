@@ -2,38 +2,45 @@ using GrapeMR
 
 # Spin Parameters
 M0 = [0.0, 0.0, 1.0]
-ΔB1 = [0.9, 1.0, 1.1]
-offsets =  -15:5:15
+ΔB1 = [1.0]
+offsets = 0.0
 T1 = [1.0, 0.25] #[1/31.3436]
 T2 = [0.08, 0.04] #[1/37.6471]
 label = ["C1", "C2"]
-target = [:max, :min]
+target = ["min", "max"]
 spins = generate_spins(M0, T1, T2, offsets, ΔB1, target, label)
 
-# Grape Parameters 
-grape_params = GrapeParams(2000, GrapeMR.saturation_contrast, Dict("B1x" => true, "B1y" => true, "Bz" => false))
+# GRAPE-specific parameters
+N = 1000
+Tc = 0.5
+B1ref = 5.0
 
-# Optimization Parameters
-random_opt = @time random_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), range(2500, 5000, step = 500)) 
+grape_params = GrapeParams(
+    N,
+    GrapeMR.euclidean_norm,
+    Dict("B1x" => true, "B1y" => true, "Bz" => false),
+)
+
+# Optimization parameters
+# random_opt = @time random_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), range(2500, 5000, step = 500)) 
 # bohb_opt = @time bohb_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), 3000)
 # hband_opt = @time hband_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), 10)
-# Tc, poly_start, poly_degree, max_iter = 0.5, 0.75, 1, 7000;
-# opt_params = OptimizationParams(poly_start, poly_degree, max_iter);
+poly_start, poly_degree, max_iter = 0.75, 1, 5000
+opt_params = OptimizationParams(poly_start, poly_degree, max_iter)
 
-# # Parameters 
-# params = Parameters(grape_params, opt_params);
+# Combined parameter struct
+params = Parameters(grape_params, opt_params)
 
-# # Initial RF Pulse
-# B1ref = 5.0;
-# control_field = spline_RF(grape_params.N, Tc, B1ref)
-# control_field1 = hard_RF(grape_params.N, Tc, B1ref)
+# Initial control field generation (refactored using trait-based dispatch)
+control_field  = generate_control_field(:spline; t_c=Tc, B1ref=B1ref)
 
-# # Run Optimization
-# grape_output = @time GrapeMR.grape(params, control_field, spins);
+# Run Optimization
+grape_output = @time grape(params, control_field, spins)
 
-# # Plots
-# plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats)
-# plot_cost_values(grape_output.cost_values, grape_output.params.grape_params)
+
+# Plots
+plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats)
+plot_cost_values(grape_output.cost_values, grape_output.params.grape_params)
 
 
 # plot_hyperopt_history(random_opt; title = "Random Sampler") 

@@ -26,21 +26,22 @@ function gradient!(grad::AbstractMatrix{<:Real},
     return grad
 end
 
-
 """
-    update!(cf::ControlField, ∇xy::Tuple, ϵ::Float64)
+    update!(cf::AbstractControlField, ∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}, ϵ::Float64)
 
-Updates the control fields based on the calculated gradient and a learning rate.
+Computes the updated x and y components of the control field using gradient descent.
+
+This function is compatible with both `ControlField` and `NormalizedControlField` types, allowing updates in either physical or normalized units.
 
 # Arguments
-- `cf::ControlField`: Control field struct to be updated.
-- `∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}`: Gradients for the x and y components of the field.
-- `ϵ::Float64`: Learning rate for gradient descent.
+- `cf::AbstractControlField`: The control field to be updated (can be normalized or physical).
+- `∇xy::Tuple{Matrix{Float64}, Matrix{Float64}}`: Tuple containing gradients of the cost function w.r.t. the B1x and B1y fields.
+- `ϵ::Float64`: Learning rate used to scale the gradient step.
 
 # Returns
-- `(u1x, u1y)`: Updated x and y control fields.
+- `(u1x, u1y)`: Tuple with updated B1x and B1y fields (not stored in `cf` in-place).
 """
-function update!(cf::ControlField, ∇xy::Tuple{Matrix{Float64},Matrix{Float64}}, ϵ::Float64)
+function update!(cf::AbstractControlField, ∇xy::Tuple{Matrix{Float64},Matrix{Float64}}, ϵ::Float64)
     u1x = cf.B1x .- ϵ .* ∇xy[1]
     u1y = cf.B1y .- ϵ .* ∇xy[2]
     return u1x, u1y

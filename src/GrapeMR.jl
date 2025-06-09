@@ -25,8 +25,6 @@ const γ_¹H = 42.5774688e6 #[Hz/T]
 const Ix = SA[0 0 0 0; 0 0 0 0; 0 0 0 -1; 0 0 1 0]
 const Iy = SA[0 0 0 0; 0 0 0 1; 0 0 0 0; 0 -1 0 0]
 
-const t_unit = 1e-3          # 1 ms (i.e. express time in ms internally)
-const B1_unit = 5.0          # RF reference amplitude in a.u.
 const γ_unit = 2π * γ_¹H     # [rad/s/T] — needed for internal Bloch matrices
 
 # ----------- #
@@ -61,7 +59,6 @@ include("propagation&cost/cost_functions.jl")
 include("optimization/optimize.jl")
 include("optimization/gradients.jl")
 include("optimization/hyperparameter_opt.jl")
-include("optimization/finite_difference.jl")
 
 # Utilities
 include("utilities/save_data.jl")
@@ -93,7 +90,10 @@ export generate_control_field, normalize_control_field, denormalize_control_fiel
 # GRAPE
 export grape, grape!, dynamics
 export backward_propagation!, forward_propagation!
-export finite_difference_cost, finite_difference_field, gradient!
+export update!, gradient!
+
+# Cost Functions
+export euclidean_norm, spin_target, saturation_contrast
 
 # File I/O
 export save_grape_data, save_hyperopt_data, load_grape_data, load_hyperopt_data

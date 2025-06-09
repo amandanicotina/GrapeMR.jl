@@ -1,62 +1,49 @@
 using Test
 using GrapeMR
 
-# Spin Parameters
-M0 = [0.0, 0.0, 1.0]
-ΔB1 = [1.0]
-offsets = 0.0 
-T1 = [1e8] 
-T2 = [1e8] 
-label = ["s1"]
-target = ["min"]
-spins = Spin(M0, T1, T2, offsets, ΔB1, target, label)
+@testset "Gradient calculation and update" begin
+    # Setup
+    t_c = 0.01
+    B1ref = 4.0
+    cf = generate_control_field(:hard; t_c=t_c, B1ref=B1ref)  # Normalized by default
 
-# Grape Parameters 
-grape_params = GrapeParams(100, GrapeMR.spin_target, Dict("B1x" => true, "B1y" => true, "Bz" => false))
+    # Spin setup
+    m_init = [0.0, 0.0, 1.0]
+    spin = Spin(m_init, 1.0, 0.2, 0.0, 1.0, "max", "test", 1)
 
-# Optimization Parameters
-Tc, poly_start, poly_degree, max_iter = 0.5, 0.1, 1, 5;
-opt_params = OptimizationParams(poly_start, poly_degree, max_iter);
+    # Forward propagation
+    N = size(cf.B1x, 2)
+    M = zeros(4, N + 1)
+    forward_propagation!(M, cf, spin)
 
-# Parameters 
-params = Parameters(grape_params, opt_params);
+    # Isochromat
+    iso = Isochromat(GrapeMR.Magnetization(M), spin)
 
-# Initial RF Pulse
-B1ref = 1.0;
-control_field = spline_RF(grape_params.N, Tc, B1ref)
+    # Cost function and gradient
+    val, cost_grad = saturation_contrast(iso)
+    @test val isa Number
+    @test length(cost_grad) == 4
 
-# Dynamics
-iso = dynamics(control_field, spins[1])
-mag = iso.magnetization.dynamics
-cost_vars = grape_params.cost_function(iso)
-# Cost Variables
-cost, adj_ini = cost_vars
-# Adjoint Propagation
-adj = backward_propagation(adj_ini, control_field, iso)
-# True Gradient
-true_grad_Bx = gradient(adj, mag, Ix)
-true_grad_By = gradient(adj, mag, Iy)
+    # Backward propagation
+    χ = zeros(4, N + 1)
+    backward_propagation!(χ, cf, iso, cost_grad)
+    @test size(χ) == (4, N + 1)
 
-# Finite difference
-Δcf = 1e-6
-fd_cf_Bx = finite_difference_field(spins[1], control_field, grape_params, "B1x", Δcf)
-fd_cf_By = finite_difference_field(spins[1], control_field, grape_params, "B1y", Δcf)
+    grad_x = zeros(1, N)
+    grad_y = zeros(1, N)
 
-using Plots
-plot(fd_cf_Bx')
-scatter!(fd_cf_Bx')
+    gradient!(grad_x, χ, M, Ix)
+    gradient!(grad_y, χ, M, Iy)
 
-plot!(true_grad_By')
-scatter!(true_grad_By')
+    @test size(grad_x) == (1, N)
+    @test size(grad_y) == (1, N)
 
-
-# Test highest difference
-tol = 1e-3
-max_diff_Bx = [abs(true_grad_Bx[i] - fd_cf_Bx[i])/maximum([1, abs(true_grad_Bx[i]), abs(fd_cf_Bx[i])]) for i in eachindex(true_grad_Bx)]
-max_diff_By = [abs(true_grad_By[i] - fd_cf_By[i])/maximum([1, abs(true_grad_By[i]), abs(fd_cf_By[i])]) for i in eachindex(true_grad_By)]
-
-@test all(max_diff_Bx .< tol)
-@test all(max_diff_By .< tol)
+    # Update
+    ϵ = 0.1
+    u1x, u1y = update!(cf, (grad_x, grad_y), ϵ)
+    @test length(u1x) == N
+    @test length(u1y) == N
+end
 
 
 

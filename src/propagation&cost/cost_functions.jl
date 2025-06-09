@@ -1,11 +1,5 @@
-
-
-############################################################################################
-#                                     Cost Functions                                       #
-############################################################################################
-
-norm_cost(x::AbstractVector{T}, Nspins) where {T} = sqrt(sum(abs2, x) + 1e-12) / Nspins
-max_cost(x::AbstractVector{T}, Nspins) where {T} = (1 - sqrt(sum(abs2, x) + 1e-12)) / Nspins
+norm_cost(x::AbstractVector{T}, n_spins) where {T} = sqrt(sum(abs2, x) + 1e-12) / n_spins
+max_cost(x::AbstractVector{T}, n_spins) where {T} = (1 - sqrt(sum(abs2, x) + 1e-12)) / n_spins
 
 function euclidean_norm(iso::Isochromat)
     s = iso.spin
@@ -15,8 +9,8 @@ function euclidean_norm(iso::Isochromat)
         m[3, end], 
         m[4, end]
     )
-    val = norm_cost(x, s.Nspins)
-    grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+    val = norm_cost(x, s.n_spins)
+    grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     return val, vcat(zero(eltype(grad)), grad)
 end
 
@@ -28,8 +22,8 @@ function spin_target(iso::Isochromat; target::AbstractVector = [0.0, 1.0, 0.0])
         (m[3, end] - target[2]),
         (m[4, end] - target[3])
     )
-    val = norm_cost(x, s.Nspins)
-    grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+    val = norm_cost(x, s.n_spins)
+    grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     return val, vcat(zero(eltype(grad)), grad)
 end
 
@@ -42,8 +36,8 @@ function saturation_contrast(iso::Isochromat)
             zero(eltype(m[4, end])), 
             m[4, end]
         )
-        val = max_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(max_cost, s.Nspins), x)
+        val = max_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(max_cost, s.n_spins), x)
         
     elseif s.target == "min"
         x = SVector(
@@ -51,8 +45,8 @@ function saturation_contrast(iso::Isochromat)
             m[3, end], 
             m[4, end]
         )
-        val = norm_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+        val = norm_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     else
         error("Invalid target $(s.target). Valid targets are 'max' or 'min'.")
     end
@@ -69,16 +63,16 @@ function saturation_contrast_Mx(iso::Isochromat)
             zero(eltype(m[2, end])), 
             zero(eltype(m[2, end])), 
         )
-        val = max_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(max_cost, s.Nspins), x)
+        val = max_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(max_cost, s.n_spins), x)
     elseif s.target == "min"
         x = SVector(
             m[2, end], 
             m[3, end], 
             zero(eltype(m[2, end])) # It does not force the z-component to be zero
         )
-        val = norm_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+        val = norm_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     else
         error("Invalid target $(s.target). Valid targets are 'max' or 'min'.")
     end
@@ -95,16 +89,16 @@ function saturation_contrast_Mtrans(iso::Isochromat)
             m[3, end], 
             zero(eltype(m[2, end]))
         )
-        val = max_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(max_cost, s.Nspins), x)
+        val = max_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(max_cost, s.n_spins), x)
     elseif s.target == "min"
         x = SVector(
             m[2, end], 
             m[3, end], 
             zero(eltype(m[2, end]))
         )
-        val = norm_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+        val = norm_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     else
         error("Invalid target $(s.target). Valid targets are 'max' or 'min'.")
     end
@@ -124,8 +118,8 @@ function target_steady_state(iso::Isochromat)
         (m[4, end] - Mz_ss)
     )
 
-    val = norm_cost(x, s.Nspins)
-    grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+    val = norm_cost(x, s.n_spins)
+    grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     return val, vcat(zero(eltype(grad)), grad)
 end
 
@@ -141,8 +135,8 @@ function saturation_contrast_steady_state(iso::Isochromat)
             (m[4, end] - Mz_ss)
         )
     
-        val = norm_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+        val = norm_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
 
     elseif s.target == "min"
         x = SVector(
@@ -150,8 +144,8 @@ function saturation_contrast_steady_state(iso::Isochromat)
             m[3, end], 
             m[4, end]
         )
-        val = norm_cost(x, s.Nspins)
-        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.Nspins), x)
+        val = norm_cost(x, s.n_spins)
+        grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     else
         error("Invalid target $(s.target). Valid targets are 'max' or 'min'.")
     end
@@ -172,11 +166,9 @@ end
 #     s = iso.spin
 
 #     if s.target == "max"
-#         c = (1 - sum(m[4,end]*m[4,end]))/s.Nspins
+#         c = (1 - sum(m[4,end]*m[4,end]))/s.n_spins
 #     elseif s.target == "min"
-#         c = sum(m[2:end,end].*m[2:end,end])/s.Nspins
+#         c = sum(m[2:end,end].*m[2:end,end])/s.n_spins
 #     end
 #     return c
 # end
-
-
