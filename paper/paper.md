@@ -8,16 +8,17 @@ tags:
   - optimal control
 authors:
   - name: Amanda Nicotina Pereira
+    # TODO(anicotina): Register for an ORCID
     orcid: 0000-0000-0000-0000
     equal-contrib: true
     affiliation: 1
   - name: David Dodel
-    corresponding: true # (This is how to denote the corresponding author)
     affiliation: 2
 affiliations:
  - name: Steffen J. Glaser, Professor, TUM, Germany
    index: 1
-   ror: 00hx57361
+   orcid: 0000-0003-4099-3177
+ # TODO(ddodel): check if this is fine
  - name: Independent Researcher, Germany
    index: 2
 date: 9 June 2025
@@ -27,15 +28,7 @@ bibliography: paper.bib
 
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+TODO
 
 # Statement of need
 
