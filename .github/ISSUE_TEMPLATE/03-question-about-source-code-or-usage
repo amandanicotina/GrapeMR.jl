@@ -1,0 +1,66 @@
+name: "❓ Question: Code & Usage"
+description: "Ask anything about GrapeMR’s code or how to use it"
+title: "[QUESTION]: "
+labels:
+  - question
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Have a question about GrapeMR?**
+        - Ask about **source code internals**, **usage patterns**, or **example workflows**.
+        - Be sure to include a **clear title and description**.
+        - Provide a **code snippet** with inline comments, or explain below the code.
+        - Mention **what you’ve tried** or **where you’re stuck**.
+  - type: input
+    id: summary
+    attributes:
+      label: Question summary
+      description: A one-liner e.g., "How to pass correct configuration to `run_grape_optimization`?"
+      placeholder: "e.g., how to pass correct configuration to `run_grape_optimization`?"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Background / Context
+      description: What you're trying to do, where you got stuck, and anything you tried.
+    validations:
+      required: false
+  - type: textarea
+    id: code
+    attributes:
+      label: Annotated code or usage example
+      description: Please include inline comments or a follow-up explanation.
+      placeholder: |
+        ```julia
+        using GrapeMR
+        run_grape_optimization("test.toml")
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result / behavior
+      description: What did you expect to happen?
+      placeholder: "I expected `run_grape_optimization` to output plots."
+    validations:
+      required: false
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result / error
+      description: What happened instead? Include error messages or logs.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Pre‑submission checklist
+      options:
+        - label: I searched existing issues before posting
+        - label: I included title, description, and annotated code
+    validations:
+      required: true
