@@ -58,9 +58,6 @@ function generate_spins(m_init, t1s, t2s, b0s, b1s, targets, labels)
 end
 
 
-
-
-
 """
     Magnetization{T, M}
 

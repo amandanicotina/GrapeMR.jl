@@ -3,7 +3,7 @@ abstract type AbstractControlField end
 """
     ControlField{T, M1, Mz}
 
-Represents an RF control field with physical units (SI): seconds, Tesla, etc.
+Represents an RF control field with physical units: seconds and Hz.
 
 # Type Parameters
 - `T`: Element type (e.g., `Float64`)
@@ -11,11 +11,11 @@ Represents an RF control field with physical units (SI): seconds, Tesla, etc.
 - `Mz`: Matrix type for the longitudinal field
 
 # Fields
-- `B1x::M1`: x-component of the RF field
-- `B1y::M1`: y-component of the RF field
-- `B1_ref::T`: Reference RF amplitude
-- `Bz::Mz`: Longitudinal field (typically zero)
-- `t_control::T`: Total pulse duration in seconds
+- `B1x::M1`: x-component of the RF field (in Hz)
+- `B1y::M1`: y-component of the RF field (in Hz)
+- `B1_ref::T`: Reference RF amplitude (in Hz)
+- `Bz::Mz`: Longitudinal field (typically zero, in Hz)
+- `t_control::T`: Total pulse duration (in seconds)
 """
 mutable struct ControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}} <: AbstractControlField
     B1x::M1
@@ -26,10 +26,21 @@ mutable struct ControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T
 end
 
 """
-    NormalizedControlField
+    NormalizedControlField{T, M1, Mz}
 
-Represents a unitless RF control field. Time and amplitude are scaled to a.u.
+Represents a unitless RF control field.
+
+Amplitude is normalized by the reference value `B1ref` (in Hz), and time is scaled as
+`t ⋅ B1ref`, resulting in a dimensionless representation of the pulse.
+
 Used internally for optimization and gradient calculations.
+
+# Fields
+- `B1x::M1`: x-component of the normalized RF field
+- `B1y::M1`: y-component of the normalized RF field
+- `B1_ref::T`: Always 1.0 (unitless reference)
+- `Bz::Mz`: Normalized longitudinal field (typically zero)
+- `t_control::T`: Dimensionless total control duration, computed as `t_c * B1ref`
 """
 struct NormalizedControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}} <: AbstractControlField
     B1x::M1
@@ -37,37 +48,6 @@ struct NormalizedControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix
     B1_ref::T
     Bz::Mz
     t_control::T
-end
-
-################################################################################
-#                                Helper Functions                              #
-################################################################################
-
-"""
-    create_spline(spline_time, control_time_vals, B1_vals; rng=Random.GLOBAL_RNG)
-
-Creates a cubic spline interpolation from the specified control points and
-evaluates it at given control time values.
-
-# Arguments
-- `spline_time::AbstractVector`: Time vector for knot positions.
-- `control_time_vals::AbstractVector`: Time vector to evaluate the spline on.
-- `B1_vals::AbstractVector`: Amplitude values for interpolation knots.
-
-# Keywords
-- `rng`: Random number generator (default: `Random.GLOBAL_RNG`).
-
-# Returns
-- Vector of interpolated values at `control_time_vals`.
-"""
-function create_spline(
-    spline_time::AbstractVector,
-    control_time_vals::AbstractVector,
-    B1_vals::AbstractVector;
-    rng = Random.GLOBAL_RNG,
-)
-    spline = CubicSpline(spline_time, B1_vals)
-    return map(t -> spline(t), control_time_vals)
 end
 
 """
@@ -94,67 +74,69 @@ function build_control_field(B1x::Vector, B1y::Vector, B1ref::Float64, t_c::Floa
     return ControlField(B1x_mat, B1y_mat, B1ref, Bz_mat, t_c)
 end
 
-
-
 """
-    normalize_control_field(cf::ControlField; t_unit=1e-3, B1_unit=1.0)
+    normalize_control_field(cf::ControlField) -> NormalizedControlField
 
-Convert a `ControlField` into a `NormalizedControlField` using reference units.
+Converts a `ControlField` into a unitless `NormalizedControlField`.
+
+- RF amplitude is normalized by `cf.B1_ref` (in Hz)
+- Time is normalized as `t ⋅ B1ref`, resulting in a dimensionless control duration
 
 # Arguments
-- `t_unit`: Time unit (default: 1e-3 s = 1 ms)
-- `B1_unit`: Amplitude unit (default: 1.0)
+- `cf::ControlField`: Control field in physical units (Hz and seconds)
 
 # Returns
-- `NormalizedControlField`
+- `NormalizedControlField`: Unitless version of the input field
 """
-function normalize_control_field(cf::ControlField; t_unit=1e-3, B1_unit=1.0)
-    B1x_norm = reshape(cf.B1x ./ B1_unit, 1, :)
-    B1y_norm = reshape(cf.B1y ./ B1_unit, 1, :)
-    Bz_norm  = reshape(cf.Bz  ./ B1_unit, 1, :)
-    t_c_norm = cf.t_control / t_unit
-    B1_ref_norm = cf.B1_ref / B1_unit
+function normalize_control_field(cf::ControlField)
+    B1x_norm = cf.B1x ./ cf.B1_ref
+    B1y_norm = cf.B1y ./ cf.B1_ref
+    Bz_norm  = cf.Bz  ./ cf.B1_ref
+    t_c_norm = cf.t_control * cf.B1_ref
+    B1_ref_norm = 1.0  # by definition
 
-    # 👇 DEBUG
-    @info "normalize_control_field" B1_unit cf.B1_ref maximum_B1x=maximum(abs, cf.B1x) maximum_B1x_norm=maximum(abs, B1x_norm)
+    # DEBUG
+    @info "normalize_control_field" cf.B1_ref maximum_B1x=maximum(abs, cf.B1x) maximum_B1x_norm=maximum(abs, B1x_norm)
 
-    return NormalizedControlField(B1x_norm, B1y_norm, B1_ref_norm, Bz_norm, t_c_norm)
+    return NormalizedControlField(
+        reshape(B1x_norm, 1, :),
+        reshape(B1y_norm, 1, :),
+        B1_ref_norm,
+        reshape(Bz_norm, 1, :),
+        t_c_norm,
+    )
 end
 
-
 """
-    denormalize_control_field(cf::NormalizedControlField; t_unit=1e-3, B1_unit=1.0)
+    denormalize_control_field(cf::NormalizedControlField, B1ref::Float64) -> ControlField
 
-Converts a `NormalizedControlField` back to SI units in a `ControlField`.
+Converts a `NormalizedControlField` back into a physical `ControlField`.
+
+- RF amplitude is scaled by `B1ref` (in Hz)
+- Time is scaled as `t / B1ref`
 
 # Arguments
-- `t_unit`: Time unit (default: 1e-3 s)
-- `B1_unit`: Amplitude unit (default: 1.0)
+- `cf::NormalizedControlField`: Unitless control field
+- `B1ref::Float64`: Reference RF amplitude (in Hz)
 
 # Returns
-- `ControlField`
+- `ControlField`: Reconstructed field in Hz and seconds
 """
+function denormalize_control_field(cf::NormalizedControlField, B1ref::Float64)
+    B1x_phys = cf.B1x .* B1ref
+    B1y_phys = cf.B1y .* B1ref
+    Bz_phys  = cf.Bz  .* B1ref
+    t_c_phys = cf.t_control / B1ref
 
-"""
-    denormalize_control_field(cf::NormalizedControlField; t_unit=1e-3, B1_unit=1.0)
-
-Converts a `NormalizedControlField` back to SI units in a `ControlField`.
-
-# Arguments
-- `t_unit`: Time unit (default: 1e-3 s)
-- `B1_unit`: Amplitude unit (default: 1.0)
-
-# Returns
-- `ControlField`
-"""
-function denormalize_control_field(cf::NormalizedControlField; t_unit=1e-3, B1_unit=1.0)
-    B1x_phys = reshape(cf.B1x .* B1_unit, 1, :)
-    B1y_phys = reshape(cf.B1y .* B1_unit, 1, :)
-    Bz_phys  = reshape(cf.Bz  .* B1_unit, 1, :)
-    t_c_phys = cf.t_control * t_unit
-    B1_ref_phys = cf.B1_ref * B1_unit
-    return ControlField(B1x_phys, B1y_phys, B1_ref_phys, Bz_phys, t_c_phys)
+    return ControlField(
+        reshape(B1x_phys, 1, :),
+        reshape(B1y_phys, 1, :),
+        B1ref,
+        reshape(Bz_phys, 1, :),
+        t_c_phys
+    )
 end
+
 
 # ------------------------------------------------------------------------------
 # Optional show methods for clarity

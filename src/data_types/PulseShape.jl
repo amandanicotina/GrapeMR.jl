@@ -47,13 +47,21 @@ or spectrally localized pulses.
 struct Gaussian <: PulseShape end
 
 """
+    ZeroPulse <: PulseShape
+
+A pulse shape with no RF excitation (B1x = B1y = 0). Useful for testing relaxation-only dynamics
+or constructing periods of inactivity in a pulse sequence.
+"""
+struct ZeroPulse <: PulseShape end
+
+
+"""
     BSSFP <: PulseShape
 
 Balanced Steady-State Free Precession pulse type. Used in rapid imaging sequences with high SNR.
 This shape assumes discrete pulses spaced over several TR periods.
 """
 struct BSSFP <: PulseShape end
-
 
 
 ################################################################################
@@ -72,6 +80,7 @@ for RF pulse generation.
 - `:sinc`     → [`Sinc`](@ref)
 - `:gaussian` → [`Gaussian`](@ref)
 - `:bssfp`    → [`BSSFP`](@ref)
+- `:zeropulse`    → [`ZeroPulse`](@ref)
 
 # Example
 ```julia
@@ -82,8 +91,9 @@ julia> pulse_shape(Val(:hard))
 Hard()
 ```
 """
-pulse_shape(::Val{:spline})   = Spline()
-pulse_shape(::Val{:hard})     = Hard()
-pulse_shape(::Val{:sinc})     = Sinc()
-pulse_shape(::Val{:gaussian}) = Gaussian()
-pulse_shape(::Val{:bssfp})    = BSSFP()
+pulse_shape(::Val{:spline})    = Spline()
+pulse_shape(::Val{:hard})      = Hard()
+pulse_shape(::Val{:sinc})      = Sinc()
+pulse_shape(::Val{:gaussian})  = Gaussian()
+pulse_shape(::Val{:bssfp})     = BSSFP()
+pulse_shape(::Val{:zeropulse}) = ZeroPulse()

@@ -1,3 +1,24 @@
+"""
+    normalize_rf!(B1x::Vector{Float64}, B1y::Vector{Float64}, B1ref::Float64) -> (B1x, B1y)
+
+Normalizes the RF field vectors `B1x` and `B1y` such that the maximum magnitude 
+of the complex-valued RF amplitude √(B1x² + B1y²) is equal to `B1ref`.
+
+The function modifies the input vectors in-place.
+
+# Arguments
+- `B1x::Vector{Float64}`: x-component of the RF pulse in Hz.
+- `B1y::Vector{Float64}`: y-component of the RF pulse in Hz.
+- `B1ref::Float64`: Reference RF amplitude (in Hz) used to scale the pulse.
+
+# Returns
+- `(B1x, B1y)`: The normalized RF vectors (same objects, modified in-place).
+
+# Notes
+- If the maximum magnitude of the original RF is zero, the pulse is left unchanged.
+- This ensures that the peak amplitude of the resulting RF pulse is `B1ref`.
+
+"""
 function normalize_rf!(B1x::Vector{Float64}, B1y::Vector{Float64}, B1ref::Float64)
     mag = sqrt.(B1x.^2 .+ B1y.^2)
     max_mag = maximum(mag)
@@ -6,6 +27,34 @@ function normalize_rf!(B1x::Vector{Float64}, B1y::Vector{Float64}, B1ref::Float6
     B1y .= (B1y ./ scale) .* B1ref
     return B1x, B1y
 end
+
+"""
+    create_spline(spline_time, control_time_vals, B1_vals; rng=Random.GLOBAL_RNG)
+
+Creates a cubic spline interpolation from the specified control points and
+evaluates it at given control time values.
+
+# Arguments
+- `spline_time::AbstractVector`: Time vector for knot positions.
+- `control_time_vals::AbstractVector`: Time vector to evaluate the spline on.
+- `B1_vals::AbstractVector`: Amplitude values for interpolation knots.
+
+# Keywords
+- `rng`: Random number generator (default: `Random.GLOBAL_RNG`).
+
+# Returns
+- Vector of interpolated values at `control_time_vals`.
+"""
+function create_spline(
+    spline_time::AbstractVector,
+    control_time_vals::AbstractVector,
+    B1_vals::AbstractVector;
+    rng = Random.GLOBAL_RNG,
+)
+    spline = CubicSpline(spline_time, B1_vals)
+    return map(t -> spline(t), control_time_vals)
+end
+
 
 """
     generate_control_field(::Spline; N, t_c, B1ref, rng)
@@ -79,6 +128,25 @@ function generate_control_field(::Gaussian; N, t_c, B1ref)
 end
 
 """
+    ZeroPulse <: PulseShape
+
+A pulse shape with zero RF amplitude (`B1x = B1y = 0`) across its duration.
+
+Useful for simulating relaxation or free precession without RF excitation, or for inserting delay periods in pulse sequences.
+
+# Example
+```julia
+cf = generate_control_field(ZeroPulse(); N, t_c, B1ref)
+"""
+function generate_control_field(::ZeroPulse;  N, t_c, B1ref)
+    B1x = zeros(N)
+    B1y = zeros(N)
+    Bz = zeros(N)
+    return build_control_field(B1x, B1y, B1ref, t_c)
+end
+
+
+"""
     generate_control_field(::BSSFP; N, t_c, B1ref, nTR, α, TR)
 
 Generates a bSSFP-style pulse sequence. Assumes N is divisible by nTR.
@@ -110,8 +178,9 @@ end
 
 Generates a control field (RF pulse) based on the selected pulse shape.
 
-By default, the generated pulse is normalized to unitless time and amplitude,
-returning a `NormalizedControlField` suitable for optimization routines like GRAPE.
+By default, the generated pulse is normalized to **unitless amplitude and time** using `B1ref`
+as the sole normalization reference. This yields a `NormalizedControlField` suitable for 
+optimization routines like GRAPE, where time is scaled as `t ⋅ B1ref`.
 
 # Supported `kind` values
 - `:spline`: Cubic spline pulse with randomized control points.
@@ -121,40 +190,39 @@ returning a `NormalizedControlField` suitable for optimization routines like GRA
 - `:bssfp`: Balanced SSFP-style pulse train.
 
 # Common Keyword Arguments
-- `N::Int`: Number of time steps (required)
 - `t_c::Float64`: Total control duration in seconds (required)
 - `B1ref::Float64`: Reference RF amplitude in Tesla (required)
+- `Δt_target::Float64`: Approximate target time resolution in seconds (default: `1e-4`)
 - `normalize::Bool`: Whether to return a normalized control field (default: `true`)
-- `t_unit::Float64`: Time normalization unit (default: `1e-3` for ms)
-- `B1_unit::Float64`: Amplitude normalization unit (default: `B1ref`)
 
 # Pulse-Specific Keywords
 - `:spline` → `rng`: Random number generator for reproducibility
 - `:sinc` → `α`: Flip angle in radians (default: `π/2`)
-- `:bssfp` → `nTR`: Number of TR repetitions (required),
-             `α`: Flip angle in radians (required),
-             `TR`: Repetition time in seconds (required)
+- `:bssfp` → 
+    - `nTR`: Number of TR repetitions (required)  
+    - `α`: Flip angle in radians (required)  
+    - `TR`: Repetition time in seconds (required)
 
 # Returns
-- `NormalizedControlField` (if `normalize=true`)
-- `ControlField` (if `normalize=false`)
+- `NormalizedControlField` (if `normalize=true`)  
+  with time normalized as `t ⋅ B1ref` and amplitude as `B1 / B1ref`
+- `ControlField` (if `normalize=false`)  
+  in physical SI units (Tesla, seconds)
 
 # Examples
 ```julia
-cf = generate_control_field(:spline; N=2000, t_c=0.5, B1ref=5.0)
-cf_phys = generate_control_field(:hard; N=2000, t_c=0.5, B1ref=5.0, normalize=false)
-```
+cf = generate_control_field(:spline; t_c=0.5, B1ref=5.0)
+cf_phys = generate_control_field(:hard; t_c=0.5, B1ref=5.0, normalize=false)
 """
 function generate_control_field(kind::Symbol = :spline; 
-    N::Int, 
-    t_c::Float64, 
+    t_c::Float64,
+    Δt_target::Float64=1e-4, 
     B1ref::Float64, 
-    normalize::Bool=true, 
-    t_unit=1e-3, 
-    B1_unit=nothing,
+    normalize::Bool=true,
     kwargs...
 )
-    B1_unit = isnothing(B1_unit) ? B1ref : B1_unit
+    N = max(10, ceil(Int, t_c / Δt_target))
+    @debug "Auto-selected N = $N for t_c = $t_c and Δt_target = $Δt_target"
 
     ps = pulse_shape(Val(kind))
     filtered = Dict(kwargs)
@@ -173,6 +241,9 @@ function generate_control_field(kind::Symbol = :spline;
     elseif ps isa Gaussian
         generate_control_field(ps; N=N, t_c=t_c, B1ref=B1ref)
 
+    elseif ps isa ZeroPulse
+        generate_control_field(ps; N=N, t_c=t_c, B1ref=B1ref)
+
     elseif ps isa BSSFP
         nTR = get(filtered, :nTR, nothing)
         α   = get(filtered, :α, nothing)
@@ -187,5 +258,6 @@ function generate_control_field(kind::Symbol = :spline;
         error("Unsupported pulse type: $kind")
     end
 
-    return normalize ? normalize_control_field(cf; t_unit=t_unit, B1_unit=B1_unit) : cf
+    return normalize ? normalize_control_field(cf) : cf
 end
+

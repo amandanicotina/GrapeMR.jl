@@ -19,37 +19,38 @@ using Random
     @test cf.B1_ref ≈ B1ref
     @test cf.t_control ≈ t_c
 
-    cf_norm = GrapeMR.normalize_control_field(cf; t_unit=1e-3, B1_unit=B1ref)
+    cf_norm = GrapeMR.normalize_control_field(cf)
     @test cf_norm.B1_ref ≈ 1.0
-    @test cf_norm.t_control ≈ 10.0  # 10 ms in ms
 
-    cf_back = GrapeMR.denormalize_control_field(cf_norm; t_unit=1e-3, B1_unit=B1ref)
+    cf_back = GrapeMR.denormalize_control_field(cf_norm, B1ref)
     @test cf_back.B1_ref ≈ B1ref
     @test cf_back.t_control ≈ t_c
     @test all(abs.(cf_back.B1x .- cf.B1x) .< 1e-10)
 end
 
 @testset "Pulse generation: all types normalized" begin
-    N = 100
     t_c = 0.01
     B1ref = 4.0
+    Δt_target = 1e-4
+    expected_N = max(10, ceil(Int, t_c / Δt_target))
 
-    for kind in (:spline, :hard, :sinc, :gaussian)
-        cf = generate_control_field(kind; N=N, t_c=t_c, B1ref=B1ref)
+    for kind in (:spline, :hard, :sinc, :gaussian, :zeropulse)
+        cf = generate_control_field(kind; t_c=t_c, B1ref=B1ref, Δt_target=Δt_target)
 
         @test cf isa NormalizedControlField
-        @test size(cf.B1x, 2) == N
+        @test size(cf.B1x, 2) == expected_N
 
         # Check magnitude constraint
         constrained_magnitude = sqrt.(cf.B1x.^2 .+ cf.B1y.^2)
         @test maximum(constrained_magnitude) ≤ 1.0
     end
 
-    # bSSFP case
+    # bSSFP case (here N is still user-defined)
     cf_bssfp = generate_control_field(:bssfp; N=100, t_c=t_c, B1ref=B1ref, nTR=5, α=π/2, TR=0.002)
     @test cf_bssfp isa NormalizedControlField
     @test size(cf_bssfp.B1x, 2) == 100
 end
+
 
 
 @testset "Spline interpolation sanity check" begin
@@ -62,3 +63,10 @@ end
     @test length(spline_vals) == 100
     @test all(isfinite, spline_vals)
 end
+
+
+@testset "Auto N calculation" begin
+    cf = generate_control_field(:hard; t_c=0.02, Δt_target=1e-4, B1ref=5.0)
+    @test size(cf.B1x, 2) ≥ 200
+end
+
