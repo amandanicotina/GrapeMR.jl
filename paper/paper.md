@@ -7,7 +7,7 @@ tags:
   - mri
   - optimal control
 authors:
-  - name: Amanda Nicotina Pereira
+  - name: Amanda Nicotina
     # TODO(anicotina): Register for an ORCID
     orcid: 0000-0000-0000-0000
     equal-contrib: true
