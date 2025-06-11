@@ -1,4 +1,3 @@
-# tests/test_generate_control_field.jl
 using Test
 using GrapeMR
 using Random

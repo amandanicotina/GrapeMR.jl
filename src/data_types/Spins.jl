@@ -11,7 +11,7 @@ abstract type Spins end
 Represents a spin system with relaxation parameters and inhomogeneities.
 
 # Fields
-- `m_init::AbstractVector{<:Real}`: Initial magnetization vector.
+- `m_init::SVector{3, Float64}`: Initial magnetization vector.
 - `t1::Float64`: Longitudinal relaxation time.
 - `t2::Float64`: Transverse relaxation time.
 - `b0_inho::Float64`: B0 inhomogeneity.
@@ -21,7 +21,7 @@ Represents a spin system with relaxation parameters and inhomogeneities.
 - `n_spins::Int`: Number of spins in this configuration.
 """
 struct Spin <: Spins
-    m_init::AbstractVector{<:Real}
+    m_init::SVector{3, Float64}
     T1::Float64
     T2::Float64
     b0_inho::Float64
@@ -79,7 +79,18 @@ Represents an isochromat, combining magnetization data with a specific spin conf
 - `magnetization::Magnetization`: Magnetization data for the isochromat.
 - `spin::S`: Spin configuration associated with the magnetization.
 """
-struct Isochromat{S<:Spins}
-    magnetization::Magnetization
+struct Isochromat{S<:Spins, T<:Real, M<:Union{AbstractVector{T}, AbstractMatrix{T}}}
+    magnetization::Magnetization{T, M}
     spin::S
 end
+
+Base.show(io::IO, spin::Spin) =
+    print(io, "Spin(M0 = $(spin.m_init), 
+    T1  = $(spin.T1) s,
+    T2  = $(spin.T2) s,
+    ΔB0 = $(spin.b0_inho) Hz, 
+    ΔB1 = $(spin.b1_inho),
+    target  = $(spin.target),
+    label   = $(spin.label),
+    n_spins = $(spin.n_spins))"
+        )
