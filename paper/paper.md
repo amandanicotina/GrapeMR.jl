@@ -8,9 +8,8 @@ tags:
   - optimal control
 authors:
   - name: Amanda Nicotina
-    # TODO(anicotina): Register for an ORCID
-    orcid: 0000-0000-0000-0000
-    equal-contrib: true
+    orcid: 0009-0004-8524-6436
+    equal-contrib: false
     affiliation: 1
   - name: David Dodel
     affiliation: 2
@@ -21,14 +20,15 @@ affiliations:
  # TODO(ddodel): check if this is fine
  - name: Independent Researcher, Germany
    index: 2
-date: 9 June 2025
+date: 11 June 2025
 bibliography: paper.bib
 
 ---
 
 # Summary
+In NMR and MRI, radiofrequency (RF) pulses are the means to manipulate spin systems. Designing optimal RF pulse sequences is critical for applications ranging from robust excitation and inversion to saturation contrast and spatial encoding. However, these pulses must account for hardware constraints, field inhomogeneities, relaxation effects, and multi-spin interactions. This makes optimal control a natural framework for RF pulse design.
 
-TODO
+GrapeMR.jl is an open-source Julia package for simulating and optimizing radiofrequency (RF) pulses in Nuclear Magnetic Resonance (NMR) and Magnetic Resonance Imaging (MRI) using Gradient Ascent Pulse Engineering (GRAPE). The package provides a high-performance, modular, and extensible framework for applying optimal control theory to spin dynamics governed by the Bloch equations.
 
 # Statement of need
 
