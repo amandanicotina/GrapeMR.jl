@@ -3,45 +3,66 @@ using GrapeMR
 # Spin Parameters
 M0 = [0.0, 0.0, 1.0]
 ΔB1 = [1.0]
-offsets = 0.0
-T1 = [1.0, 0.25] #[1/31.3436]
-T2 = [0.08, 0.04] #[1/37.6471]
+offsets = -15:1:15
+T1 = [0.6, 0.3]
+T2 = [0.1, 0.05]
 label = ["C1", "C2"]
-target = ["min", "max"]
+target = ["max", "min"]
 spins = generate_spins(M0, T1, T2, offsets, ΔB1, target, label)
 
 # GRAPE-specific parameters
-N = 1000
-Tc = 0.5
-B1ref = 5.0
-
 grape_params = GrapeParams(
-    N,
-    GrapeMR.euclidean_norm,
+    GrapeMR.saturation_contrast,
     Dict("B1x" => true, "B1y" => true, "Bz" => false),
 )
 
 # Optimization parameters
-# random_opt = @time random_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), range(2500, 5000, step = 500)) 
-# bohb_opt = @time bohb_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), 3000)
-# hband_opt = @time hband_hyperopt(spins, grape_params, LinRange(0.1, 0.5, 10), 10)
-poly_start, poly_degree, max_iter = 0.75, 1, 5000
-opt_params = OptimizationParams(poly_start, poly_degree, max_iter)
+gd_config = GradientDescentConfig(0.75, 1, 500)
+opt_params_gd = OptimizationParams(GradientDescent(), gd_config)
+
+# Manual Gradient Descent
+mgd_config = ManualGradientDescentConfig(0.75, 1, 2000)
+opt_params_mgd = OptimizationParams(ManualGradientDescent(), mgd_config)
+
+# BFGS-specific config
+bfgs_config = BFGSConfig(500)
+opt_params_bfgs = OptimizationParams(BFGS(), bfgs_config)
 
 # Combined parameter struct
-params = Parameters(grape_params, opt_params)
+params_gd = Parameters(grape_params, opt_params_gd)
+params_mgd = Parameters(grape_params, opt_params_mgd)
+params_bfgs = Parameters(grape_params, opt_params_bfgs)
 
-# Initial control field generation (refactored using trait-based dispatch)
-control_field  = generate_control_field(:spline; t_c=Tc, B1ref=B1ref)
+# Initial control field
+B1ref = 1.0
+t_c = 0.5
+control_field  = generate_control_field(:spline; t_c=t_c, B1ref=B1ref)
 
 # Run Optimization
-grape_output = @time grape(params, control_field, spins)
-
+grape_output_gd = @time grape(params_gd, control_field, spins);
+grape_output_mgd = @time grape(params_mgd, control_field, spins);
+grape_output_bfgs = @time grape(params_bfgs, control_field, spins);
 
 # Plots
-plot_magnetization_control_field(grape_output.control_field, grape_output.isochromats)
-plot_cost_values(grape_output.cost_values, grape_output.params.grape_params)
+plot_magnetization_control_field(grape_output_gd.control_field, grape_output_gd.isochromats)
+plot_magnetization_control_field(grape_output_mgd.control_field, grape_output_mgd.isochromats)
+plot_magnetization_control_field(grape_output_bfgs.control_field, grape_output_bfgs.isochromats)
 
+plot_cost_values(grape_output_gd.cost_values, grape_output_gd.params.grape_params)
+plot_cost_values(grape_output_mgd.cost_values, grape_output_mgd.params.grape_params)
+plot_cost_values(grape_output_bfgs.cost_values, grape_output_bfgs.params.grape_params)
+
+
+# output_gd = GrapeOutput(params_gd, control_field)
+# output_mgd = GrapeOutput(params_mgd, control_field)
+# output_bfgs = GrapeOutput(params_bfgs, control_field)
+
+# grape!(output_gd, params_gd, control_field, spins, GradientDescent())
+# grape!(output_mgd, params_mgd, control_field, spins, ManualGradientDescent())
+# grape!(output_bfgs, params_bfgs, control_field, spins, BFGS())
+
+# using Plots
+# plot!(grape_output.isochromats[3].magnetization.dynamics')
 
 # plot_hyperopt_history(random_opt; title = "Random Sampler") 
 # plot_hyperopt_history(bohb_opt; title = "BOHB Sampler") 

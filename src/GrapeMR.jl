@@ -59,6 +59,7 @@ include("propagation&cost/bloch_methods.jl")
 include("propagation&cost/cost_functions.jl")
 
 # Optimization
+include("optimization/grape_utils.jl")
 include("optimization/grape.jl")
 include("optimization/gradients.jl")
 include("optimization/hyperparameter_opt.jl")
@@ -94,7 +95,7 @@ export GrapeOutput
 export generate_control_field, normalize_control_field, denormalize_control_field
 
 # GRAPE
-export grape, grape!, dynamics, grape_gd_optim!
+export grape, grape!, dynamics
 export backward_propagation!, forward_propagation!, bloch_matrix
 export update!, gradient!, gradient
 
