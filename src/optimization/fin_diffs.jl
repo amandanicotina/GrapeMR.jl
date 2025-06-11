@@ -96,7 +96,7 @@ plot!(time, grad_y[1, :], lw=2, label="GRAPE ∇ᵧ", title="∇ᵧ Comparison",
 plot!(time, grad_fd_y[1, :], lw=2, linestyle=:dash, label="FiniteDiff ∇ᵧ", subplot=4)
 
 
-using GrapeMR
+# using GrapeMR
 # using Plots
 
 # # Parameters

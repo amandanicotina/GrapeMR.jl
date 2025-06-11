@@ -93,7 +93,7 @@ Generates a rectangular (hard) RF pulse.
 function generate_control_field(::Hard; N, t_c, B1ref)
     B1x = fill(B1ref, N)
     B1y = zeros(N)
-    normalize_rf!(B1x, B1y, B1ref)
+    # normalize_rf!(B1x, B1y, B1ref)
     return build_control_field(B1x, B1y, B1ref, t_c)
 end
 

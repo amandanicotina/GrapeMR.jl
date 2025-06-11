@@ -40,12 +40,14 @@ Simulates forward Bloch dynamics using normalized units.
 """
 function forward_propagation!(M::AbstractMatrix, cf::NormalizedControlField, s::Spins)
     Δt_arr = range(0.0, cf.t_control, length(cf.B1x) + 1)
-    Γ1, Γ2 = 1 / (cf.B1_ref * s.T1), 1 / (cf.B1_ref * s.T2)
-    B1, B0 = s.b1_inho, 2π * s.b0_inho
-
-    Bx, By, Bz = 2π * B1 .* cf.B1x, 2π * B1 .* cf.B1y, 2π .* cf.Bz .+ B0
     M[:, 1] .= [1.0, s.m_init[1], s.m_init[2], s.m_init[3]]
 
+    Bx = (2π * s.b1_inho) .* cf.B1x
+    By = (2π * s.b1_inho) .* cf.B1y
+    Bz = 2π .* (cf.Bz .+ s.b0_inho)
+
+    Γ1 = 1 / s.T1
+    Γ2 = 1 / s.T2
     for (i, Δt) in enumerate(diff(Δt_arr))
         mul!(view(M, :, i + 1), exp(Δt * bloch_matrix(Bx[i], By[i], Bz[i], Γ1, Γ2)), view(M, :, i))
     end
@@ -67,12 +69,14 @@ Simulates forward Bloch dynamics using SI units (Tesla and seconds).
 """
 function forward_propagation!(M::AbstractMatrix, cf::ControlField, s::Spins)
     Δt_arr = range(0.0, cf.t_control, length(cf.B1x) + 1)
-    Γ1, Γ2 = 1 / s.T1, 1 / s.T2
-    B1, B0 = s.b1_inho, 2π * s.b0_inho
-
-    Bx, By, Bz = 2π * B1 .* cf.B1x, 2π * B1 .* cf.B1y, 2π .* cf.Bz .+ B0
     M[:, 1] .= [1.0, s.m_init[1], s.m_init[2], s.m_init[3]]
 
+    Bx = (2π * s.b1_inho) .* cf.B1x
+    By = (2π * s.b1_inho) .* cf.B1y
+    Bz = 2π .* (cf.Bz .+ s.b0_inho)
+
+    Γ1 = 1 / s.T1
+    Γ2 = 1 / s.T2
     for (i, Δt) in enumerate(diff(Δt_arr))
         mul!(view(M, :, i + 1), exp(Δt * bloch_matrix(Bx[i], By[i], Bz[i], Γ1, Γ2)), view(M, :, i))
     end
@@ -100,13 +104,15 @@ Simulates backward adjoint dynamics using normalized control fields.
 """
 function backward_propagation!(χ::AbstractMatrix, cf::NormalizedControlField, iso::Isochromat, cost_grad::AbstractVector)
     Δt = diff(range(0.0, cf.t_control, length(cf.B1x) + 1))
-    s = iso.spin
-    Γ1, Γ2 = 1 / (cf.B1_ref * s.T1), 1 / (cf.B1_ref * s.T2)
-    B1, B0 = s.b1_inho, 2π * s.b0_inho
-
-    Bx, By, Bz = 2π * B1 .* cf.B1x, 2π * B1 .* cf.B1y, 2π .* cf.Bz .+ B0
+    s  = iso.spin
     χ[:, end] .= cost_grad
 
+    Bx = (2π * s.b1_inho) .* cf.B1x
+    By = (2π * s.b1_inho) .* cf.B1y
+    Bz = 2π .* (cf.Bz .+ s.b0_inho)
+
+    Γ1 = 1 / s.T1
+    Γ2 = 1 / s.T2
     for i in length(Δt):-1:1
         mul!(view(χ, :, i), exp(Δt[i] * adjoint(bloch_matrix(Bx[i], By[i], Bz[i], Γ1, Γ2))), view(χ, :, i + 1))
     end
@@ -129,15 +135,21 @@ Simulates backward adjoint dynamics using SI-unit control fields.
 """
 function backward_propagation!(χ::AbstractMatrix, cf::ControlField, iso::Isochromat, cost_grad::AbstractVector)
     Δt = diff(range(0.0, cf.t_control, length(cf.B1x) + 1))
-    s = iso.spin
-    Γ1, Γ2 = 1 / s.T1, 1 / s.T2
-    B1, B0 = s.b1_inho, 2π * s.b0_inho
-
-    Bx, By, Bz = 2π * B1 .* cf.B1x, 2π * B1 .* cf.B1y, 2π .* cf.Bz .+ B0
+    s  = iso.spin
     χ[:, end] .= cost_grad
 
+    Bx = (2π * s.b1_inho) .* cf.B1x
+    By = (2π * s.b1_inho) .* cf.B1y
+    Bz = 2π .* (cf.Bz .+ s.b0_inho)
+
+    Γ1 = 1 / s.T1
+    Γ2 = 1 / s.T2
     for i in length(Δt):-1:1
-        mul!(view(χ, :, i), exp(Δt[i] * adjoint(bloch_matrix(Bx[i], By[i], Bz[i], Γ1, Γ2))), view(χ, :, i + 1))
+        mul!(
+            view(χ, :, i), 
+            exp(Δt[i] * adjoint(bloch_matrix(Bx[i], By[i], Bz[i], Γ1, Γ2))), 
+            view(χ, :, i + 1)
+        )
     end
     return χ
 end

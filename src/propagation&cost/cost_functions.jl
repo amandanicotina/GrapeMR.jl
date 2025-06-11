@@ -11,7 +11,7 @@ function euclidean_norm(iso::Isochromat)
     )
     val = norm_cost(x, s.n_spins)
     grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
-    return val, vcat(zero(eltype(grad)), grad)
+    return val, SVector(zero(eltype(grad)), grad...)
 end
 
 function spin_target(iso::Isochromat; target::AbstractVector = [0.0, 1.0, 0.0])
@@ -21,7 +21,7 @@ function spin_target(iso::Isochromat; target::AbstractVector = [0.0, 1.0, 0.0])
         (m[2, end] - target[1]),
         (m[3, end] - target[2]),
         (m[4, end] - target[3])
-    )
+    )/2
     val = norm_cost(x, s.n_spins)
     grad = ForwardDiff.gradient(Base.Fix2(norm_cost, s.n_spins), x)
     return val, vcat(zero(eltype(grad)), grad)

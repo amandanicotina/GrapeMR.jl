@@ -14,9 +14,11 @@ using JLD2
 using LinearAlgebra
 using Logging
 using NumericalIntegration
+using Optim
 using ParameterSchedulers
 using Plots
 using PrettyPrint
+using ProgressMeter
 using Random
 using StaticArrays
 using TOML
@@ -33,10 +35,11 @@ const γ_unit = 2π * γ_¹H     # [rad/s/T] — needed for internal Bloch matri
 
 # Data types
 include("data_types/ControlField.jl")
-include("data_types/Parameters.jl")
 include("data_types/Spins.jl")
-include("data_types/GrapeOutput.jl")
 include("data_types/PulseShape.jl")
+include("data_types/Optimizer.jl")
+include("data_types/Parameters.jl")
+include("data_types/GrapeOutput.jl")
 
 # Pulse generators
 include("rf_pulses/generators.jl")
@@ -56,7 +59,7 @@ include("propagation&cost/bloch_methods.jl")
 include("propagation&cost/cost_functions.jl")
 
 # Optimization
-include("optimization/optimize.jl")
+include("optimization/grape.jl")
 include("optimization/gradients.jl")
 include("optimization/hyperparameter_opt.jl")
 
@@ -79,18 +82,21 @@ export γ_¹H, Ix, Iy
 
 # Data types
 export ControlField, NormalizedControlField
-export OptimizationParams, GrapeParams, Parameters
 export Spins, Spin, Magnetization, Isochromat, generate_spins
-export GrapeOutput
 export PulseShape, Spline, Hard, Sinc, Gaussian, BSSFP, pulse_shape
+export AbstractOptimizer, GradientDescent, BFGS, ManualGradientDescent
+export AbstractOptimizerConfig, GradientDescentConfig, BFGSConfig, ManualGradientDescentConfig
+export OptimizationParams, GrapeParams, Parameters
+export GrapeOutput
+
 
 # RF pulse generation
 export generate_control_field, normalize_control_field, denormalize_control_field
 
 # GRAPE
-export grape, grape!, dynamics
-export backward_propagation!, forward_propagation!
-export update!, gradient!
+export grape, grape!, dynamics, grape_gd_optim!
+export backward_propagation!, forward_propagation!, bloch_matrix
+export update!, gradient!, gradient
 
 # Cost Functions
 export euclidean_norm, spin_target, saturation_contrast

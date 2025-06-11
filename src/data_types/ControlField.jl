@@ -95,8 +95,8 @@ function normalize_control_field(cf::ControlField)
     t_c_norm = cf.t_control * cf.B1_ref
     B1_ref_norm = 1.0  # by definition
 
-    # DEBUG
-    @info "normalize_control_field" cf.B1_ref maximum_B1x=maximum(abs, cf.B1x) maximum_B1x_norm=maximum(abs, B1x_norm)
+    # # DEBUG
+    # @info "normalize_control_field" cf.B1_ref maximum_B1x=maximum(abs, cf.B1x) maximum_B1x_norm=maximum(abs, B1x_norm)
 
     return NormalizedControlField(
         reshape(B1x_norm, 1, :),
@@ -138,12 +138,8 @@ function denormalize_control_field(cf::NormalizedControlField, B1ref::Float64)
 end
 
 
-# ------------------------------------------------------------------------------
-# Optional show methods for clarity
-# ------------------------------------------------------------------------------
-
 Base.show(io::IO, cf::NormalizedControlField) =
     print(io, "NormalizedControlField(t_control = $(cf.t_control), B1_ref = $(cf.B1_ref))")
 
 Base.show(io::IO, cf::ControlField) =
-    print(io, "ControlField(t_control = $(cf.t_control), B1_ref = $(cf.B1_ref))")
+    print(io, "ControlField(t_control = $(cf.t_control) s, B1_ref = $(cf.B1_ref) Hz)")

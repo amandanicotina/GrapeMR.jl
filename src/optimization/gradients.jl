@@ -15,8 +15,37 @@ In-place calculation of the gradient of the cost function with respect to the Ha
 function gradient!(grad::AbstractMatrix{<:Real},
                 χ::AbstractMatrix{<:Real},
                 M::AbstractMatrix{<:Real},
-                H::AbstractMatrix{<:Real})
-    @inbounds for i in 1:(size(M, 2) - 1)
+                H::AbstractMatrix{<:Real}
+                )
+    for i in 1:(size(M, 2) - 1)
+        grad[1, i] = dot(
+            transpose(view(χ, :, i + 1)),
+            H,
+            view(M, :, i + 1)
+        )
+    end
+    return grad
+end
+
+"""
+    gradient(χ::Matrix{Float64}, M::Matrix{Float64}, H::Matrix)
+
+Calculates the gradient of the cost function with respect to the Hamiltonian for each time step.
+
+# Arguments
+- `χ::Matrix{Float64}`: Adjoint state matrix.
+- `M::Matrix{Float64}`: Forward propagation matrix.
+- `H::Matrix`: Hamiltonian matrix.
+
+# Returns
+- `grad::Matrix{Float64}`: Gradient of the cost function, as a 1xN matrix.
+"""
+function gradient(χ::Matrix{Float64},
+            M::Matrix{Float64}, 
+            H::AbstractMatrix{Int64}
+            )
+    grad = zeros(Float64, 1, size(M, 2) - 1)
+    for i in 1:(size(M, 2) - 1)
         grad[1, i] = dot(
             transpose(view(χ, :, i + 1)),
             H,

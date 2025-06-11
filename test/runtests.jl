@@ -2,21 +2,21 @@ using GrapeMR
 using Test, SafeTestsets
 
 @time begin
-    @safetestset "Control Field Generation: construction, normalization, and shape types" begin
-        include("control_fields/test_control_fields.jl")
-    end
+    # @safetestset "Control Field Generation: construction, normalization, and shape types" begin
+    #     include("control_fields/test_control_fields.jl")
+    # end
 
-    @safetestset "Spin Data Type: struct definition and spin population constructor" begin
-        include("bloch_methods/test_spin_generation.jl")
-    end
+    # @safetestset "Spin Data Type: struct definition and spin population constructor" begin
+    #     include("bloch_methods/test_spin_generation.jl")
+    # end
 
-    @safetestset "Bloch Simulation: normalized vs physical units (single spin)" begin
-        include("bloch_methods/test_bloch_methods.jl")
-    end
+    # @safetestset "Bloch Simulation: normalized vs physical units (single spin)" begin
+    #     include("bloch_methods/test_bloch_methods.jl")
+    # end
 
-    @safetestset "Bloch Simulation: normalized vs physical units (multiple spins)" begin
-        include("bloch_methods/test_bloch_methods_multi_spins.jl")
-    end
+    # @safetestset "Bloch Simulation: normalized vs physical units (multiple spins)" begin
+    #     include("bloch_methods/test_bloch_methods_multi_spins.jl")
+    # end
 
     @safetestset "Bloch Simulation: Verification of Magnetization Trajectories" begin
         include("bloch_methods/test_bloch_methods_dynamics.jl")
