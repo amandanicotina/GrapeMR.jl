@@ -33,28 +33,28 @@ GrapeMR.jl is an open-source Julia package for simulating and optimizing RF pul
 
 # Statement of need
 
-Statement of Need
-GrapeMR.jl was designed to be extensible, efficient, easy to use, and accessible even for users who are not deeply familiar with programming. Optimal control in magnetic resonance applications can be powerful, but it remains significantly underutilized in practice, primarily due to the complexity and inaccessibility of existing tools and their performance limitations.
+**GrapeMR.jl** was designed to be extensible, efficient, easy to use, and accessible even for users who are not deeply familiar with programming. Optimal control in magnetic resonance applications can be powerful, but it remains significantly underutilized in practice, primarily due to the complexity and inaccessibility of existing tools and their performance limitations.
 
 Several GRAPE implementations exist, such as the MATLAB-based toolkit by Van Reeth et al. for MRI contrast optimization [@van2017optimal]. However, they often rely on proprietary software, are not extensible for different applications, and lack modern features like automated hyperparameter tuning. GrapeMR.jl addresses these limitations by leveraging Julia's features like type stability, memory allocation, and static arrays. It consistently outperforms its MATLAB counterparts, achieving speedups of up to 20× in representative test cases. In addition, GrapeMR.jl automatically computes the gradient of the cost function, eliminating the need for users to manually derive and implement these expressions when testing new optimization goals.
 
-To further enhance accessibility, a standalone application built via PackageCompiler.jl is provided. This implementation allows users to run optimizations without interacting directly with Julia code, making the package suitable for non-developers. Optimization parameters can be defined through a Julia script or a human-readable 'TOML' configuration file. Results are automatically exported in formats compatible with widely used NMR software, such as Bruker TopSpin. The export system is modular and easily extensible, supporting integration with other scanner formats.
+To further enhance accessibility, a standalone application built via PackageCompiler.jl is provided. This implementation allows users to run optimizations without interacting directly with Julia code, making the package suitable for non-developers. Optimization parameters can be defined through a Julia script or a human-readable `TOML` configuration file. Results are automatically exported in formats compatible with widely used NMR software, such as Bruker TopSpin. The export system is modular and easily extensible, supporting integration with other scanner formats.
 
-The main goal of GrapeMR.jl lowers the barrier to entry to promote broader adoption of optimal control-designed RF pulses in research and clinical settings.
+The main goal of **GrapeMR.jl** lowers the barrier to entry to promote broader adoption of optimal control-designed RF pulses in research and clinical settings.
 
 # How the Package Works
 
-The GrapeMR.jl package allows users to perform GRAPE-based optimization by defining the spin system, inhomogeneity distributions, and optimization parameters. Users specify the number of time steps, cost function, control fields to optimize, and the initial guess for the RF pulse, commonly generated via a cubic spline interpolation 'spline_RF()' (or alternatives like 'hard_RF()', 'sinc_RF()', and 'gaussian_RF()').
+The **GrapeMR.jl** package allows users to perform GRAPE-based optimization by defining the spin system, inhomogeneity distributions, and optimization parameters. Users specify the number of time steps, cost function, control fields to optimize, and the initial guess for the RF pulse, commonly generated via a cubic spline interpolation using `spline_RF()` (or alternatives like `hard_RF()`, `sinc_RF()`, and `gaussian_RF()`).
 
 Optimizations can be run in two main ways:
+
 - **Script-based workflow:** Users define all relevant variables in a Julia script and call the main functions directly.
 - **TOML-based workflow:** Users define a configuration file containing all parameters and execute the optimization from the REPL or a compiled binary without writing code.
 
-The core function 'grape()' executes the optimization and returns optimized fields, cost function history, and magnetization trajectories. Visualization functions such as 'plot_magnetization_control_field()' and 'plot_cost_values()' assist in interpreting the results. If no file path is specified, results are automatically saved in a default folder within the package directory.
+The core function `grape()` executes the optimization and returns optimized fields, cost function history, and magnetization trajectories. Visualization functions such as `plot_magnetization_control_field()` and `plot_cost_values()` assist in interpreting the results. If no file path is specified, results are automatically saved in a default folder within the package directory.
 
-Thanks to Julia's multiple dispatch, GrapeMR.jl supports seamless integration with optimization algorithms from Optim.jl [@mogensen2018optim]. This allows users to switch between gradient descent, BFGS, L-BFGS, and others, depending on their problem's characteristics and constraints.
+Thanks to Julia's multiple dispatch,**GrapeMR.jl** supports seamless integration with optimization algorithms from Optim.jl [@mogensen2018optim]. This allows users to switch between gradient descent, BFGS, L-BFGS, and others, depending on their problem's characteristics and constraints.
 
-Hyperparameter search is handled via a hyper_opt flag: if set to true, the package automatically performs a hyperparameter search; otherwise, it uses the provided user values.
+Hyperparameter search is handled via a hyper_opt flag: if set to `true`, the package automatically performs a hyperparameter search; otherwise, it uses the provided user values.
 
 # Acknowledgements
 
