@@ -49,7 +49,7 @@ The GrapeMR.jl package allows users to perform GRAPE-based optimization by defin
 Optimizations can be run in two main ways:
 - **Script-based workflow:** Users define all relevant variables in a Julia script and call the main functions directly.
 - **TOML-based workflow:** Users define a configuration file containing all parameters and execute the optimization from the REPL or a compiled binary without writing code.
-- 
+
 The core function 'grape()' executes the optimization and returns optimized fields, cost function history, and magnetization trajectories. Visualization functions such as 'plot_magnetization_control_field()' and 'plot_cost_values()' assist in interpreting the results. If no file path is specified, results are automatically saved in a default folder within the package directory.
 
 Thanks to Julia's multiple dispatch, GrapeMR.jl supports seamless integration with optimization algorithms from Optim.jl [@mogensen2018optim]. This allows users to switch between gradient descent, BFGS, L-BFGS, and others, depending on their problem's characteristics and constraints.
