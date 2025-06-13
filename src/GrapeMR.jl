@@ -26,13 +26,11 @@ using TOML
 const γ_¹H = 42.5774688e6 #[Hz/T] 
 const Ix = SA[0 0 0 0; 0 0 0 0; 0 0 0 -1; 0 0 1 0]
 const Iy = SA[0 0 0 0; 0 0 0 1; 0 0 0 0; 0 -1 0 0]
-
-const γ_unit = 2π * γ_¹H     # [rad/s/T] — needed for internal Bloch matrices
+const Δt_target = 1e-4
 
 # ----------- #
   # Includes #
 # ----------- #
-
 # Data types
 include("data_types/ControlField.jl")
 include("data_types/Spins.jl")
@@ -79,7 +77,7 @@ include("plots/plots_magnetization.jl")
 # ----------- #
 
 # Constants
-export γ_¹H, Ix, Iy
+export γ_¹H, Ix, Iy, Δt_target
 
 # Data types
 export ControlField, NormalizedControlField
@@ -95,7 +93,7 @@ export GrapeOutput
 export generate_control_field, normalize_control_field, denormalize_control_field
 
 # GRAPE
-export grape, grape!, dynamics
+export grape, grape!, dynamics, GrapeContext
 export backward_propagation!, forward_propagation!, bloch_matrix
 export update!, gradient!, gradient
 

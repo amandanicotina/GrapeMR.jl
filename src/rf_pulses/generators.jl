@@ -1,34 +1,4 @@
 """
-    normalize_rf!(B1x::Vector{Float64}, B1y::Vector{Float64}, B1ref::Float64) -> (B1x, B1y)
-
-Normalizes the RF field vectors `B1x` and `B1y` such that the maximum magnitude 
-of the complex-valued RF amplitude √(B1x² + B1y²) is equal to `B1ref`.
-
-The function modifies the input vectors in-place.
-
-# Arguments
-- `B1x::Vector{Float64}`: x-component of the RF pulse in Hz.
-- `B1y::Vector{Float64}`: y-component of the RF pulse in Hz.
-- `B1ref::Float64`: Reference RF amplitude (in Hz) used to scale the pulse.
-
-# Returns
-- `(B1x, B1y)`: The normalized RF vectors (same objects, modified in-place).
-
-# Notes
-- If the maximum magnitude of the original RF is zero, the pulse is left unchanged.
-- This ensures that the peak amplitude of the resulting RF pulse is `B1ref`.
-
-"""
-function normalize_rf!(B1x::Vector{Float64}, B1y::Vector{Float64}, B1ref::Float64)
-    mag = sqrt.(B1x.^2 .+ B1y.^2)
-    max_mag = maximum(mag)
-    scale = max_mag > 0 ? max_mag : 1.0
-    B1x .= (B1x ./ scale) .* B1ref
-    B1y .= (B1y ./ scale) .* B1ref
-    return B1x, B1y
-end
-
-"""
     create_spline(spline_time, control_time_vals, B1_vals; rng=Random.GLOBAL_RNG)
 
 Creates a cubic spline interpolation from the specified control points and
@@ -81,7 +51,6 @@ function generate_control_field(::Spline; N, t_c, B1ref, rng=Random.GLOBAL_RNG)
     B1x_raw = create_spline(spline_time, control_time, B1_vals_x)
     B1y_raw = create_spline(spline_time, control_time, B1_vals_y)
 
-    normalize_rf!(B1x_raw, B1y_raw, B1ref)
     return build_control_field(B1x_raw, B1y_raw, B1ref, t_c)
 end
 
@@ -93,7 +62,7 @@ Generates a rectangular (hard) RF pulse.
 function generate_control_field(::Hard; N, t_c, B1ref)
     B1x = fill(B1ref, N)
     B1y = zeros(N)
-    # normalize_rf!(B1x, B1y, B1ref)
+
     return build_control_field(B1x, B1y, B1ref, t_c)
 end
 
@@ -109,7 +78,7 @@ function generate_control_field(::Sinc; N, t_c, B1ref, α=π/2)
     x = BW_Hz .* t
     B1x = (flip .* sinc.(x)) ./ 2π
     B1y = (flip .* sinc.(x .+ π / 2)) ./ 2π
-    normalize_rf!(B1x, B1y, B1ref)
+
     return build_control_field(B1x, B1y, B1ref, t_c)
 end
 
@@ -123,7 +92,7 @@ function generate_control_field(::Gaussian; N, t_c, B1ref)
     B1 = exp.(-0.5 .* x.^2)
     B1x = copy(B1)
     B1y = copy(B1)
-    normalize_rf!(B1x, B1y, B1ref)
+
     return build_control_field(B1x, B1y, B1ref, t_c)
 end
 
@@ -169,7 +138,7 @@ function generate_control_field(::BSSFP; N, t_c, B1ref, nTR, α, TR)
         B1x[idx] = n == 1 ? rf0 : rf
     end
     B1y = zeros(N)
-    normalize_rf!(B1x, B1y, B1ref)
+
     return build_control_field(B1x, B1y, B1ref, nTR * TR)
 end
 
@@ -216,11 +185,10 @@ cf_phys = generate_control_field(:hard; t_c=0.5, B1ref=5.0, normalize=false)
 """
 function generate_control_field(kind::Symbol = :spline; 
     t_c::Float64,
-    Δt_target::Float64=1e-4, 
     B1ref::Float64, 
     normalize::Bool=true,
     kwargs...
-)
+    )
     N = max(10, ceil(Int, t_c / Δt_target))
     @debug "Auto-selected N = $N for t_c = $t_c and Δt_target = $Δt_target"
 

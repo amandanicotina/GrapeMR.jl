@@ -105,7 +105,7 @@ Simulates backward adjoint dynamics using normalized control fields.
 function backward_propagation!(χ::AbstractMatrix, cf::NormalizedControlField, iso::Isochromat, cost_grad::AbstractVector)
     Δt = diff(range(0.0, cf.t_control, length(cf.B1x) + 1))
     s  = iso.spin
-    χ[:, end] .= cost_grad
+    χ[:, end] .= cost_grad .* (2π * s.b1_inho)
 
     Bx = (2π * s.b1_inho) .* cf.B1x
     By = (2π * s.b1_inho) .* cf.B1y
@@ -136,7 +136,7 @@ Simulates backward adjoint dynamics using SI-unit control fields.
 function backward_propagation!(χ::AbstractMatrix, cf::ControlField, iso::Isochromat, cost_grad::AbstractVector)
     Δt = diff(range(0.0, cf.t_control, length(cf.B1x) + 1))
     s  = iso.spin
-    χ[:, end] .= cost_grad
+    χ[:, end] .= cost_grad .* (2π * s.b1_inho)
 
     Bx = (2π * s.b1_inho) .* cf.B1x
     By = (2π * s.b1_inho) .* cf.B1y

@@ -6,7 +6,7 @@ using BenchmarkTools
 # Spin Parameters
 M0 = [0.0, 0.0, 1.0]
 ΔB1 = [1.0]
-offsets = 0.0 #-15:1:15
+offsets = -15:1:15
 T1 = [0.6, 0.3]
 T2 = [0.1, 0.05]
 label = ["C1", "C2"]

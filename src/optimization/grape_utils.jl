@@ -125,3 +125,9 @@ function gradient_function_vec!(G, u_vec::Vector{Float64}, ctx::GrapeContext)
     G .= vcat(vec(grad_x), vec(grad_y))
     return G
 end
+
+
+function early_stopping(res::Optim.MultivariateOptimizationResults)
+    @info "check for custom stopping"
+    return Optim.converged(res)
+end

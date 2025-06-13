@@ -18,11 +18,12 @@ function gradient!(grad::AbstractMatrix{<:Real},
                 H::AbstractMatrix{<:Real}
                 )
     for i in 1:(size(M, 2) - 1)
-        grad[1, i] = dot(
+        grad[1, i] = Δt_target .* dot(
             transpose(view(χ, :, i + 1)),
             H,
             view(M, :, i + 1)
         )
+       # + 2*λ*ux[i]*Δt
     end
     return grad
 end
@@ -46,7 +47,7 @@ function gradient(χ::Matrix{Float64},
             )
     grad = zeros(Float64, 1, size(M, 2) - 1)
     for i in 1:(size(M, 2) - 1)
-        grad[1, i] = dot(
+        grad[1, i] = Δt_target .* dot(
             transpose(view(χ, :, i + 1)),
             H,
             view(M, :, i + 1)
