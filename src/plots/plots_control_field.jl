@@ -97,7 +97,7 @@ Plot the magnetization trajectory for a set of isochromats and the corresponding
     1. The magnetization trajectory in the transverse plane.
     2. The control field amplitude and phase over time.
 """
-function plot_magnetization_control_field(cf::ControlField, isos::Vector{<:Isochromat})
+function plot_magnetization_control_field(cf::AbstractControlField, isos::Vector{<:Isochromat})
     colors = color_palette(10)
     labels_shown = Set()
 

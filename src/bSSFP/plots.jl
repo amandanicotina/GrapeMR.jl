@@ -1,8 +1,3 @@
-theme(:default, 
-    palette=:viridis,          # For discrete colors (lines, points)
-    colorgradient=:viridis     # For continuous colors (colorbars, heatmaps)
-)
-
 function calculate_steady_state(ss_spin::Vector{GrapeMR.SteadyState})
     offset     = collect(range(ss_spin[1].B0inho, ss_spin[end].B0inho, length(ss_spin)))
     ss_mat_vec = steady_state_matrix.(ss_spin)

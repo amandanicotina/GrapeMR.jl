@@ -1,19 +1,23 @@
-# TODO add examples to docstrings
-# TODO refactor bSSFP_RF to export ControlField struct 
+abstract type AbstractControlField end
 
 """
     ControlField{T, M1, Mz}
 
-Represents the RF control field parameters for an NMR/MRI sequence.
+Represents an RF control field with physical units: seconds and Hz.
+
+# Type Parameters
+- `T`: Element type (e.g., `Float64`)
+- `M1`: Matrix type for the transverse components
+- `Mz`: Matrix type for the longitudinal field
 
 # Fields
-- `B1x::M1`: Matrix for the x-component of the RF field.
-- `B1y::M1`: Matrix for the y-component of the RF field.
-- `B1_ref::T`: Reference amplitude of the RF field.
-- `Bz::Mz`: Matrix for the z-component of the magnetic field.
-- `t_control::T`: Total control time for the sequence.
+- `B1x::M1`: x-component of the RF field (in Hz)
+- `B1y::M1`: y-component of the RF field (in Hz)
+- `B1_ref::T`: Reference RF amplitude (in Hz)
+- `Bz::Mz`: Longitudinal field (typically zero, in Hz)
+- `t_control::T`: Total pulse duration (in seconds)
 """
-mutable struct ControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}}
+mutable struct ControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}} <: AbstractControlField
     B1x::M1
     B1y::M1
     B1_ref::T
@@ -21,219 +25,121 @@ mutable struct ControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T
     t_control::T
 end
 
-
 """
-    create_spline(spline_time::AbstractArray, control_time_vals::AbstractArray, B1_random_vals::AbstractArray)
+    NormalizedControlField{T, M1, Mz}
 
-Creates a cubic spline interpolation for the control field based on the specified time and amplitude values.
+Represents a unitless RF control field.
 
-# Arguments
-- `spline_time::AbstractArray`: Array of time points for the spline.
-- `control_time_vals::AbstractArray`: Array of control time points for evaluation.
-- `B1_random_vals::AbstractArray`: Array of B1 amplitude values for spline generation.
+Amplitude is normalized by the reference value `B1ref` (in Hz), and time is scaled as
+`t ⋅ B1ref`, resulting in a dimensionless representation of the pulse.
 
-# Returns
-- Array of interpolated control field values at each control time.
+Used internally for optimization and gradient calculations.
+
+# Fields
+- `B1x::M1`: x-component of the normalized RF field
+- `B1y::M1`: y-component of the normalized RF field
+- `B1_ref::T`: Always 1.0 (unitless reference)
+- `Bz::Mz`: Normalized longitudinal field (typically zero)
+- `t_control::T`: Dimensionless total control duration, computed as `t_c * B1ref`
 """
-function create_spline(spline_time::AbstractArray, control_time_vals::AbstractArray, B1_random_vals::AbstractArray)
-    spline = CubicSpline(spline_time, B1_random_vals)
-    return map(control_time -> spline(control_time), control_time_vals)
+struct NormalizedControlField{T<:Real, M1<:AbstractMatrix{T}, Mz<:AbstractMatrix{T}} <: AbstractControlField
+    B1x::M1
+    B1y::M1
+    B1_ref::T
+    Bz::Mz
+    t_control::T
 end
 
-
 """
-    spline_RF(N::Int, t_c::Float64, B1ref::Float64)
+    build_control_field(B1x, B1y, B1ref, t_c; Bz=nothing)
 
-Generates a cubic spline-based RF pulse.
+Assembles and returns a `ControlField` struct from RF field vectors.
 
 # Arguments
-- `N::Int`: Number of time points.
-- `t_c::Float64`: Duration of the pulse in seconds.
-- `B1ref::Float64`: Reference amplitude for scaling the pulse.
+- `B1x::Vector`: Vector of x RF field values.
+- `B1y::Vector`: Vector of y RF field values.
+- `B1ref::Float64`: Reference amplitude.
+- `t_c::Float64`: Total control duration in seconds.
+
+# Keywords
+- `Bz`: Optional longitudinal component. Defaults to zero.
 
 # Returns
-- A `ControlField` struct with `B1x`, `B1y`, and `Bz` components generated using spline interpolation.
+- A `ControlField` struct with reshaped field arrays.
 """
-function spline_RF(N, t_c, B1ref)
-    len = 10
-    spline_time = range(0.0, t_c, length=len)
-    control_time = range(0.0, t_c, length=N)
-    B1_random_vals = rand(Float64, len)
-
-    # B1x
-    B1x = B1ref * create_spline(spline_time, control_time, B1_random_vals)
+function build_control_field(B1x::Vector, B1y::Vector, B1ref::Float64, t_c::Float64; Bz=nothing)
     B1x_mat = reshape(B1x, 1, :)
-
-    # B1y
-    B1y = B1ref * create_spline(spline_time, control_time, B1_random_vals)
     B1y_mat = reshape(B1y, 1, :)
-
-    # Bz
-    Bz = zeros(1, N)
-
-    return ControlField(B1x_mat, B1y_mat, B1ref, Bz, t_c)
+    Bz_mat = isnothing(Bz) ? zeros(1, length(B1x)) : reshape(Bz, 1, :)
+    return ControlField(B1x_mat, B1y_mat, B1ref, Bz_mat, t_c)
 end
 
-
 """
-    hard_RF(N::Int, t_c::Float64, B1ref::Float64)
+    normalize_control_field(cf::ControlField) -> NormalizedControlField
 
-Generates a hard RF pulse with constant amplitude in the x-axis and zero amplitude in the y-axis.
+Converts a `ControlField` into a unitless `NormalizedControlField`.
+
+- RF amplitude is normalized by `cf.B1_ref` (in Hz)
+- Time is normalized as `t ⋅ B1ref`, resulting in a dimensionless control duration
 
 # Arguments
-- `N::Int`: Number of time points.
-- `t_c::Float64`: Duration of the pulse in seconds.
-- `B1ref::Float64`: Amplitude of the RF pulse.
+- `cf::ControlField`: Control field in physical units (Hz and seconds)
 
 # Returns
-- A `ControlField` struct with constant `B1x` and zero `B1y` components.
+- `NormalizedControlField`: Unitless version of the input field
 """
-function hard_RF(N, t_c, B1ref)
-    # B1x
-    B1x = B1ref * ones(1, N)
-    # B1y
-    B1y = B1ref * zeros(1, N)
-    # Bz
-    Bz = zeros(1, N) 
+function normalize_control_field(cf::ControlField)
+    B1x_norm = cf.B1x ./ cf.B1_ref
+    B1y_norm = cf.B1y ./ cf.B1_ref
+    Bz_norm  = cf.Bz  ./ cf.B1_ref
+    t_c_norm = cf.t_control * cf.B1_ref
+    B1_ref_norm = 1.0  # by definition
 
-    return ControlField(B1x, B1y, B1ref, Bz, t_c)
+    # # DEBUG
+    # @info "normalize_control_field" cf.B1_ref maximum_B1x=maximum(abs, cf.B1x) maximum_B1x_norm=maximum(abs, B1x_norm)
+
+    return NormalizedControlField(
+        reshape(B1x_norm, 1, :),
+        reshape(B1y_norm, 1, :),
+        B1_ref_norm,
+        reshape(Bz_norm, 1, :),
+        t_c_norm,
+    )
 end
 
-
 """
-    sinc_RF(N::Int, t_c::Float64, B1ref::Float64; α=π/2)
+    denormalize_control_field(cf::NormalizedControlField, B1ref::Float64) -> ControlField
 
-Generates a sinc RF pulse with a specified flip angle. Bandwidth hardcoded to 100 Hz. B1x and B1y have a π/2 phase difference
+Converts a `NormalizedControlField` back into a physical `ControlField`.
+
+- RF amplitude is scaled by `B1ref` (in Hz)
+- Time is scaled as `t / B1ref`
 
 # Arguments
-- `N::Int`: Number of time points.
-- `t_c::Float64`: Duration of the pulse in seconds.
-- `B1ref::Float64`: Reference amplitude for scaling the pulse.
-- `α::Float64=π/2`: Flip angle in radians.
+- `cf::NormalizedControlField`: Unitless control field
+- `B1ref::Float64`: Reference RF amplitude (in Hz)
 
 # Returns
-- A `ControlField` struct with `B1x`, `B1y`, and `Bz` components generated as sinc functions.
+- `ControlField`: Reconstructed field in Hz and seconds
 """
-function sinc_RF(N::Int, t_c::Float64, B1ref::Float64; α=π / 2)
-    BW_Hz = 100.0
-    t_array = range(0.0, stop=t_c, length=N)
-    t = t_array .- t_c / 2
-    rot = rad2deg(α) / 360
-    flip = rot / diff(t)[1]
-    x = BW_Hz .* t
+function denormalize_control_field(cf::NormalizedControlField, B1ref::Float64)
+    B1x_phys = cf.B1x .* B1ref
+    B1y_phys = cf.B1y .* B1ref
+    Bz_phys  = cf.Bz  .* B1ref
+    t_c_phys = cf.t_control / B1ref
 
-    # B1x 
-    B1x = (flip .* sinc.(x)) ./ 2π
-    B1x_mat = reshape(B1x, 1, :)
-
-    # B1y
-    B1y = (flip .* sinc.(x .+ π / 2)) ./ 2π
-    B1y_mat = reshape(B1y, 1, :)
-
-    # B1z
-    Bz = zeros(1, N)
-
-    return ControlField(B1x_mat, B1y_mat, B1ref, Bz, t_c)
-end
-
-"""
-    gaussian_RF(N::Int, t_c::Float64, B1ref::Float64)
-
-Generates a Gaussian-shaped RF pulse.
-
-# Arguments
-- `N::Int`: Number of time points.
-- `t_c::Float64`: Duration of the pulse in seconds.
-- `B1ref::Float64`: Reference amplitude for scaling the pulse.
-
-# Returns
-- A `ControlField` struct with Gaussian-distributed `B1x` and `B1y` components.
-"""
-function gaussian_RF(N::Int, t_c::Float64, B1ref::Float64)
-    # B1x
-    B1x = B1ref * exp.(-0.5 * ((collect(1:N) .- N / 2) / (N / 10)) .^ 2)
-    B1x_mat = reshape(B1x, 1, :)
-
-    # B1y
-    B1y = B1ref * exp.(-0.5 * ((collect(1:N) .- N / 2) / (N / 10)) .^ 2)
-    B1y_mat = reshape(B1y, 1, :)
-
-    # Bz
-    Bz = zeros(1, N)
-
-    return ControlField(B1x_mat, B1y_mat, B1ref, Bz, t_c)
-
+    return ControlField(
+        reshape(B1x_phys, 1, :),
+        reshape(B1y_phys, 1, :),
+        B1ref,
+        reshape(Bz_phys, 1, :),
+        t_c_phys
+    )
 end
 
 
-"""
-    bSSFP_RF(N::Int, nTR::Int, α::Real, TR::Float64)
+Base.show(io::IO, cf::NormalizedControlField) =
+    print(io, "NormalizedControlField(t_control = $(cf.t_control), B1_ref = $(cf.B1_ref))")
 
-Generates an RF pulse sequence for bSSFP with specified flip angle and repetition time.
-
-# Arguments
-- `N::Int`: Number of points per repetition.
-- `nTR::Int`: Number of TR periods (repetitions).
-- `α::Real`: Flip angle in radians.
-- `TR::Float64`: Repetition time in seconds.
-
-# Returns
-- A 1D array containing the bSSFP RF pulse sequence.
-"""
-# function bSSFP_RF(N::Int, nTR::Int, α::Real, TR::Float64)
-#     Δt = TR / N
-#     rf0 = (α / 2) / (2π * Δt)
-#     rf = α / (2π * Δt)
-#     bSSFP_vec = Float64[]
-
-#     t_c = nTR * TR
-
-#     for n ∈ 1:nTR
-#         if n == 1
-#             append!(bSSFP_vec, rf0)
-#             append!(bSSFP_vec, zeros(N))
-#         elseif n > 1
-#             append!(bSSFP_vec, rf)
-#             append!(bSSFP_vec, zeros(N))
-#         else
-#             continue
-#         end
-#     end
-#     b1 = [0.0; bSSFP_vec]
-#     B1x = reshape(b1, 1, :)
-#     B1y, Bz = zeros(1, N), zeros(1, N)
-
-#     return ControlField(B1x, B1y, 1.0, Bz, t_c)
-# end
-
-
-function bSSFP_RF(N::Int, nTR::Int, α::Real, TR::Float64)
-    # Calculate points per TR period
-    points_per_TR = N ÷ nTR  # Integer division to ensure even distribution
-    Δt = TR / points_per_TR
-    
-    # Calculate RF amplitudes
-    rf0 = (α / 2) / (2π * Δt)
-    rf = α / (2π * Δt)
-    
-    # Initialize vector with zeros
-    bSSFP_vec = zeros(N)
-    
-    # Fill in RF pulses at the start of each TR
-    for n in 1:nTR
-        idx = (n-1) * points_per_TR + 1  # Index for start of each TR
-        if n == 1
-            bSSFP_vec[idx] = rf0
-        else
-            bSSFP_vec[idx] = rf
-        end
-    end
-    
-    # Create control field
-    t_c = nTR * TR
-    B1x = reshape(bSSFP_vec, 1, :)
-    B1y = zeros(1, N)
-    Bz = zeros(1, N)
-    
-    return ControlField(B1x, B1y, 1.0, Bz, t_c)
-end
+Base.show(io::IO, cf::ControlField) =
+    print(io, "ControlField(t_control = $(cf.t_control) s, B1_ref = $(cf.B1_ref) Hz)")

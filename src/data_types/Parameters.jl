@@ -8,10 +8,10 @@ Defines parameters for polynomial-based decay for ϵ in the GRAPE algorithm.
 - `poly_degree::Int`: Degree of the polynomial.
 - `max_iter::Int`: Maximum number of optimization iterations.
 """
-struct OptimizationParams
-    poly_start::Float64
-    poly_degree::Int
-    max_iter::Int
+
+struct OptimizationParams{T<:AbstractOptimizer, C<:AbstractOptimizerConfig}
+    optimizer::T
+    config::C
 end
 
 """
@@ -25,7 +25,6 @@ Encapsulates key parameters for the GRAPE optimization process.
 - `fields_opt::Dict{String, Bool}`: Dictionary indicating which fields to optimize (e.g., `B1x`, `B1y`).
 """
 struct GrapeParams{F}
-    N::Int64
     cost_function::F
     fields_opt::Dict{String, Bool}
 end
@@ -39,7 +38,7 @@ Combines GRAPE and optimization parameters for the full optimization process.
 - `grape_params::GrapeParams{F}`: GRAPE-specific optimization parameters.
 - `opt_params::OptimizationParams`: General optimization parameters.
 """
-struct Parameters{F}
+struct Parameters{F, T<:AbstractOptimizer, C<:AbstractOptimizerConfig}
     grape_params::GrapeParams{F}
-    opt_params::OptimizationParams
+    opt_params::OptimizationParams{T, C}
 end

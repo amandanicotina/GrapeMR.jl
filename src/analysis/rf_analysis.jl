@@ -106,12 +106,11 @@ function fast_fourier_transform(cf::ControlField)
     frequencies = fftfreq(N, sampling_rate) |> fftshift
 
     # Plot
-    plot_layout = @layout [a; b]
     pTime = plot()
         plot!(pTime, time, abs.(B1), label = false, ylabel = "Magnitude", xlabel = "Time [s]", title = "Time-Domain Pulse")
     pFreq = plot()
         plot!(pFreq, frequencies, fftshift(abs.(fft_RF)), label = false, ylabel = "Magnitude", xlabel = "Frequency [kHz]", title = "Frequency-Domain Pulse")
-    p = plot(pTime, pFreq, layout = plot_layout)
+    p = plot(pTime, pFreq, layout = @layout([a; b]))
 
     # cf = res_grape.control_field 
     # pFFT = fast_fourier_transform(cf)
