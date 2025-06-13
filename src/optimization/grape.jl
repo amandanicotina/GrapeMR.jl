@@ -1,3 +1,4 @@
+const grad_tol = 1e-8
 """
     grape(params, control_field, spins, optimizer)
 
@@ -74,7 +75,7 @@ function grape!(output::GrapeOutput,
         show_trace = false,
         callback = progress_callback,
         show_every = 1,
-        g_abstol = 1e-6  
+        g_abstol = grad_tol  
         # f_abstol = 1e-4
     )
 
@@ -156,7 +157,7 @@ function grape!(output::GrapeOutput,
         show_trace = false,
         callback = progress_callback,
         show_every = 1,
-        g_abstol = 1e-7  
+        g_abstol = grad_tol  
         # f_abstol = 1e-4
     )
 
