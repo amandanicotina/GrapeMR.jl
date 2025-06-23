@@ -1,0 +1,59 @@
+name: "Feature Request"
+description: "Suggest a new feature or enhancement"
+title: "[FEATURE]: "
+labels:
+  - enhancement
+assignees:
+  - SampleAssignee
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to propose a new feature! Please fill out the sections below.
+  - type: input
+    id: summary
+    attributes:
+      label: 🚀 Feature summary
+      description: One-sentence summary of the new feature.
+      placeholder: "e.g., Enable exporting pulse sequences to Varian/Agilent VnmrJ"
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 🎯 Motivation
+      description: Who wants it and why?  
+      placeholder: "I'm using Grape in the context of ___ and I want ____, so that ____."
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: ✏️ Proposed implementation
+      description: How do you imagine it working? Algorithms, API, constraints, additional dependencies?
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives considered
+      description: Other approaches you’ve thought about and why you rejected them.
+      placeholder: "i.e., user could manually export from Bruker to Varian/Agilent VnmrJ via alternative software but that adds unnecessary steps."
+    validations:
+      required: false
+  - type: textarea
+    id: benefits
+    attributes:
+      label: ✅ Benefits
+      description: What value does this bring? Who benefits and how?
+      placeholder: "Improves productivity, reduces repetition, etc."
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Pre-submission checklist
+      options:
+        - label: I have searched for existing requests and duplicates
+        - label: I have added labels if applicable
+        - label: I have provided clear user story or motivation

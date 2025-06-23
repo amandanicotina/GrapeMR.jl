@@ -1,0 +1,75 @@
+name: "🐞 Bug Report"
+description: "Report a bug in GrapeMR — please include steps to reproduce and context."
+title: "[BUG]: "
+labels:
+  - bug
+assignees:
+  - SampleAssignee
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Did you find a bug?**
+        - ✅ I’ve searched [existing issues](https://github.com/amandanicotina/GrapeMR.jl/issues) and didn’t find a match.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Bug summary
+      description: One‑sentence overview of the bug.
+      placeholder: "e.g., `run_grape_optimization(...)` does not produce any plots despite `plot` being truthy in used TOML configuration."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal runnable example or test case. Ensure to include the Julia version, along with any configuration or data files necessary to reproduce.
+      placeholder: |
+        ```julia
+        using GrapeMR
+        ...
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What GrapeMR should do instead.
+      placeholder: "I expected `run_grape_optimization(...)` to produce plots."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happens (include error messages / stack traces).
+      placeholder: |
+        ```text
+        MethodError: no method matching ...
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Provide info about OS, Julia version, GrapeMR version, etc.
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Julia: 1.9.0
+        - GrapeMR: v0.3.1
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Pre‑submission checklist
+      options:
+        - label: I have provided a minimal reproducible example or test
